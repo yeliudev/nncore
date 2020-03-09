@@ -1,0 +1,98 @@
+os: linux
+
+language: python
+
+jobs:
+  include:
+    - name: Python 3.6 on Xenial Linux
+      dist: xenial
+      python: 3.6
+    - name: Python 3.7 on Xenial Linux
+      dist: xenial
+      python: 3.7
+    - name: Python 3.8 on Xenial Linux
+      dist: xenial
+      python: 3.8
+    - name: Python nightly on Xenial Linux
+      dist: xenial
+      python: nightly
+    - name: Python pypy3 on Xenial Linux
+      dist: xenial
+      python: pypy3
+    - name: Python 3.6 on Bionic Linux
+      dist: bionic
+      python: 3.6
+    - name: Python 3.7 on Bionic Linux
+      dist: bionic
+      python: 3.7
+    - name: Python 3.8 on Bionic Linux
+      dist: bionic
+      python: 3.8
+    - name: Python nightly on Bionic Linux
+      dist: bionic
+      python: nightly
+    - name: Python pypy3 on Bionic Linux
+      dist: bionic
+      python: pypy3
+
+    - name: Python 3.7 on macOS 10.13
+      os: osx
+      osx_image: xcode10.1
+      language: shell
+      before_install:
+        - brew update
+        - brew uninstall --ignore-dependencies python@2
+        - brew upgrade python
+    - name: Python 3.7 on macOS 10.14
+      os: osx
+      osx_image: xcode11.3
+      language: shell
+      before_install:
+        - brew update
+        - brew uninstall --ignore-dependencies python@2
+        - brew upgrade python
+
+    - name: Python 3.6 on Windows
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.6.8
+        - python -m pip install --upgrade pip
+      env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
+    - name: Python 3.7 on Windows
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.7.6
+        - python -m pip install --upgrade pip
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+    - name: Python 3.8 on Windows
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --version 3.8.2
+        - python -m pip install --upgrade pip
+      env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
+    - name: Python nightly on Windows
+      os: windows
+      language: shell
+      before_install:
+        - choco install python --pre
+        - python -m pip install --upgrade pip
+      env: PATH=/c/Python39:/c/Python39/Scripts:$PATH
+
+install:
+  - pip3 install --upgrade pip
+  - pip3 install setuptools coveralls flake8 yapf isort
+  - pip3 install -e .
+
+before_script:
+  - isort -rc -df nncore/ tests/
+  - yapf -r -d nncore/ tests/
+  - flake8
+
+script:
+  - coverage run --source=nncore setup.py test
+
+after_success:
+  - coveralls
