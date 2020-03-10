@@ -19,10 +19,10 @@ def test_timer_init():
 def test_timer_run():
     timer = nncore.Timer()
     time.sleep(1)
-    assert abs(timer.since_start() - 1) < 0.5
+    assert abs(timer.since_start() - 1) < 1
     time.sleep(1)
-    assert abs(timer.since_last_check() - 1) < 0.5
-    assert abs(timer.since_start() - 2) < 0.5
+    assert abs(timer.since_last_check() - 1) < 1
+    assert abs(timer.since_start() - 2) < 1
     timer = nncore.Timer(False)
     with pytest.raises(RuntimeError):
         timer.since_start()
@@ -34,7 +34,7 @@ def test_timer_context(capsys):
     with nncore.Timer():
         time.sleep(1)
     out, _ = capsys.readouterr()
-    assert abs(float(out) - 1) < 0.5
+    assert abs(float(out) - 1) < 1
     with nncore.Timer(print_tmpl='time: {:.1f}s'):
         time.sleep(1)
     out, _ = capsys.readouterr()
