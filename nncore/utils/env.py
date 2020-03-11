@@ -1,18 +1,16 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+import importlib
 import os
 import os.path as osp
 import subprocess
 import sys
 from getpass import getuser
-from importlib.util import find_spec
 from platform import system
 from re import findall
 from socket import gethostname
 
 from tabulate import tabulate
-
-import nncore
 
 
 def get_host_info():
@@ -94,7 +92,8 @@ def _collect_torchvision_env():
                                            osp.dirname(torchvision.__file__))
         if torch.cuda.is_available():
             try:
-                torchvision_C = find_spec('torchvision._C').origin
+                torchvision_C = importlib.util.find_spec(
+                    'torchvision._C').origin
                 torchvision_arch_flags = _detect_compute_compatibility(
                     CUDA_HOME, torchvision_C)
                 return torchvision_env, torchvision_arch_flags
@@ -105,26 +104,10 @@ def _collect_torchvision_env():
         return None, None
 
 
-def _collect_numpy_env():
+def _get_module_version(module_name):
     try:
-        import numpy as np
-        return np.__version__
-    except ImportError:
-        return None
-
-
-def _collect_pillow_env():
-    try:
-        import PIL
-        return PIL.__version__
-    except ImportError:
-        return None
-
-
-def _collect_opencv_env():
-    try:
-        import cv2
-        return cv2.__version__
+        module = importlib.import_module(module_name)
+        return module.__version__
     except ImportError:
         return None
 
@@ -163,10 +146,8 @@ def collect_env_info():
         _c.append(('torchvision arch flags', torchvision_arch_flags))
 
     # other libraries
-    _c.append(('nncore', nncore.__version__))
-    _c.append(('numpy', _collect_numpy_env()))
-    _c.append(('pillow', _collect_pillow_env()))
-    _c.append(('cv2', _collect_opencv_env()))
+    for module in ['nncore', 'numpy', 'PIL', 'cv2']:
+        _c.append((module, _get_module_version(module)))
 
     env_info = tabulate(_c)
     torch_build_env = _collect_torch_build_env()

@@ -1,23 +1,19 @@
 os: linux
+dist: xenial
 
 language: python
 
 jobs:
   include:
     - name: Python 3.6 on Xenial Linux
-      dist: xenial
       python: 3.6
     - name: Python 3.7 on Xenial Linux
-      dist: xenial
       python: 3.7
     - name: Python 3.8 on Xenial Linux
-      dist: xenial
       python: 3.8
     - name: Python nightly on Xenial Linux
-      dist: xenial
       python: nightly
     - name: Python pypy3 on Xenial Linux
-      dist: xenial
       python: pypy3
     - name: Python 3.6 on Bionic Linux
       dist: bionic
@@ -45,6 +41,20 @@ jobs:
         - brew uninstall --ignore-dependencies python@2
         - brew upgrade python
       env: HOMEBREW_NO_INSTALL_CLEANUP=true
+    - name: Python 3.8 on macOS 10.13
+      os: osx
+      osx_image: xcode10.1
+      language: shell
+      before_install:
+        - brew update
+        - brew uninstall --ignore-dependencies python@2 python
+        - brew install python@3.8
+        - pip3 install virtualenv
+        - virtualenv python3.8
+        - source python3.8/bin/activate
+      env:
+        - HOMEBREW_NO_INSTALL_CLEANUP=true
+        - PATH=/usr/local/opt/python@3.8/bin:$PATH
     - name: Python 3.7 on macOS 10.14
       os: osx
       osx_image: xcode11.3
@@ -54,6 +64,20 @@ jobs:
         - brew uninstall --ignore-dependencies python@2
         - brew upgrade python
       env: HOMEBREW_NO_INSTALL_CLEANUP=true
+    - name: Python 3.8 on macOS 10.14
+      os: osx
+      osx_image: xcode11.3
+      language: shell
+      before_install:
+        - brew update
+        - brew uninstall --ignore-dependencies python@2 python
+        - brew upgrade python@3.8
+        - pip3 install virtualenv
+        - virtualenv python3.8
+        - source python3.8/bin/activate
+      env:
+        - HOMEBREW_NO_INSTALL_CLEANUP=true
+        - PATH=/usr/local/opt/python@3.8/bin:$PATH
 
     - name: Python 3.6 on Windows
       os: windows
@@ -66,7 +90,7 @@ jobs:
       os: windows
       language: shell
       before_install:
-        - choco install python --version 3.7.6
+        - choco install python --version 3.7.7
         - python -m pip install --upgrade pip
       env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
     - name: Python 3.8 on Windows
@@ -90,9 +114,9 @@ install:
   - pip3 install -e .
 
 before_script:
-  - isort -rc -df nncore/ tests/
-  - yapf -r -d nncore/ tests/
-  - flake8
+  - isort -rc -df nncore/ tests/ setup.py
+  - yapf -r -d nncore/ tests/ setup.py
+  - flake8 nncore/ tests/ setup.py
 
 script:
   - coverage run --source=nncore setup.py test

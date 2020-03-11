@@ -1,5 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+import multiprocessing as mp
 import os
 import time
 from io import StringIO
@@ -108,6 +109,7 @@ def test_track_enum_progress():
 def test_track_parallel_progress_list():
     if system() == 'Windows':
         return
+    mp.set_start_method('fork', force=True)
     results = nncore.track_parallel_progress(dummy_func, [1, 2, 3, 4], 2)
     assert results == [1, 2, 3, 4]
 
@@ -115,6 +117,7 @@ def test_track_parallel_progress_list():
 def test_track_parallel_progress_iterator():
     if system() == 'Windows':
         return
+    mp.set_start_method('fork', force=True)
     results = nncore.track_parallel_progress(dummy_func,
                                              ((i for i in [1, 2, 3, 4]), 4), 2)
     assert results == [1, 2, 3, 4]

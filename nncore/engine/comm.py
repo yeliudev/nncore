@@ -48,6 +48,10 @@ def all_gather(data):
     """
     Run all_gather on arbitrary serializable data.
 
+    This method will first check whether free gpu memory is enough for
+    gathering data, if so, the data would be gathered using gpus, if not,
+    it would be gatherd by writing into the disk.
+
     Args:
         data (any): any serializable object
 
