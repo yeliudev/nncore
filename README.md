@@ -10,7 +10,7 @@
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/c1aris/nncore/blob/master/LICENSE)
 [![Coverage Status](https://coveralls.io/repos/github/c1aris/nncore/badge.svg?branch=master)](https://coveralls.io/github/c1aris/nncore?branch=master)
 [![Slack](https://img.shields.io/badge/slack-chat-blue.svg?logo=slack)](https://join.slack.com/t/nncore/shared_invite/zt-cex52vw2-PBxlf~BToxS3k8etdxYxHQ)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/61c2ce72b14345d186876150cc1d4df8)](https://www.codacy.com/manual/c1aris/nncore?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=c1aris/nncore&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0692961de1d94464a770b22efc2a5b0d)](https://www.codacy.com/manual/c1aris/nncore?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=c1aris/nncore&amp;utm_campaign=Badge_Grade)
 
 </div>
 
