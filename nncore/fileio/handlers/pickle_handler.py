@@ -15,7 +15,7 @@ class PickleHandler(FileHandler):
         return super(PickleHandler, self).load_from_path(filename, mode='rb')
 
     def load_from_bytes(self, bytes):
-        return pickle.loads(bytes, protocol=2)
+        return pickle.loads(bytes)
 
     def dump_to_bytes(self, obj):
         return pickle.dumps(obj, protocol=2)

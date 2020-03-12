@@ -11,13 +11,15 @@ import torch.multiprocessing as mp
 import nncore
 
 
-def init_dist(backend='nccl', **kwargs):
+def init_dist(backend, **kwargs):
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method('spawn')
 
-    rank = int(os.environ['RANK'])
-    num_gpus = torch.cuda.device_count()
-    torch.cuda.set_device(rank % num_gpus)
+    if torch.cuda.is_available():
+        rank = int(os.environ['RANK'])
+        num_gpus = torch.cuda.device_count()
+        torch.cuda.set_device(rank % num_gpus)
+
     dist.init_process_group(backend=backend, **kwargs)
 
 
@@ -75,14 +77,14 @@ def _serialize_to_tensor(data, group):
 
     buffer = nncore.dumps(data)
     storage = torch.ByteStorage.from_buffer(buffer)
-    tensor = torch.ByteTensor(storage, device=device)
+    tensor = torch.ByteTensor(storage).to(device=device)
 
     return tensor, group
 
 
 def _pad_tensors(tensor, group):
     world_size = get_world_size(group=group)
-    local_size = torch.LongTensor(tensor.numel(), device=tensor.device)
+    local_size = torch.LongTensor([tensor.numel()], device=tensor.device)
     size_list = [local_size.clone() for _ in range(world_size)]
     dist.all_gather(size_list, local_size, group=group)
 
@@ -166,8 +168,7 @@ def master_only(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        rank = get_rank()
-        if rank == 0:
+        if is_main_process():
             return func(*args, **kwargs)
 
     return wrapper
