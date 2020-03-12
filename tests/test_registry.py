@@ -9,10 +9,10 @@ def test_registry():
     reg_name = 'cat'
     CATS = nncore.Registry(reg_name)
     assert CATS.name == reg_name
-    assert CATS.modules == dict()
+    assert CATS.items == dict()
     assert len(CATS) == 0
 
-    @CATS.register_module
+    @CATS.register
     class BritishShorthair:
         pass
 
@@ -22,40 +22,40 @@ def test_registry():
     class Munchkin:
         pass
 
-    CATS.register_module(Munchkin)
+    CATS.register(Munchkin)
     assert len(CATS) == 2
     assert CATS.get('Munchkin') is Munchkin
 
     with pytest.raises(KeyError):
-        CATS.register_module(Munchkin)
+        CATS.register(Munchkin)
 
     with pytest.raises(KeyError):
 
-        @CATS.register_module
+        @CATS.register
         class BritishShorthair:
             pass
 
     assert CATS.get('PersianCat') is None
     assert repr(CATS) in [
-        "Registry(name=cat, modules=['BritishShorthair', 'Munchkin'])",
-        "Registry(name=cat, modules=['Munchkin', 'BritishShorthair'])"
+        "Registry(name=cat, items=['BritishShorthair', 'Munchkin'])",
+        "Registry(name=cat, items=['Munchkin', 'BritishShorthair'])"
     ]
 
     with pytest.raises(TypeError):
-        CATS.register_module(0)
+        CATS.register(0)
 
 
 def test_build_object():
     BACKBONES = nncore.Registry('backbone')
 
-    @BACKBONES.register_module
+    @BACKBONES.register
     class ResNet:
 
         def __init__(self, depth, stages=4):
             self.depth = depth
             self.stages = stages
 
-    @BACKBONES.register_module
+    @BACKBONES.register
     class ResNeXt:
 
         def __init__(self, depth, stages=4):

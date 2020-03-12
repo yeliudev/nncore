@@ -32,6 +32,7 @@ def update_bn_stats(model, data_loader, num_iters=200):
     training both BN stats and the weight are changing after every iteration,
     so the running average can not precisely reflect the actual stats of the
     current model.
+
     In this function, the BN stats are recomputed with fixed weights, to make
     the running average more precise. Specifically, it computes the true
     average of per-batch mean/variance instead of the running average.

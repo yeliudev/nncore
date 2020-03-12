@@ -2,32 +2,38 @@
 
 from time import time
 
+from .misc import bind_getters
 
+
+@bind_getters('is_running')
 class Timer(object):
     """
-    A flexible Timer class.
+    A flexible timer class.
 
-    :Example:
+    Example:
+        >>> import time
+        >>> import mmcv
+        >>> with mmcv.Timer():
+        >>>     # simulate a code block that will run for 1s
+        >>>     time.sleep(1)
+        1.000
 
-    >>> import time
-    >>> import mmcv
-    >>> with mmcv.Timer():
-    >>>     # simulate a code block that will run for 1s
-    >>>     time.sleep(1)
-    1.000
-    >>> with mmcv.Timer(print_tmpl='it takes {:.1f} seconds'):
-    >>>     # simulate a code block that will run for 1s
-    >>>     time.sleep(1)
-    it takes 1.0 seconds
-    >>> timer = mmcv.Timer()
-    >>> time.sleep(0.5)
-    >>> print(timer.since_start())
-    0.500
-    >>> time.sleep(0.5)
-    >>> print(timer.since_last_check())
-    0.500
-    >>> print(timer.since_start())
-    1.000
+        >>> with mmcv.Timer(print_tmpl='it takes {:.1f} seconds'):
+        >>>     # simulate a code block that will run for 1s
+        >>>     time.sleep(1)
+        it takes 1.0 seconds
+
+        >>> timer = mmcv.Timer()
+        >>> time.sleep(0.5)
+        >>> print(timer.since_start())
+        0.500
+
+        >>> time.sleep(0.5)
+        >>> print(timer.since_last_check())
+        0.500
+
+        >>> print(timer.since_start())
+        1.000
     """
 
     def __init__(self, start=True, print_tmpl=None):
@@ -35,10 +41,6 @@ class Timer(object):
         self.print_tmpl = print_tmpl if print_tmpl else '{:.3f}'
         if start:
             self.start()
-
-    @property
-    def is_running(self):
-        return self._is_running
 
     def __enter__(self):
         self.start()
@@ -56,13 +58,13 @@ class Timer(object):
 
     def since_start(self):
         if not self._is_running:
-            raise RuntimeError('Timer is not running')
+            raise RuntimeError('timer is not running')
         self._t_last = time()
         return self._t_last - self._t_start
 
     def since_last_check(self):
         if not self._is_running:
-            raise RuntimeError('Timer is not running')
+            raise RuntimeError('timer is not running')
         dur = time() - self._t_last
         self._t_last = time()
         return dur

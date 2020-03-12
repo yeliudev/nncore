@@ -6,6 +6,8 @@ import nncore
 from .hooks import Hook
 
 
+@nncore.bind_getters('hooks', 'epoch', 'iter', 'inner_iter', 'max_epochs',
+                     'max_iters')
 class Engine(object):
 
     def __init__(self, model, logger=None, log_level='INFO', work_dir=None):
@@ -20,30 +22,6 @@ class Engine(object):
 
         self.flush_states()
 
-    @property
-    def hooks(self):
-        return self._hooks
-
-    @property
-    def epoch(self):
-        return self._epoch
-
-    @property
-    def inner_iter(self):
-        return self._inner_iter
-
-    @property
-    def iter(self):
-        return self._iter
-
-    @property
-    def max_epochs(self):
-        return self._max_epochs
-
-    @property
-    def max_iters(self):
-        return self._max_iters
-
     def __call_hook(self, fn_name):
         for hook in self._hooks.values():
             getattr(hook, fn_name)(self)
@@ -52,6 +30,7 @@ class Engine(object):
         self._hooks = OrderedDict()
         self._epoch = 0
         self._iter = 0
+        self._inner_iter = 0
         self._max_epochs = 0
         self._max_iters = 0
 

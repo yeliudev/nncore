@@ -42,12 +42,12 @@ def get_logger(name='nncore',
 
     Args:
         name (str, optional): logger name
-        fmt (str, optional): log format. The format must end with '%(message)s'
+        fmt (str, optional): log format. The format must end with `%(message)s`
             to make sure that the colors could be rendered properly.
         datefmt (str, optional): date format
         log_level (int, optional): the logger level. Note that only the main
             process (rank 0) is affected, and other processes will set the
-            level to 'ERROR' thus be silent most of the time.
+            level to `ERROR` thus be silent most of the time.
         log_file (str, optional): filename of the log file. If not None, a
             FileHandler will be added to the logger.
 

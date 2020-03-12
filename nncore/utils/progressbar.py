@@ -78,7 +78,7 @@ def track_progress(func, tasks, stream=sys.stdout, **kwargs):
     Args:
         func (callable): the function to be applied to each task
         tasks (list or tuple[Iterable, int]): a list of tasks or
-            (tasks, total num)
+            (tasks, total_num)
 
     Returns:
         results (list): the task results
@@ -109,7 +109,7 @@ def track_parallel_progress(func, tasks, nproc=None, stream=sys.stdout):
     Args:
         func (callable): the function to be applied to each task
         tasks (list or tuple[Iterable, int]): a list of tasks or
-            (tasks, total num)
+            (tasks, total_num)
         nproc (int or None, optional): number of processes
 
     Returns:
@@ -144,7 +144,7 @@ def track_iter_progress(tasks, stream=sys.stdout, **kwargs):
 
     Args:
         tasks (list or tuple[Iterable, int]): a list of tasks or
-            (tasks, total num)
+            (tasks, total_num)
 
     Yields:
         results (list): the task results

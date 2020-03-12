@@ -7,14 +7,14 @@ import os.path as osp
 def dir_exist(dir_name, raise_error=False):
     isdir = osp.isdir(dir_name)
     if not isdir and raise_error:
-        raise NotADirectoryError("Directory '{}' not found".format(dir_name))
+        raise NotADirectoryError("directory '{}' not found".format(dir_name))
     return isdir
 
 
 def file_exist(filename, raise_error=False):
     isfile = osp.isfile(filename)
     if not isfile and raise_error:
-        raise FileNotFoundError("File '{}' not found".format(filename))
+        raise FileNotFoundError("file '{}' not found".format(filename))
     return isfile
 
 
@@ -39,11 +39,11 @@ def symlink(src, dst, overwrite=True):
     Args:
         src (str): source of the symlink
         dst (str): destination of the symlink
-        overwrite (bool, optional): whether to overwrite it when an old
-            symlink exists
+        overwrite (bool, optional): whether to overwrite it when an old symlink
+            exists
     """
     if osp.lexists(dst):
         if not overwrite:
-            raise FileExistsError("File '{}' exists".format(dst))
+            raise FileExistsError("file '{}' exists".format(dst))
         os.remove(dst)
     os.symlink(src, dst)

@@ -10,7 +10,7 @@ def bbox_area(bboxes):
 
     Args:
         bboxes (Tensor[N, 4]): bboxes for which the area will be computed. They
-            are expected to be in (x1, y1, x2, y2) format
+            are expected to be in (x1, y1, x2, y2) format.
 
     Returns:
         areas (Tensor[N]): area for each box

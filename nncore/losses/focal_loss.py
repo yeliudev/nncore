@@ -19,7 +19,7 @@ def sigmoid_focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
         gamma (int or float, optional): exponent of the modulating factor
             (1 - p_t) to balance easy vs hard examples
         reduction (str, optional): reduction methods. Currently supported
-            methods include 'none', 'mean' and 'sum'.
+            methods include `none`, `mean` and `sum`.
 
     Returns:
         loss (Tensor): loss tensor with the reduction option applied
@@ -56,7 +56,7 @@ def sigmoid_focal_loss_star(pred, target, alpha=-1, gamma=1, reduction='mean'):
         gamma (int or float, optional): gamma parameter described in FL*.
             -1 means no weighting.
         reduction (str, optional): reduction methods. Currently supported
-            methods include 'none', 'mean' and 'sum'.
+            methods include `none`, `mean` and `sum`.
 
     Returns:
         loss (Tensor): loss tensor with the reduction option applied
@@ -87,7 +87,7 @@ class FocalLoss(nn.Module):
         gamma (int or float, optional): exponent of the modulating factor
             (1 - p_t) to balance easy vs hard examples
         reduction (str, optional): reduction methods. Currently supported
-            methods include 'none', 'mean' and 'sum'.
+            methods include `none`, `mean` and `sum`.
     """
 
     def __init__(self, alpha=-1, gamma=2, reduction='mean'):
@@ -113,7 +113,7 @@ class FocalLossStar(nn.Module):
         gamma (int or float, optional): gamma parameter described in FL*.
             -1 means no weighting.
         reduction (str, optional): reduction methods. Currently supported
-            methods include 'none', 'mean' and 'sum'.
+            methods include `none`, `mean` and `sum`.
     """
 
     def __init__(self, alpha=-1, gamma=1, reduction='mean'):

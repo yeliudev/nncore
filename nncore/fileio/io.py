@@ -19,8 +19,8 @@ def load(filename, file_format=None):
         filename (str): name of the file
         file_format (str, optional): if not specified, the file format will be
             inferred from the file extension, otherwise use the specified one.
-            Currently supported formats include 'json', 'yaml/yml' and
-            'pickle/pkl'.
+            Currently supported formats include `json`, `yaml/yml` and
+            `pickle/pkl`.
 
     Returns:
         obj (any): the content from the file
@@ -43,7 +43,7 @@ def loads(bytes, file_format='pickle'):
     Args:
         bytes (str or btyearray): bytes object of the file
         file_format (str, optional): format of the bytes object. Only supports
-            'pickle/pkl' currently.
+            `pickle/pkl` currently.
 
     Returns:
         obj (any): the content from the file
@@ -64,8 +64,8 @@ def dump(obj, filename, file_format=None):
         filename (str): name of the dumped file
         file_format (str, optional): if not specified, the file format will be
             inferred from the file extension, otherwise use the specified one.
-            Currently supported formats include 'json', 'yaml/yml' and
-            'pickle/pkl'.
+            Currently supported formats include `json`, `yaml/yml` and
+            `pickle/pkl`.
     """
     if not isinstance(filename, str):
         raise TypeError("'filename' must be a str")
@@ -85,7 +85,7 @@ def dumps(obj, file_format='pickle'):
     Args:
         obj (any): the python object to be dumped
         file_format (str, optional): format of the bytes object. Currently
-            supported formats include 'json', 'yaml/yml' and 'pickle/pkl'.
+            supported formats include `json`, `yaml/yml` and `pickle/pkl`.
 
     Returns:
         string (str): the string of the dumped file

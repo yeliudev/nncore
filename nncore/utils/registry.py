@@ -2,27 +2,28 @@
 
 from inspect import isclass
 
+from .misc import bind_getters
 
+
+@bind_getters('name', 'items')
 class Registry(object):
     """
     A registry to map strings to classes.
 
-    Records in the `self._modules` maintain the registry of classes. For each
+    Records in the `self._items` maintain the registry of classes. For each
     record, the key is the class name and the value is the class itself. The
-    method `self.register_module` can be used as a decorator or a normal
-    function.
+    method `self.register` can be used as a decorator or a normal function.
 
     Example:
         >>> backbones = Registry('backbone')
-        >>> @backbones.register_module
+        >>> @backbones.register
         >>> class ResNet(object):
         >>>     pass
 
-    Example:
         >>> backbones = Registry('backbone')
         >>> class ResNet(object):
         >>>     pass
-        >>> backbones.register_module(ResNet)
+        >>> backbones.register(ResNet)
 
     Args:
         name (str): registry name
@@ -30,37 +31,29 @@ class Registry(object):
 
     def __init__(self, name):
         self._name = name
-        self._modules = dict()
+        self._items = dict()
 
     def __len__(self):
-        return len(self._modules)
+        return len(self._items)
 
     def __getattr__(self, key):
-        return self._modules.get(key, None)
+        return self._items.get(key, None)
 
     def __repr__(self):
-        return '{}(name={}, modules={})'.format(self.__class__.__name__,
-                                                self._name,
-                                                list(self._modules.keys()))
+        return '{}(name={}, items={})'.format(self.__class__.__name__,
+                                              self._name,
+                                              list(self._items.keys()))
 
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def modules(self):
-        return self._modules
-
-    def register_module(self, module_cls):
-        if not isclass(module_cls):
-            raise TypeError('module must be a class, but got {}'.format(
-                type(module_cls)))
-        module_name = module_cls.__name__
-        if module_name in self._modules:
+    def register(self, obj_cls):
+        if not isclass(obj_cls):
+            raise TypeError('obj_cls must be a class, but got {}'.format(
+                type(obj_cls)))
+        name = obj_cls.__name__
+        if name in self._items:
             raise KeyError('{} is already registered in {}'.format(
-                module_name, self.name))
-        self._modules[module_name] = module_cls
-        return module_cls
+                name, self.name))
+        self._items[name] = obj_cls
+        return obj_cls
 
     def get(self, key):
         return self.__getattr__(key)
@@ -70,7 +63,7 @@ def build_object(cfg, parent=None, default_args=None):
     """
     Initialize an object from a dict.
 
-    The dict must contain a key 'type', which is a indicating the object type.
+    The dict must contain a key `type`, which is a indicating the object type.
     Remaining fields are treated as the arguments for constructing the object.
 
     Args:

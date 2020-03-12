@@ -18,11 +18,11 @@ def init_dist(launcher='pytorch', backend='gloo', **kwargs):
 
     Args:
         launcher (str, optional): launcher for the process group. Currently
-            supported lauchers include 'pytorch' and 'slurm'.
+            supported lauchers include `pytorch` and `slurm`.
         backend (str or :class:`dist.Backend`, optional): the backend to use.
             Depending on build-time configurations, valid values include,
             `gloo` and `nccl`. This field should be given as a lowercase string
-            (e.g., `'gloo`), which can also be accessed via
+            (e.g., `gloo`), which can also be accessed via
             :class:`dist.Backend` attributes (e.g., `Backend.GLOO`). If using
             multiple processes per machine with `nccl` backend, each process
             must have exclusive access to every GPU it uses, as sharing GPUs
@@ -203,6 +203,9 @@ def gather(data, dst=0, group=dist.group.WORLD):
 
 
 def master_only(func):
+    """
+    A decorator to let a function only be executed in the main process.
+    """
 
     @wraps(func)
     def wrapper(*args, **kwargs):

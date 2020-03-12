@@ -106,7 +106,7 @@ def build_config(filename):
         config_dir = osp.dirname(filename)
 
         if '.' in module_name:
-            raise ValueError('Dots are not allowed in the config file path.')
+            raise ValueError('dots are not allowed in the config file path.')
 
         sys.path.insert(0, config_dir)
         mod = import_module(module_name)
