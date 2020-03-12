@@ -19,10 +19,10 @@ def init_dist(launcher='pytorch', backend='gloo', **kwargs):
     Args:
         launcher (str, optional): launcher for the process group. Currently
             supported lauchers include `pytorch` and `slurm`.
-        backend (str or :class:`dist.Backend`, optional): the backend to use.
-            Depending on build-time configurations, valid values include,
-            `gloo` and `nccl`. This field should be given as a lowercase string
-            (e.g., `gloo`), which can also be accessed via
+        backend (str or :class:`dist.Backend`, optional): the distribution
+            backend to use. Depending on build-time configurations, valid
+            values include, `gloo` and `nccl`. This field should be given as a
+            string (e.g., `gloo`), which can also be accessed via
             :class:`dist.Backend` attributes (e.g., `Backend.GLOO`). If using
             multiple processes per machine with `nccl` backend, each process
             must have exclusive access to every GPU it uses, as sharing GPUs
@@ -180,7 +180,7 @@ def gather(data, dst=0, group=dist.group.WORLD):
             each rank. Otherwise, None.
     """
     rank, world_size = get_dist_info(group=group)
-    if get_world_size() == 1:
+    if world_size == 1:
         return [data]
 
     tensor, group = _serialize_to_tensor(data, group)

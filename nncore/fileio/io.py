@@ -11,6 +11,11 @@ file_handlers = {
 }
 
 
+def _check_format(file_format, supported_formats):
+    if file_format not in supported_formats:
+        raise TypeError('unsupported format: {}'.format(file_format))
+
+
 def load(filename, file_format=None):
     """
     Load data from json/yaml/pickle files.
@@ -25,34 +30,13 @@ def load(filename, file_format=None):
     Returns:
         obj (any): the content from the file
     """
-    if not isinstance(filename, str):
-        raise TypeError("'filename' must be a str")
+    assert isinstance(filename, str)
 
     file_format = file_format or filename.split('.')[-1]
-    if file_format not in file_handlers:
-        raise TypeError('unsupported format: {}'.format(file_format))
+    _check_format(file_format, file_handlers)
 
     handler = file_handlers[file_format]
     return handler.load_from_path(filename)
-
-
-def loads(bytes, file_format='pickle'):
-    """
-    Load data from json/yaml/pickle bytes objects.
-
-    Args:
-        bytes (str or btyearray): bytes object of the file
-        file_format (str, optional): format of the bytes object. Only supports
-            `pickle/pkl` currently.
-
-    Returns:
-        obj (any): the content from the file
-    """
-    if file_format not in ['pickle', 'pkl']:
-        raise TypeError('unsupported format: {}'.format(file_format))
-
-    handler = file_handlers[file_format]
-    return handler.load_from_bytes(bytes)
 
 
 def dump(obj, filename, file_format=None):
@@ -67,15 +51,30 @@ def dump(obj, filename, file_format=None):
             Currently supported formats include `json`, `yaml/yml` and
             `pickle/pkl`.
     """
-    if not isinstance(filename, str):
-        raise TypeError("'filename' must be a str")
+    assert isinstance(filename, str)
 
     file_format = file_format or filename.split('.')[-1]
-    if file_format not in file_handlers:
-        raise TypeError('unsupported format: {}'.format(file_format))
+    _check_format(file_format, file_handlers)
 
     handler = file_handlers[file_format]
     handler.dump_to_path(obj, filename)
+
+
+def loads(bytes, file_format='pickle'):
+    """
+    Load data from json/yaml/pickle bytes objects.
+
+    Args:
+        bytes (str or btyearray): bytes object of the file
+        file_format (str, optional): format of the bytes object. Only supports
+            `pickle/pkl` currently.
+
+    Returns:
+        obj (any): the content from the file
+    """
+    _check_format(file_format, ['pickle', 'pkl'])
+    handler = file_handlers[file_format]
+    return handler.load_from_bytes(bytes)
 
 
 def dumps(obj, file_format='pickle'):
@@ -90,8 +89,6 @@ def dumps(obj, file_format='pickle'):
     Returns:
         string (str): the string of the dumped file
     """
-    if file_format not in file_handlers:
-        raise TypeError('unsupported format: {}'.format(file_format))
-
+    _check_format(file_format, file_handlers)
     handler = file_handlers[file_format]
     return handler.dump_to_bytes(obj)

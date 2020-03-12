@@ -10,11 +10,9 @@ import nncore
 
 
 def _test_handler(file_format, test_obj, str_checker, mode='r+'):
-    # dump to a string
     dump_str = nncore.dumps(test_obj, file_format=file_format)
     str_checker(dump_str)
 
-    # load/dump with filenames
     tmp_filename = osp.join(tempfile.gettempdir(), 'nncore_test_dump')
     nncore.dump(test_obj, tmp_filename, file_format=file_format)
     assert osp.isfile(tmp_filename)
@@ -22,7 +20,6 @@ def _test_handler(file_format, test_obj, str_checker, mode='r+'):
     assert load_obj == test_obj
     os.remove(tmp_filename)
 
-    # automatically inference the file format from the given filename
     tmp_filename = osp.join(tempfile.gettempdir(),
                             'nncore_test_dump.' + file_format)
     nncore.dump(test_obj, tmp_filename)

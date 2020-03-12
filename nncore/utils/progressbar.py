@@ -54,9 +54,9 @@ class ProgressBar(object):
                   ''.format(self.completed, self.task_num, fps,
                             int(elapsed + 0.5), eta)
 
-            bar_width = min(50,
-                            int(self.terminal_width - len(msg)) + 2,
-                            int(self.terminal_width * 0.6))
+            bar_width = min(
+                int(self.terminal_width - len(msg)) + 2,
+                int(self.terminal_width * 0.6), 50)
             bar_width = max(2, bar_width)
             mark_width = int(bar_width * percentage)
             bar_chars = '>' * mark_width + ' ' * (bar_width - mark_width)
@@ -71,18 +71,7 @@ class ProgressBar(object):
             self.stream.write('\n')
 
 
-def track_progress(func, tasks, stream=sys.stdout, **kwargs):
-    """
-    Track the progress of tasks execution with a progress bar.
-
-    Args:
-        func (callable): the function to be applied to each task
-        tasks (list or tuple[Iterable, int]): a list of tasks or
-            (tasks, total_num)
-
-    Returns:
-        results (list): the task results
-    """
+def _parse_tasks(tasks):
     if isinstance(tasks, tuple):
         assert len(tasks) == 2
         assert isinstance(tasks[0], Iterable)
@@ -94,6 +83,23 @@ def track_progress(func, tasks, stream=sys.stdout, **kwargs):
     else:
         raise TypeError(
             "'tasks' must be an iterable object or a (iterator, int) tuple")
+
+    return tasks, task_num
+
+
+def track_progress(func, tasks, stream=sys.stdout, **kwargs):
+    """
+    Track the progress of tasks execution with a progress bar.
+
+    Args:
+        func (callable): the function to be applied to each task
+        tasks (list or tuple[Iterable, int]): a list of tasks or
+            (tasks, task_num)
+
+    Returns:
+        results (list): the task results
+    """
+    tasks, task_num = _parse_tasks(tasks)
     prog_bar = ProgressBar(task_num, stream=stream)
     results = []
     for task in tasks:
@@ -109,23 +115,13 @@ def track_parallel_progress(func, tasks, nproc=None, stream=sys.stdout):
     Args:
         func (callable): the function to be applied to each task
         tasks (list or tuple[Iterable, int]): a list of tasks or
-            (tasks, total_num)
+            (tasks, task_num)
         nproc (int or None, optional): number of processes
 
     Returns:
         results (list): the task results
     """
-    if isinstance(tasks, tuple):
-        assert len(tasks) == 2
-        assert isinstance(tasks[0], Iterable)
-        assert isinstance(tasks[1], int)
-        task_num = tasks[1]
-        tasks = tasks[0]
-    elif isinstance(tasks, Iterable):
-        task_num = len(tasks)
-    else:
-        raise TypeError(
-            "'tasks' must be an iterable object or a (iterator, int) tuple")
+    tasks, task_num = _parse_tasks(tasks)
     pool = Pool(nproc)
     prog_bar = ProgressBar(task_num, stream=stream)
     results = []
@@ -144,22 +140,12 @@ def track_iter_progress(tasks, stream=sys.stdout, **kwargs):
 
     Args:
         tasks (list or tuple[Iterable, int]): a list of tasks or
-            (tasks, total_num)
+            (tasks, task_num)
 
     Yields:
         results (list): the task results
     """
-    if isinstance(tasks, tuple):
-        assert len(tasks) == 2
-        assert isinstance(tasks[0], Iterable)
-        assert isinstance(tasks[1], int)
-        task_num = tasks[1]
-        tasks = tasks[0]
-    elif isinstance(tasks, Iterable):
-        task_num = len(tasks)
-    else:
-        raise TypeError(
-            "'tasks' must be an iterable object or a (iterator, int) tuple")
+    tasks, task_num = _parse_tasks(tasks)
     prog_bar = ProgressBar(task_num, stream=stream)
     for task in tasks:
         yield task
