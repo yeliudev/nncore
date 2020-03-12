@@ -30,7 +30,7 @@ def load(filename, file_format=None):
 
     file_format = file_format or filename.split('.')[-1]
     if file_format not in file_handlers:
-        raise TypeError('Unsupported format: {}'.format(file_format))
+        raise TypeError('unsupported format: {}'.format(file_format))
 
     handler = file_handlers[file_format]
     return handler.load_from_path(filename)
@@ -49,7 +49,7 @@ def loads(bytes, file_format='pickle'):
         obj (any): the content from the file
     """
     if file_format not in ['pickle', 'pkl']:
-        raise TypeError('Unsupported format: {}'.format(file_format))
+        raise TypeError('unsupported format: {}'.format(file_format))
 
     handler = file_handlers[file_format]
     return handler.load_from_bytes(bytes)
@@ -72,7 +72,7 @@ def dump(obj, filename, file_format=None):
 
     file_format = file_format or filename.split('.')[-1]
     if file_format not in file_handlers:
-        raise TypeError('Unsupported format: {}'.format(file_format))
+        raise TypeError('unsupported format: {}'.format(file_format))
 
     handler = file_handlers[file_format]
     handler.dump_to_path(obj, filename)
@@ -91,7 +91,7 @@ def dumps(obj, file_format='pickle'):
         string (str): the string of the dumped file
     """
     if file_format not in file_handlers:
-        raise TypeError('Unsupported format: {}'.format(file_format))
+        raise TypeError('unsupported format: {}'.format(file_format))
 
     handler = file_handlers[file_format]
     return handler.dump_to_bytes(obj)

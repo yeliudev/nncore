@@ -1,9 +1,5 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-import os.path as osp
-from shutil import rmtree
-from tempfile import mkdtemp
-
 import pynvml
 import torch
 import torch.distributed as dist
@@ -15,112 +11,138 @@ def is_distributed():
     return dist.is_available() and dist.is_initialized()
 
 
-def get_rank():
-    return dist.get_rank() if is_distributed() else 0
+def get_rank(group=dist.group.WORLD):
+    return dist.get_rank(group=group) if is_distributed() else 0
 
 
-def get_world_size():
-    return dist.get_world_size() if is_distributed() else 1
+def get_world_size(group=dist.group.WORLD):
+    return dist.get_world_size(group=group) if is_distributed() else 1
 
 
-def get_dist_info():
-    return (get_rank(), get_world_size()) if is_distributed() else (0, 1)
+def get_dist_info(group=dist.group.WORLD):
+    return (get_rank(group=group),
+            get_world_size(group=group)) if is_distributed() else (0, 1)
 
 
 def is_main_process():
     return get_rank() == 0
 
 
-def synchronize():
+def synchronize(group=dist.group.WORLD):
     """
-    Synchronizes among all processes when using distributed training.
+    Synchronize among all processes in a process group.
     """
     if not dist.is_available():
         return
     if not dist.is_initialized():
         return
-    if get_world_size() == 1:
+    if get_world_size(group=group) == 1:
         return
-    dist.barrier()
+    dist.barrier(group=group)
 
 
-def all_gather(data):
+def _serialize_to_tensor(data, group):
+    backend = dist.get_backend(group)
+    assert backend in ['nccl', 'gloo']
+    device = torch.device('cuda' if backend == 'nccl' else 'cpu')
+
+    if backend == 'nccl':
+        world_size = get_world_size()
+        total_size = len(bytearray(nncore.dumps(data))) * world_size
+
+        pynvml.nvmlInit()
+        for i in range(world_size):
+            handle = pynvml.nvmlDeviceGetHandleByIndex(i)
+            meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
+            if meminfo.free < total_size:
+                group = dist.new_group(backend='gloo')
+                device = 'cpu'
+                break
+
+    buffer = nncore.dumps(data)
+    storage = torch.ByteStorage.from_buffer(buffer)
+    tensor = torch.ByteTensor(storage, device=device)
+
+    return tensor, group
+
+
+def _pad_tensors(tensor, group):
+    world_size = get_world_size(group=group)
+    local_size = torch.LongTensor(tensor.numel(), device=tensor.device)
+    size_list = [local_size.clone() for _ in range(world_size)]
+    dist.all_gather(size_list, local_size, group=group)
+
+    size_list = [int(size.item()) for size in size_list]
+    max_size = max(size_list)
+
+    if local_size != max_size:
+        padding = torch.ByteTensor([max_size - local_size],
+                                   device=tensor.device)
+        tensor = torch.cat((tensor, padding))
+
+    return size_list, tensor
+
+
+def all_gather(data, group=dist.group.WORLD):
     """
     Run all_gather on arbitrary serializable data.
 
-    This method will first check whether free gpu memory is enough for
-    gathering data, if so, the data would be gathered using gpus, if not,
-    it would be gatherd by writing into the disk.
+    Args:
+        data (any): any serializable object
+        group (ProcessGroup, optional): a torch process group
+
+    Returns:
+        gathered (list[data]): a list of data gathered from each rank
+    """
+    if get_world_size(group=group) == 1:
+        return [data]
+
+    tensor, group = _serialize_to_tensor(data, group)
+    size_list, tensor = _pad_tensors(tensor, group)
+    max_size = max(size_list)
+
+    tensor_list = [tensor.new_empty([max_size]) for _ in size_list]
+    dist.all_gather(tensor_list, tensor, group=group)
+
+    gathered = []
+    for size, tensor in zip(size_list, tensor_list):
+        buffer = tensor.cpu().numpy().tobytes()[:size]
+        gathered.append(nncore.loads(buffer))
+
+    return gathered
+
+
+def gather(data, dst=0, group=dist.group.WORLD):
+    """
+    Run gather on arbitrary serializable data.
 
     Args:
         data (any): any serializable object
+        dst (int): destination rank
+        group (ProcessGroup, optional): a torch process group
 
     Returns:
-        collected (list[data]): a list of data gathered from each rank
+        gathered (list[data]) or None: on dst, a list of data gathered from
+            each rank. Otherwise, None.
     """
-    world_size = get_world_size()
-    total_size = len(bytearray(nncore.dumps(data))) * world_size
+    rank, world_size = get_dist_info(group=group)
+    if get_world_size() == 1:
+        return [data]
 
-    pynvml.nvmlInit()
-    matched = False
-    for i in range(world_size):
-        handle = pynvml.nvmlDeviceGetHandleByIndex(i)
-        meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
-        if meminfo.free < total_size:
-            matched = True
-            break
+    tensor, group = _serialize_to_tensor(data, group)
+    size_list, tensor = _pad_tensors(tensor, group)
 
-    if matched:
-        return _all_gather_cpu(data)
+    if rank == dst:
+        max_size = max(size_list)
+        tensor_list = [tensor.new_empty([max_size]) for _ in size_list]
+        dist.gather(tensor, tensor_list, dst=dst, group=group)
+
+        gathered = []
+        for size, tensor in zip(size_list, tensor_list):
+            buffer = tensor.cpu().numpy().tobytes()[:size]
+            gathered.append(nncore.loads(buffer))
     else:
-        return _all_gather_gpu(data)
+        dist.gather(tensor, dst=dst, group=group)
+        gathered = None
 
-
-def _all_gather_gpu(data):
-    world_size = get_world_size()
-
-    part_tensor = torch.cuda.ByteTensor(bytearray(nncore.dumps(data)))
-    size_tensor = torch.cuda.LongTensor([part_tensor.shape[0]])
-    size_list = [size_tensor.clone() for _ in range(world_size)]
-    dist.all_gather(size_list, size_tensor)
-
-    max_size = torch.LongTensor(size_list).max()
-    part_send = torch.zeros(max_size, dtype=torch.uint8, device='cuda')
-    part_send[:size_tensor[0]] = part_tensor
-    recv_list = [part_tensor.new_zeros(max_size) for _ in range(world_size)]
-    dist.all_gather(recv_list, part_send)
-
-    if is_main_process():
-        collected = []
-        for recv, size in zip(recv_list, size_list):
-            collected.append(
-                nncore.loads(recv[:size.item()].cpu().numpy().tobytes()))
-    else:
-        collected = None
-
-    return collected
-
-
-def _all_gather_cpu(data):
-    rank, world_size = get_dist_info()
-    dir_tensor = torch.full((512, ), 32, dtype=torch.uint8, device='cuda')
-
-    if is_main_process():
-        tmpdir = torch.cuda.ByteTensor(bytearray(mkdtemp().encode()))
-        dir_tensor[:len(tmpdir)] = tmpdir
-
-    dist.broadcast(dir_tensor, 0)
-    tmpdir = dir_tensor.cpu().numpy().tobytes().decode().rstrip()
-    nncore.dump(data, osp.join(tmpdir, 'part_{}.pkl'.format(rank)))
-    synchronize()
-
-    if is_main_process():
-        collected = []
-        for i in range(world_size):
-            part_file = osp.join(tmpdir, 'part_{}.pkl'.format(i))
-            collected.append(nncore.load(part_file))
-        rmtree(tmpdir)
-    else:
-        collected = None
-
-    return collected
+    return gathered

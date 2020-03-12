@@ -74,7 +74,7 @@ def get_logger(name='nncore',
         if not comm.is_main_process():
             logger.setLevel(logging.ERROR)
             return logger
-    except ModuleNotFoundError:
+    except ImportError:
         pass
 
     if log_file is not None:

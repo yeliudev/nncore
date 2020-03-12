@@ -119,6 +119,6 @@ def build_config(filename):
     elif file_format in ['yml', 'yaml', 'json']:
         cfg_dict = nncore.load(filename)
     else:
-        raise IOError('Unsupported format: {}'.format(file_format))
+        raise IOError('unsupported format: {}'.format(file_format))
 
     return Config(cfg_dict=cfg_dict, filename=filename)
