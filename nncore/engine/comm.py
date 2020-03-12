@@ -2,6 +2,7 @@
 
 import os
 from functools import wraps
+from subprocess import getoutput
 
 import pynvml
 import torch
@@ -11,15 +12,52 @@ import torch.multiprocessing as mp
 import nncore
 
 
-def init_dist(backend, **kwargs):
+def init_dist(launcher='pytorch', backend='gloo', **kwargs):
+    """
+    Initialize a distributed process group.
+
+    Args:
+        launcher (str, optional): launcher for the process group. Currently
+            supported lauchers include 'pytorch' and 'slurm'.
+        backend (str or :class:`dist.Backend`, optional): the backend to use.
+            Depending on build-time configurations, valid values include,
+            `gloo` and `nccl`. This field should be given as a lowercase string
+            (e.g., `'gloo`), which can also be accessed via
+            :class:`dist.Backend` attributes (e.g., `Backend.GLOO`). If using
+            multiple processes per machine with `nccl` backend, each process
+            must have exclusive access to every GPU it uses, as sharing GPUs
+            between processes can result in deadlocks.
+    """
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method('spawn')
 
+    if launcher == 'pytorch':
+        _init_dist_pytorch(backend, **kwargs)
+    elif launcher == 'slurm':
+        _init_dist_slurm(backend, **kwargs)
+    else:
+        raise TypeError("unsupported launcher: '{}'".format(launcher))
+
+
+def _init_dist_pytorch(backend, **kwargs):
     if torch.cuda.is_available():
         rank = int(os.environ['RANK'])
         num_gpus = torch.cuda.device_count()
         torch.cuda.set_device(rank % num_gpus)
+    dist.init_process_group(backend=backend, **kwargs)
 
+
+def _init_dist_slurm(backend, port=29500, **kwargs):
+    proc_id = int(os.environ['SLURM_PROCID'])
+    ntasks = int(os.environ['SLURM_NTASKS'])
+    node_list = os.environ['SLURM_NODELIST']
+    num_gpus = torch.cuda.device_count()
+    torch.cuda.set_device(proc_id % num_gpus)
+    addr = getoutput('scontrol show hostname {} | head -n1'.format(node_list))
+    os.environ['MASTER_PORT'] = str(port)
+    os.environ['MASTER_ADDR'] = addr
+    os.environ['WORLD_SIZE'] = str(ntasks)
+    os.environ['RANK'] = str(proc_id)
     dist.init_process_group(backend=backend, **kwargs)
 
 
