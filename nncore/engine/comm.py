@@ -1,10 +1,24 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+import os
+from functools import wraps
+
 import pynvml
 import torch
 import torch.distributed as dist
+import torch.multiprocessing as mp
 
 import nncore
+
+
+def init_dist(backend='nccl', **kwargs):
+    if mp.get_start_method(allow_none=True) is None:
+        mp.set_start_method('spawn')
+
+    rank = int(os.environ['RANK'])
+    num_gpus = torch.cuda.device_count()
+    torch.cuda.set_device(rank % num_gpus)
+    dist.init_process_group(backend=backend, **kwargs)
 
 
 def is_distributed():
@@ -146,3 +160,14 @@ def gather(data, dst=0, group=dist.group.WORLD):
         gathered = None
 
     return gathered
+
+
+def master_only(func):
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        rank = get_rank()
+        if rank == 0:
+            return func(*args, **kwargs)
+
+    return wrapper

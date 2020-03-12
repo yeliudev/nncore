@@ -113,6 +113,16 @@ def _get_module_version(module_name):
 
 
 def collect_env_info():
+    """
+    Collect information about the environment.
+
+    This method will try and collect all the information about the entire
+    environment, including platform, python version, cuda version, pytorch
+    version, etc., and return a string describing the environment.
+
+    Returns:
+        info (str): the information about the environment
+    """
     _c = []
 
     # system info
