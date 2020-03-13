@@ -12,12 +12,12 @@ import nncore
 
 class CfgNode(OrderedDict):
     """
-    A facility for better :class:`dict` objects.
+    An extended `dict` class with several practical methods.
 
-    This class is an extension of the built-in type `OrderedDict` with several
-    practical methods. The interface is the same as a dict object and also
-    allows access config values as attributes. The input to the init method
-    could be either a single dict or several named parameters.
+    This class is an extension of the built-in type `OrderedDict`. The
+    interface is the same as a dict object and also allows access config values
+    as attributes. The input to the init method could be either a single dict
+    or several named parameters.
     """
 
     def __init__(self, *args, **kwargs):
@@ -104,6 +104,13 @@ class CfgNode(OrderedDict):
 
 
 class Config(object):
+    """
+    A facility for better :class:`dict` objects.
+
+    This class is a wrapper for :class:`CfgNode` which can be initialized from
+    a config file. Users can use the static method :meth:`Config.from_file` to
+    create a `Config` object.
+    """
 
     @staticmethod
     def from_file(filename):
