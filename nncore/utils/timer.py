@@ -2,10 +2,10 @@
 
 from time import time
 
-from .misc import bind_getters
+from .misc import bind_getter
 
 
-@bind_getters('is_running')
+@bind_getter('is_running')
 class Timer(object):
     """
     A flexible timer class.

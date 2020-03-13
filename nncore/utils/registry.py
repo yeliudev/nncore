@@ -2,10 +2,10 @@
 
 from inspect import isclass
 
-from .misc import bind_getters
+from .misc import bind_getter
 
 
-@bind_getters('name', 'items')
+@bind_getter('name', 'items')
 class Registry(object):
     """
     A registry to map strings to classes.

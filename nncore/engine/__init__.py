@@ -4,11 +4,10 @@ from .comm import (all_gather, gather, get_dist_info, get_rank, get_world_size,
                    init_dist, is_distributed, is_main_process, master_only,
                    synchronize)
 from .engine import Engine
-from .history_buffer import HistoryBuffer
 from .hooks import Hook
 
 __all__ = [
     'all_gather', 'gather', 'get_dist_info', 'get_rank', 'get_world_size',
     'init_dist', 'is_distributed', 'is_main_process', 'master_only',
-    'synchronize', 'Engine', 'HistoryBuffer', 'Hook'
+    'synchronize', 'Engine', 'Hook'
 ]

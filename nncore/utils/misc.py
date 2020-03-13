@@ -1,9 +1,9 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-import functools
+from functools import partial
 
 
-def bind_getters(*vars):
+def bind_getter(*vars):
     """
     A syntactic sugar for automatically binding getters for classes. This
     method is expected to be used as a decorator.
@@ -15,7 +15,7 @@ def bind_getters(*vars):
 
     Example:
         >>> import nncore
-        >>> @nncore.bind_getters('name', 'depth')
+        >>> @nncore.bind_getter('name', 'depth')
         >>> class Backbone:
         >>>     _name = 'ResNet'
         >>>     _depth = 50
@@ -31,17 +31,11 @@ def bind_getters(*vars):
         >>>         return self._depth
     """
 
-    def decorator(cls):
+    def wrapper(cls):
+        for var in vars:
+            method = partial(
+                lambda self, key: getattr(self, key), key='_{}'.format(var))
+            setattr(cls, var, property(method))
+        return cls
 
-        @functools.wraps(cls)
-        def wrapper(*args, **kwargs):
-            for var in vars:
-                method = functools.partial(
-                    lambda self, key: getattr(self, key),
-                    key='_{}'.format(var))
-                setattr(cls, var, property(method))
-            return cls(*args, **kwargs)
-
-        return wrapper
-
-    return decorator
+    return wrapper

@@ -1,65 +1,79 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-from collections import OrderedDict
-
 import nncore
 from .hooks import Hook
+from .utils import bind_hooks
 
 
-@nncore.bind_getters('hooks', 'epoch', 'iter', 'inner_iter', 'max_epochs',
-                     'max_iters')
+@bind_hooks
+@nncore.bind_getter('hooks', 'stage', 'epoch', 'iter')
 class Engine(object):
 
-    def __init__(self, model, logger=None, log_level='INFO', work_dir=None):
+    def __init__(self, model, data_loaders, scheduler, work_dir=None):
+        self._hooks = []
         self.model = model
+        self.data_loaders = data_loaders
+        self.scheduler = scheduler
         self.work_dir = work_dir
+        self.logger = nncore.get_logger()
 
-        if logger is None:
-            self.logger = nncore.get_logger()
-            self.logger.setLevel(log_level)
-        else:
-            self.logger = logger
-
-        self.flush_states()
-
-    def __call_hook(self, fn_name):
-        for hook in self._hooks.values():
-            getattr(hook, fn_name)(self)
-
-    def flush_states(self):
-        self._hooks = OrderedDict()
+        self._hooks = []
+        self._stage = 0
         self._epoch = 0
         self._iter = 0
-        self._inner_iter = 0
-        self._max_epochs = 0
-        self._max_iters = 0
 
-    def register_hook(self, hook, name=None, after=None):
+    def register_hook(self, hook, before=None):
         """
         Register a hook into the engine.
 
         Args:
             hook (:obj:`Hook`): the hook to be registered
-            name (str, optional): name of the hook to be registered
-            after (str, optional): name of the hook to insert after. The
+            before (str, optional): name of the hook to insert before. The
                 registered hook will be inserted into the end of the hook list
                 by default.
         """
         assert isinstance(hook, Hook)
-        name = name or getattr(hook, name, None) or hook.__class__.__name__
 
-        if name in self._hooks:
-            raise KeyError("hook '{}' has been registered before".format(name))
+        if hook in self._hooks:
+            raise ValueError("hook '{}' exists".format(hook.name))
 
-        self._hooks[name] = hook
-        if after is not None:
-            if after not in self._hooks:
-                raise KeyError(
-                    "hook '{}' not found in registered hooks".format(after))
+        if before is not None:
+            idx = self._hooks.index(before)
+            self._hooks.insert(idx, hook)
+        else:
+            self._hooks.append(hook)
 
-            matched = False
-            for key in list(self._hooks.keys()):
-                if key == after:
-                    matched = True
-                elif matched and key != name:
-                    self._hooks.move_to_end(key)
+    def train_step(self, *args, **kwargs):
+        self.before_train_step()
+        # do something
+        self.after_train_step()
+        self._step += 1
+
+    def val_step(self, *args, **kwargs):
+        self.before_val_step()
+        # do something
+        self.after_val_step()
+
+    def train_epoch(self, *args, **kwargs):
+        self.model.train()
+        self.before_train_epoch()
+        # do something
+        self.after_train_epoch()
+        self._epoch += 1
+
+    def val_epoch(self, *args, **kwargs):
+        self.model.eval()
+        self.before_val_epoch()
+        # do something
+        self.after_val_epoch()
+
+    def train_stage(self, *args, **kwargs):
+        self.before_stage()
+        # do something
+        self.after_stage()
+        self._stage += 1
+
+    def launch(self, *args, **kwargs):
+        self.before_launch()
+        # do something
+        self.after_launch()

@@ -3,9 +3,9 @@
 import nncore
 
 
-def test_bind_getters():
+def test_bind_getter():
 
-    @nncore.bind_getters('name', 'depth')
+    @nncore.bind_getter('name', 'depth')
     class Backbone:
         _name = 'ResNet'
         _depth = 50

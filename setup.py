@@ -45,7 +45,7 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=[
-        'addict', 'joblib', 'numpy', 'pynvml', 'pyyaml', 'sentry-sdk', 'six',
+        'addict', 'joblib', 'pynvml', 'pyyaml', 'sentry-sdk', 'six',
         'tabulate', 'termcolor'
     ],
     packages=find_packages(exclude=('tests', )))

@@ -172,7 +172,7 @@ def gather(data, dst=0, group=dist.group.WORLD):
 
     Args:
         data (any): any serializable object
-        dst (int): destination rank
+        dst (int, optional): destination rank
         group (ProcessGroup, optional): a torch process group
 
     Returns:
