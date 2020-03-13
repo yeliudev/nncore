@@ -71,8 +71,8 @@ class Hook(object):
     def after_val_step(self, engine):
         self.after_step(engine)
 
-    def every_n_epochs(self, runner, n):
-        return (runner.epoch + 1) % n == 0 if n > 0 else False
+    def every_n_epochs(self, engine, n):
+        return (engine.epoch + 1) % n == 0 if n > 0 else False
 
-    def every_n_steps(self, runner, n):
-        return (runner.iter + 1) % n == 0 if n > 0 else False
+    def every_n_steps(self, engine, n):
+        return (engine.iter + 1) % n == 0 if n > 0 else False

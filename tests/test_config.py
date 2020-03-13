@@ -12,7 +12,6 @@ def test_construct():
     assert cfg.filename is None
     assert cfg.text == ''
     assert len(cfg) == 0
-    assert cfg._cfg_dict == {}
     with pytest.raises(TypeError):
         nncore.Config([0, 1])
 
@@ -20,18 +19,19 @@ def test_construct():
 def test_build_config():
     for filename in ['a.py', 'b.json', 'c.yaml']:
         cfg_file = osp.join(osp.dirname(__file__), 'data', 'config', filename)
-        cfg = nncore.build_config(cfg_file)
+        cfg = nncore.Config.from_file(cfg_file)
         assert isinstance(cfg, nncore.Config)
         assert cfg.filename == cfg_file
         assert cfg.text == open(cfg_file, 'r').read()
 
     with pytest.raises(FileNotFoundError):
-        nncore.build_config('no_such_file.py')
+        nncore.Config.from_file('no_such_file.py')
     with pytest.raises(ValueError):
-        nncore.build_config(
+        nncore.Config.from_file(
             osp.join(osp.dirname(__file__), 'data/config/a.b.py'))
     with pytest.raises(IOError):
-        nncore.build_config(osp.join(osp.dirname(__file__), 'data/color.jpg'))
+        nncore.Config.from_file(
+            osp.join(osp.dirname(__file__), 'data/color.jpg'))
 
 
 def test_dict():
@@ -39,11 +39,11 @@ def test_dict():
 
     for filename in ['a.py', 'b.json', 'c.yaml']:
         cfg_file = osp.join(osp.dirname(__file__), 'data/config', filename)
-        cfg = nncore.build_config(cfg_file)
+        cfg = nncore.Config.from_file(cfg_file)
 
         assert len(cfg) == 4
         assert set(cfg.keys()) == set(cfg_dict.keys())
-        assert set(cfg._cfg_dict.keys()) == set(cfg_dict.keys())
+        assert set(cfg.keys()) == set(cfg_dict.keys())
         for value in cfg.values():
             assert value in cfg_dict.values()
         for name, value in cfg.items():
@@ -54,7 +54,7 @@ def test_dict():
         assert cfg.item2.a == 0
         assert cfg.item3 == cfg_dict['item3']
         assert cfg.item4 == cfg_dict['item4']
-        with pytest.raises(AttributeError):
+        with pytest.raises(KeyError):
             cfg.not_exist
         for name in ['item1', 'item2', 'item3', 'item4']:
             assert name in cfg
@@ -77,9 +77,9 @@ def test_setattr():
     cfg.item1 = [1, 2]
     cfg.item2 = {'a': 0}
     cfg['item5'] = {'a': {'b': None}}
-    assert cfg._cfg_dict['item1'] == [1, 2]
+    assert cfg._cfg['item1'] == [1, 2]
     assert cfg.item1 == [1, 2]
-    assert cfg._cfg_dict['item2'] == {'a': 0}
+    assert cfg._cfg['item2'] == {'a': 0}
     assert cfg.item2.a == 0
-    assert cfg._cfg_dict['item5'] == {'a': {'b': None}}
+    assert cfg._cfg['item5'] == {'a': {'b': None}}
     assert cfg.item5.a.b is None

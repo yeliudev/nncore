@@ -16,7 +16,7 @@ def _check_format(file_format, supported_formats):
         raise TypeError('unsupported format: {}'.format(file_format))
 
 
-def load(filename, file_format=None):
+def load(filename, file_format=None, **kwargs):
     """
     Load data from json/yaml/pickle files.
 
@@ -36,10 +36,10 @@ def load(filename, file_format=None):
     _check_format(file_format, file_handlers)
 
     handler = file_handlers[file_format]
-    return handler.load_from_path(filename)
+    return handler.load_from_path(filename, **kwargs)
 
 
-def dump(obj, filename, file_format=None):
+def dump(obj, filename, file_format=None, **kwargs):
     """
     Dump data to json/yaml/pickle files.
 
@@ -57,10 +57,10 @@ def dump(obj, filename, file_format=None):
     _check_format(file_format, file_handlers)
 
     handler = file_handlers[file_format]
-    handler.dump_to_path(obj, filename)
+    handler.dump_to_path(obj, filename, **kwargs)
 
 
-def loads(bytes, file_format='pickle'):
+def loads(bytes, file_format='pickle', **kwargs):
     """
     Load data from json/yaml/pickle bytes objects.
 
@@ -74,10 +74,10 @@ def loads(bytes, file_format='pickle'):
     """
     _check_format(file_format, ['pickle', 'pkl'])
     handler = file_handlers[file_format]
-    return handler.load_from_bytes(bytes)
+    return handler.load_from_bytes(bytes, **kwargs)
 
 
-def dumps(obj, file_format='pickle'):
+def dumps(obj, file_format='pickle', **kwargs):
     """
     Dump data to json/yaml/pickle bytes objects.
 
@@ -91,4 +91,4 @@ def dumps(obj, file_format='pickle'):
     """
     _check_format(file_format, file_handlers)
     handler = file_handlers[file_format]
-    return handler.dump_to_bytes(obj)
+    return handler.dump_to_bytes(obj, **kwargs)

@@ -12,11 +12,11 @@ except ImportError:
 
 class YamlHandler(FileHandler):
 
-    def load_from_fileobj(self, file):
-        return yaml.load(file, Loader=Loader)
+    def load_from_fileobj(self, file, **kwargs):
+        return yaml.load(file, Loader=Loader, **kwargs)
 
-    def dump_to_fileobj(self, obj, file):
-        yaml.dump(obj, file, Dumper=Dumper)
+    def dump_to_fileobj(self, obj, file, **kwargs):
+        yaml.dump(obj, file, Dumper=Dumper, **kwargs)
 
-    def dump_to_bytes(self, obj):
-        return yaml.dump(obj, Dumper=Dumper)
+    def dump_to_bytes(self, obj, **kwargs):
+        return yaml.dump(obj, Dumper=Dumper, **kwargs)
