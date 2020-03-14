@@ -52,7 +52,7 @@ def _collect_cuda_env():
         else:
             nvcc = None
         if torch.cuda.is_available():
-            devices = dict()
+            devices = {}
             for k in range(torch.cuda.device_count()):
                 devices[torch.cuda.get_device_name(k)].append(str(k))
         else:

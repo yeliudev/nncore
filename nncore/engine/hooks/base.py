@@ -2,6 +2,8 @@
 
 import nncore
 
+HOOKS = nncore.Registry('hook')
+
 
 @nncore.bind_getter('name')
 class Hook(object):
@@ -12,6 +14,9 @@ class Hook(object):
     provide an argument `engine` to access more properties about the context.
     All the hooks will be called one by one according to the order in
     `engine.hooks`.
+
+    Note that :meth:`self.on_register` will be called automatically when the
+    hook is being registerd into an engine.
     """
 
     def __init__(self, name=None):
@@ -22,6 +27,9 @@ class Hook(object):
 
     def __eq__(self, hook):
         return self._name == getattr(hook, 'name', hook)
+
+    def on_register(self, engine):
+        pass
 
     def before_run(self, engine):
         pass
@@ -70,9 +78,3 @@ class Hook(object):
 
     def after_val_step(self, engine):
         self.after_step(engine)
-
-    def every_n_epochs(self, engine, n):
-        return (engine.epoch + 1) % n == 0 if n > 0 else False
-
-    def every_n_steps(self, engine, n):
-        return (engine.iter + 1) % n == 0 if n > 0 else False

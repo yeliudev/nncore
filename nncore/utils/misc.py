@@ -164,11 +164,11 @@ def bind_getter(*vars):
         >>>         return self._depth
     """
 
-    def wrapper(cls):
+    def _wrapper(cls):
         for var in vars:
             method = partial(
                 lambda self, key: getattr(self, key), key='_{}'.format(var))
             setattr(cls, var, property(method))
         return cls
 
-    return wrapper
+    return _wrapper

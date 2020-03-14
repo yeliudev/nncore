@@ -8,6 +8,7 @@ from copy import deepcopy
 from importlib import import_module
 
 import nncore
+from .misc import bind_getter
 
 
 class CfgNode(OrderedDict):
@@ -25,7 +26,7 @@ class CfgNode(OrderedDict):
             raise TypeError('too many arguments')
 
         if len(args) == 1:
-            if isinstance(args[0], dict):
+            if isinstance(args[0], (Config, dict)):
                 kwargs.update(args[0])
             else:
                 raise TypeError("unsupported type '{}'".format(type(args[0])))
@@ -73,7 +74,7 @@ class CfgNode(OrderedDict):
         return deepcopy(self)
 
     def update(self, *args, **kwargs):
-        other = dict()
+        other = {}
         if len(args) > 1:
             raise TypeError('too many arguments')
         elif len(args) == 1:
@@ -86,8 +87,15 @@ class CfgNode(OrderedDict):
             else:
                 self[k].update(v)
 
+    def setdefault(self, key, value):
+        if key in self:
+            return self[key]
+        else:
+            self[key] = value
+            return value
+
     def to_dict(self):
-        base = dict()
+        base = {}
         for key, value in self.items():
             if isinstance(value, type(self)):
                 base[key] = value.to_dict()
@@ -103,6 +111,7 @@ class CfgNode(OrderedDict):
         return nncore.dumps(self.to_dict(), file_format='json', indent=2)
 
 
+@bind_getter('filename', 'text')
 class Config(object):
     """
     A facility for better :class:`dict` objects.
@@ -149,9 +158,7 @@ class Config(object):
         return Config(cfg=cfg, filename=filename)
 
     def __init__(self, cfg=None, filename=None):
-        if isinstance(cfg, CfgNode):
-            _cfg = cfg
-        elif isinstance(cfg, dict):
+        if isinstance(cfg, (type(self), dict)):
             _cfg = CfgNode(cfg)
         elif cfg is None:
             _cfg = CfgNode()
@@ -166,14 +173,6 @@ class Config(object):
                 super(Config, self).__setattr__('_text', f.read())
         else:
             super(Config, self).__setattr__('_text', '')
-
-    @property
-    def filename(self):
-        return self._filename
-
-    @property
-    def text(self):
-        return self._text
 
     def __repr__(self):
         return 'Config(filename: {}): {}'.format(self._filename,
@@ -196,3 +195,9 @@ class Config(object):
 
     def __iter__(self):
         return iter(self._cfg)
+
+    def setdefault(self, key, value):
+        return self._cfg.setdefault(key, value)
+
+    def to_dict(self):
+        return self._cfg.to_dict()

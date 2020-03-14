@@ -84,3 +84,13 @@ def get_logger(name='nncore',
         logger.addHandler(fh)
 
     return logger
+
+
+def log_or_print(msg, logger, log_level=logging.INFO):
+    if isinstance(logger, logging.Logger):
+        logger.log(logging._checkLevel(log_level), msg)
+    elif isinstance(logger, str):
+        logger = logging.getLogger(logger)
+        logger.log(logging._checkLevel(log_level), msg)
+    else:
+        print(msg)

@@ -9,7 +9,7 @@ def test_registry():
     reg_name = 'cat'
     CATS = nncore.Registry(reg_name)
     assert CATS.name == reg_name
-    assert CATS.items == dict()
+    assert CATS.items == {}
     assert len(CATS) == 0
 
     @CATS.register

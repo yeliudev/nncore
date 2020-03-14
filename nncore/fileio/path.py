@@ -2,6 +2,7 @@
 
 import os
 import os.path as osp
+from platform import system
 
 
 def dir_exist(dir_name, raise_error=False):
@@ -24,7 +25,7 @@ def mkdir(dir_name, exist_ok=True):
 
     Args:
         dir_name (str): (positive or relative) path to the directory
-        exist_ok (bool, optional): if False, raise an OSError when the
+        exist_ok (bool, optional): if false, raise an OSError when the
             directory exists
     """
     assert isinstance(dir_name, str) and dir_name != ''
@@ -32,16 +33,21 @@ def mkdir(dir_name, exist_ok=True):
     os.makedirs(dir_name, exist_ok=exist_ok)
 
 
-def symlink(src, dst, overwrite=True):
+def symlink(src, dst, overwrite=True, safe_mode=True):
     """
     Create a symlink from source to destination.
 
     Args:
         src (str): source of the symlink
         dst (str): destination of the symlink
-        overwrite (bool, optional): whether to overwrite it when an old symlink
+        overwrite (bool, optional): if true, overwrite it when an old symlink
             exists
+        safe_mode (bool, optional): if true, do not raise error when the
+            platform does not support symlink
     """
+    if system() == 'Windows' and safe_mode:
+        return
+
     if osp.lexists(dst):
         if not overwrite:
             raise FileExistsError("file '{}' exists".format(dst))

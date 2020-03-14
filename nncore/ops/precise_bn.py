@@ -13,10 +13,10 @@ def get_bn_layers(model):
     Find all BatchNorm (BN) modules that are in training mode.
 
     Args:
-        model (nn.Module): a model possibly containing BN modules
+        model (:obj:`nn.Module`): a model possibly containing BN modules
 
     Returns:
-        bn_layers (list[nn.Module]): all BN modules in the model
+        bn_layers (list[:obj:`nn.Module`]): all BN modules in the model
     """
     bn_layers = [
         m for m in model.modules()
@@ -38,7 +38,7 @@ def update_bn_stats(model, data_loader, num_iters=200):
     average of per-batch mean/variance instead of the running average.
 
     Args:
-        model (nn.Module): the model whose bn stats will be recomputed.
+        model (:obj:`nn.Module`): the model whose bn stats will be recomputed.
 
             Note that:
 

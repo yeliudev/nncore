@@ -1,7 +1,7 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import nncore
-from .hooks import Hook
+from .hooks import HOOKS, Hook
 from .utils import bind_hooks
 
 
@@ -9,13 +9,15 @@ from .utils import bind_hooks
 @nncore.bind_getter('hooks', 'stage', 'epoch', 'iter')
 class Engine(object):
 
-    def __init__(self, model, data_loaders, scheduler, work_dir=None):
+    def __init__(self, model, data_loaders, scheduler, hooks, work_dir=None):
         self._hooks = []
         self.model = model
         self.data_loaders = data_loaders
         self.scheduler = scheduler
         self.work_dir = work_dir
+
         self.logger = nncore.get_logger()
+        self.register_hook(hooks)
 
         self._hooks = []
         self._stage = 0
@@ -27,16 +29,23 @@ class Engine(object):
         Register a hook into the engine.
 
         Args:
-            hook (:obj:`Hook`): the hook to be registered
-            before (str, optional): name of the hook to insert before. The
-                registered hook will be inserted into the end of the hook list
-                by default.
+            hook (:obj:`Hook` or dict): the hook to be registered
+            before (str, optional): name of the hook to be inserted before. The
+                new hook will be inserted into the end of the hook list by
+                default.
         """
-        assert isinstance(hook, Hook)
+        if isinstance(hook, dict):
+            hook = nncore.build_object(hook, HOOKS)
+        elif not isinstance(hook, Hook):
+            raise TypeError('hook must be a Hook or dict, but got {}'.format(
+                type(hook)))
 
         if hook in self._hooks:
             raise ValueError("hook '{}' exists".format(hook.name))
+        if before not in self._hooks:
+            raise ValueError("hook '{}' not found".format(before))
 
+        hook.on_register(self)
         if before is not None:
             idx = self._hooks.index(before)
             self._hooks.insert(idx, hook)
