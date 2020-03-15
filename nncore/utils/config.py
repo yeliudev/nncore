@@ -114,7 +114,7 @@ class CfgNode(OrderedDict):
 @bind_getter('filename', 'text')
 class Config(object):
     """
-    A facility for better :class:`dict` objects.
+    A facility for better :class:`CfgNode` objects.
 
     This class is a wrapper for :class:`CfgNode` which can be initialized from
     a config file. Users can use the static method :meth:`Config.from_file` to

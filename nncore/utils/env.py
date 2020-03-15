@@ -5,6 +5,7 @@ import os
 import os.path as osp
 import subprocess
 import sys
+from collections import defaultdict
 from getpass import getuser
 from platform import system
 from re import findall
@@ -52,7 +53,7 @@ def _collect_cuda_env():
         else:
             nvcc = None
         if torch.cuda.is_available():
-            devices = {}
+            devices = defaultdict(list)
             for k in range(torch.cuda.device_count()):
                 devices[torch.cuda.get_device_name(k)].append(str(k))
         else:
@@ -157,7 +158,7 @@ def collect_env_info():
 
     # other libraries
     for module in ['nncore', 'numpy', 'PIL', 'cv2']:
-        _c.append((module, _get_module_version(module)))
+        _c.append((module, _get_module_version(module) or '<not found>'))
 
     env_info = tabulate(_c)
     torch_build_env = _collect_torch_build_env()

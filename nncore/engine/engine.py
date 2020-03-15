@@ -9,16 +9,18 @@ from .utils import bind_hooks
 @nncore.bind_getter('hooks', 'stage', 'epoch', 'iter')
 class Engine(object):
 
-    def __init__(self, model, data_loaders, scheduler, hooks, work_dir=None):
-        self._hooks = []
+    def __init__(self, model, scheduler, hooks, logger=None, work_dir=None):
         self.model = model
-        self.data_loaders = data_loaders
         self.scheduler = scheduler
         self.work_dir = work_dir
 
-        self.logger = nncore.get_logger()
-        self.register_hook(hooks)
+        for hook in hooks:
+            self.register_hook(hook)
 
+        self.logger = logger or nncore.get_logger()
+        self.flush_states()
+
+    def flush_states(self):
         self._hooks = []
         self._stage = 0
         self._epoch = 0

@@ -34,7 +34,7 @@ def bind_hooks(cls):
 
 
 def get_torchvision_models():
-    model_urls = dict()
+    model_urls = {}
     for _, name, ispkg in walk_packages(torchvision.models.__path__):
         if ispkg:
             continue

@@ -33,7 +33,10 @@ class CheckpointHook(Hook):
         filename = self.filename_tmpl.format(self.epoch + 1)
         filepath = osp.join(self.out_dir, filename)
         optimizer = engine.optimizer if self.save_optimizer else None
+
+        engine.logger.info('Saving checkpoint to {}...'.format(filepath))
         save_checkpoint(engine.model, filepath, optimizer=optimizer, meta=meta)
+
         if self.create_symlink:
             nncore.symlink(filename, osp.join(self.out_dir, 'latest.pth'))
 

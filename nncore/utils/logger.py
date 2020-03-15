@@ -70,8 +70,8 @@ def get_logger(name='nncore',
     logger.addHandler(sh)
 
     try:
-        from nncore.engine import comm
-        if not comm.is_main_process():
+        from nncore.engine import is_main_process
+        if not is_main_process():
             logger.setLevel(logging.ERROR)
             return logger
     except ImportError:
