@@ -17,7 +17,7 @@ def test_construct():
 
 
 def test_build_config():
-    for filename in ['a.py', 'b.json', 'c.yaml']:
+    for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
         cfg_file = osp.join(osp.dirname(__file__), 'data', 'config', filename)
         cfg = nncore.Config.from_file(cfg_file)
         assert isinstance(cfg, nncore.Config)
@@ -26,9 +26,6 @@ def test_build_config():
 
     with pytest.raises(FileNotFoundError):
         nncore.Config.from_file('no_such_file.py')
-    with pytest.raises(ValueError):
-        nncore.Config.from_file(
-            osp.join(osp.dirname(__file__), 'data/config/a.b.py'))
     with pytest.raises(IOError):
         nncore.Config.from_file(
             osp.join(osp.dirname(__file__), 'data/color.jpg'))

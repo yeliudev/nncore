@@ -165,4 +165,7 @@ def collect_env_info():
     if torch_build_env is not None:
         env_info += '\n{}'.format(torch_build_env)
 
+    if system() == 'Windows':
+        env_info = env_info.replace('\n', '\r\n')
+
     return env_info

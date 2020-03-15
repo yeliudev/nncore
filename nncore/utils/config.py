@@ -6,6 +6,8 @@ from collections import OrderedDict
 from collections.abc import MutableSequence
 from copy import deepcopy
 from importlib import import_module
+from shutil import copyfile
+from tempfile import TemporaryDirectory
 
 import nncore
 from .misc import bind_getter
@@ -138,18 +140,16 @@ class Config(object):
 
         file_format = filename.split('.')[-1]
         if file_format == 'py':
-            module_name = osp.basename(filename)[:-3]
-            config_dir = osp.dirname(filename)
-            if '.' in module_name:
-                raise ValueError('dots are not allowed in the file path')
-            sys.path.insert(0, config_dir)
-            mod = import_module(module_name)
-            sys.path.pop(0)
-            cfg = {
-                k: v
-                for k, v in mod.__dict__.items()
-                if not k.startswith('__') or not k.endswith('__')
-            }
+            with TemporaryDirectory() as temp_config_dir:
+                copyfile(filename, osp.join(temp_config_dir, '_tmp.py'))
+                sys.path.insert(0, temp_config_dir)
+                mod = import_module('_tmp')
+                sys.path.pop(0)
+                cfg = {
+                    k: v
+                    for k, v in mod.__dict__.items()
+                    if not k.startswith('__') or not k.endswith('__')
+                }
         elif file_format in ['json', 'yml', 'yaml']:
             cfg = nncore.load(filename)
         else:
