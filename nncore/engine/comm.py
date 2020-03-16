@@ -19,11 +19,11 @@ def init_dist(launcher='pytorch', backend='gloo', **kwargs):
     Args:
         launcher (str, optional): launcher for the process group. Currently
             supported lauchers include `pytorch` and `slurm`.
-        backend (str or :class:`dist.Backend`, optional): the distribution
+        backend (str or :obj:`dist.Backend`, optional): the distribution
             backend to use. Depending on build-time configurations, valid
             values include, `gloo` and `nccl`. This field should be given as a
             string (e.g., `gloo`), which can also be accessed via
-            :class:`dist.Backend` attributes (e.g., `Backend.GLOO`). If using
+            :obj:`dist.Backend` attributes (e.g., `Backend.GLOO`). If using
             multiple processes per machine with `nccl` backend, each process
             must have exclusive access to every GPU it uses, as sharing GPUs
             between processes can result in deadlocks.
@@ -65,24 +65,30 @@ def is_distributed():
     return dist.is_available() and dist.is_initialized()
 
 
-def get_rank(group=dist.group.WORLD):
-    return dist.get_rank(group=group) if is_distributed() else 0
+def get_rank(group=None):
+    if not is_distributed():
+        return 0
+    return dist.get_rank(group=group or dist.group.WORLD)
 
 
-def get_world_size(group=dist.group.WORLD):
-    return dist.get_world_size(group=group) if is_distributed() else 1
+def get_world_size(group=None):
+    if not is_distributed():
+        return 1
+    return dist.get_world_size(group=group or dist.group.WORLD)
 
 
-def get_dist_info(group=dist.group.WORLD):
-    return (get_rank(group=group),
-            get_world_size(group=group)) if is_distributed() else (0, 1)
+def get_dist_info(group=None):
+    if not is_distributed():
+        return 0, 1
+    group = group or dist.group.WORLD
+    return get_rank(group=group), get_world_size(group=group)
 
 
 def is_main_process():
     return get_rank() == 0
 
 
-def synchronize(group=dist.group.WORLD):
+def synchronize(group=None):
     """
     Synchronize among all processes in a process group.
     """
@@ -137,13 +143,14 @@ def _pad_tensors(tensor, group):
     return size_list, tensor
 
 
-def all_gather(data, group=dist.group.WORLD):
+def all_gather(data, group=None):
     """
     Run all_gather on arbitrary serializable data.
 
     Args:
         data (any): any serializable object
-        group (ProcessGroup, optional): a torch process group
+        group (ProcessGroup or None, optional): a torch process group. If None,
+            use the default process group.
 
     Returns:
         gathered (list[data]): a list of data gathered from each rank
@@ -151,6 +158,7 @@ def all_gather(data, group=dist.group.WORLD):
     if get_world_size(group=group) == 1:
         return [data]
 
+    group = group or dist.group.WORLD
     tensor, group = _serialize_to_tensor(data, group)
     size_list, tensor = _pad_tensors(tensor, group)
     max_size = max(size_list)
@@ -166,14 +174,15 @@ def all_gather(data, group=dist.group.WORLD):
     return gathered
 
 
-def gather(data, dst=0, group=dist.group.WORLD):
+def gather(data, dst=0, group=None):
     """
     Run gather on arbitrary serializable data.
 
     Args:
         data (any): any serializable object
         dst (int, optional): destination rank
-        group (ProcessGroup, optional): a torch process group
+        group (ProcessGroup or None, optional): a torch process group. If None,
+            use the default process group.
 
     Returns:
         gathered (list[data]) or None: on dst, a list of data gathered from
@@ -183,6 +192,7 @@ def gather(data, dst=0, group=dist.group.WORLD):
     if world_size == 1:
         return [data]
 
+    group = group or dist.group.WORLD
     tensor, group = _serialize_to_tensor(data, group)
     size_list, tensor = _pad_tensors(tensor, group)
 

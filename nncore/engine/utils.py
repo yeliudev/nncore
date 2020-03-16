@@ -1,6 +1,8 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+import hashlib
 import os.path as osp
+import subprocess
 from collections import OrderedDict
 from functools import partial
 from importlib import import_module
@@ -14,7 +16,7 @@ import nncore
 from .comm import is_main_process, synchronize
 
 _HOOKS = [
-    'before_run', 'after_run', 'before_stage', 'after_stage',
+    'before_launch', 'after_launch', 'before_stage', 'after_stage',
     'before_train_epoch', 'after_train_epoch', 'before_val_epoch',
     'after_val_epoch', 'before_train_step', 'after_train_step',
     'before_val_step', 'after_val_step'
@@ -34,7 +36,7 @@ def bind_hooks(cls):
 
 
 def get_torchvision_models():
-    model_urls = {}
+    model_urls = dict()
     for _, name, ispkg in walk_packages(torchvision.models.__path__):
         if ispkg:
             continue
@@ -104,7 +106,7 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
         state_dict._metadata = metadata
 
     def load(module, prefix=''):
-        local_metadata = {} if metadata is None else metadata.get(
+        local_metadata = dict() if metadata is None else metadata.get(
             prefix[:-1], {})
         module._load_from_state_dict(state_dict, prefix, local_metadata, True,
                                      missing_keys, unexpected_keys, err)
@@ -184,7 +186,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         meta (dict, optional): metadata to be saved
     """
     if meta is None:
-        meta = {}
+        meta = dict()
     elif not isinstance(meta, dict):
         raise TypeError('meta must be a dict or None, but got {}'.format(
             type(meta)))
@@ -202,3 +204,35 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         checkpoint['optimizer'] = optimizer.state_dict()
 
     torch.save(checkpoint, filename)
+
+
+def publish_model(in_file,
+                  out_file,
+                  keys_to_remove=['optimizer'],
+                  hash_type='sha256'):
+    """
+    Publish a model by removing needless data in a checkpoint and hash the
+    output checkpoint file.
+
+    Args:
+        in_file (str): name of the input checkpoint file
+        out_file (str): name of the output checkpoint file
+        keys_to_remove (list[str], optional): the keys to be removed from the
+            checkpoint
+        hash_type (str, optional): type of the hash algorithm. Currently
+            supported algorithms include `md5`, `sha1`, `sha224`, `sha256`,
+            `sha384`, `sha512`, `blake2b`, `blake2s`, `sha3_224`, `sha3_256`,
+            `sha3_384`, `sha3_512`, `shake_128`, and `shake_256`.
+    """
+    checkpoint = torch.load(in_file, map_location='cpu')
+    for key in keys_to_remove:
+        if key in checkpoint:
+            del checkpoint[key]
+    torch.save(checkpoint, out_file)
+
+    with open(in_file, 'rb') as f:
+        hasher = hashlib.new(hash_type, data=f.read())
+        hash_value = hasher.hexdigest()
+
+    final_file = out_file[:-4] + '-{}.pth'.format(hash_value[:8])
+    subprocess.Popen(['mv', out_file, final_file])

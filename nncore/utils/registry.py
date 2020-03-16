@@ -31,7 +31,7 @@ class Registry(object):
 
     def __init__(self, name):
         self._name = name
-        self._items = {}
+        self._items = dict()
 
     def __len__(self):
         return len(self._items)
@@ -68,7 +68,7 @@ def build_object(cfg, parent, default_args=None):
 
     Args:
         cfg (dict): object types and arguments
-        parent (:class:`module`): the module which may containing
+        parent (:obj:`module`): the module which may containing
             expected object class
         default_args (dict, optional): default arguments for initializing the
             object

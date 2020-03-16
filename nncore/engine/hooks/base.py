@@ -8,7 +8,7 @@ HOOKS = nncore.Registry('hook')
 @nncore.bind_getter('name')
 class Hook(object):
     """
-    Base class for hooks that can be registered into :class:`Engine`.
+    Base class for hooks that can be registered into :obj:`Engine`.
 
     Each hook can implement several methods. In the hook methods, users should
     provide an argument `engine` to access more properties about the context.
@@ -31,10 +31,10 @@ class Hook(object):
     def on_register(self, engine):
         pass
 
-    def before_run(self, engine):
+    def before_launch(self, engine):
         pass
 
-    def after_run(self, engine):
+    def after_launch(self, engine):
         pass
 
     def before_stage(self, engine):

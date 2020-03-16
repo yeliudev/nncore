@@ -3,7 +3,8 @@
 import os.path as osp
 
 import nncore
-from nncore.engine import master_only, save_checkpoint
+from ..comm import master_only
+from ..utils import save_checkpoint
 from .base import HOOKS, Hook
 from .utils import every_n_epochs, every_n_steps
 
@@ -12,7 +13,7 @@ from .utils import every_n_epochs, every_n_steps
 class CheckpointHook(Hook):
 
     def __init__(self,
-                 interval=-1,
+                 interval=1,
                  interval_type='epoch',
                  filename_tmpl=None,
                  save_optimizer=True,
@@ -42,6 +43,9 @@ class CheckpointHook(Hook):
 
     def on_register(self, engine):
         if not self.out_dir:
+            if not nncore.dir_exist(engine.work_dir):
+                raise ValueError("invalid work_dir: {}".format(
+                    engine.work_dir))
             self.out_dir = engine.work_dir
 
     @master_only
@@ -49,7 +53,6 @@ class CheckpointHook(Hook):
     def after_train_epoch(self, engine):
         if not self.interval_type == 'epoch':
             return
-
         meta = dict(epoch=engine.epoch + 1, iter=engine.iter)
         self._save_checkpoint(engine, meta)
 
@@ -58,6 +61,5 @@ class CheckpointHook(Hook):
     def after_train_step(self, engine):
         if not self.interval_type == 'iter':
             return
-
         meta = dict(iter=engine.iter + 1)
         self._save_checkpoint(engine, meta)

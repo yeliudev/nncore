@@ -28,14 +28,14 @@ def test_build_config():
         nncore.Config.from_file('no_such_file.py')
     with pytest.raises(IOError):
         nncore.Config.from_file(
-            osp.join(osp.dirname(__file__), 'data/color.jpg'))
+            osp.join(osp.dirname(__file__), 'data', 'color.jpg'))
 
 
 def test_dict():
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
 
     for filename in ['a.py', 'b.json', 'c.yaml']:
-        cfg_file = osp.join(osp.dirname(__file__), 'data/config', filename)
+        cfg_file = osp.join(osp.dirname(__file__), 'data', 'config', filename)
         cfg = nncore.Config.from_file(cfg_file)
 
         assert len(cfg) == 4

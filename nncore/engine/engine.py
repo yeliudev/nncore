@@ -1,17 +1,19 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+from collections import OrderedDict
+
 import nncore
 from .hooks import HOOKS, Hook
 from .utils import bind_hooks
 
 
 @bind_hooks
-@nncore.bind_getter('hooks', 'stage', 'epoch', 'iter')
+@nncore.bind_getter('hooks', 'max_stages', 'stage', 'epoch', 'iter')
 class Engine(object):
 
-    def __init__(self, model, scheduler, hooks, logger=None, work_dir=None):
+    def __init__(self, model, data_loaders, hooks, logger=None, work_dir=None):
         self.model = model
-        self.scheduler = scheduler
+        self.data_loaders = data_loaders
         self.work_dir = work_dir
 
         for hook in hooks:
@@ -21,7 +23,8 @@ class Engine(object):
         self.flush_states()
 
     def flush_states(self):
-        self._hooks = []
+        self._hooks = OrderedDict()
+        self._max_stages = len(self.stages)
         self._stage = 0
         self._epoch = 0
         self._iter = 0
@@ -44,15 +47,18 @@ class Engine(object):
 
         if hook in self._hooks:
             raise ValueError("hook '{}' exists".format(hook.name))
-        if before not in self._hooks:
-            raise ValueError("hook '{}' not found".format(before))
 
         hook.on_register(self)
+        self._hooks[hook.name] = hook
+
         if before is not None:
-            idx = self._hooks.index(before)
-            self._hooks.insert(idx, hook)
-        else:
-            self._hooks.append(hook)
+            if before not in self._hooks:
+                raise ValueError("hook '{}' not found".format(before))
+
+            keys = list(self._hooks.keys())
+            idx = keys.index(before)
+            for key in keys[idx:-1]:
+                self._hooks[key].move_to_end()
 
     def train_step(self, *args, **kwargs):
         self.before_train_step()
@@ -80,11 +86,20 @@ class Engine(object):
 
     def train_stage(self, *args, **kwargs):
         self.before_stage()
-        # do something
+        self.cur_stage = self._stages[self._stage]
+        self.logger.info('Stage {}, num_epochs: {}'.format(
+            self._stage, self.cur_stage.epochs))
+        for i in range(self.cur_stage.epochs):
+            self.train_epoch()
+            if i % self.cur_stage.val_interval == 0:
+                self.val_epoch()
         self.after_stage()
         self._stage += 1
 
-    def launch(self, *args, **kwargs):
+    def launch(self):
+        self.logger.info('Launch engine, host: {}, work_dir: {}'.format(
+            nncore.get_host_info(), self.work_dir))
         self.before_launch()
-        # do something
+        while self._stage < self._max_stages:
+            self.train_stage()
         self.after_launch()

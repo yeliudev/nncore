@@ -76,7 +76,7 @@ class CfgNode(OrderedDict):
         return deepcopy(self)
 
     def update(self, *args, **kwargs):
-        other = {}
+        other = dict()
         if len(args) > 1:
             raise TypeError('too many arguments')
         elif len(args) == 1:
@@ -97,7 +97,7 @@ class CfgNode(OrderedDict):
             return value
 
     def to_dict(self):
-        base = {}
+        base = dict()
         for key, value in self.items():
             if isinstance(value, type(self)):
                 base[key] = value.to_dict()
@@ -116,9 +116,9 @@ class CfgNode(OrderedDict):
 @bind_getter('filename', 'text')
 class Config(object):
     """
-    A facility for better :class:`CfgNode` objects.
+    A facility for better :obj:`CfgNode` objects.
 
-    This class is a wrapper for :class:`CfgNode` which can be initialized from
+    This class is a wrapper for :obj:`CfgNode` which can be initialized from
     a config file. Users can use the static method :meth:`Config.from_file` to
     create a `Config` object.
     """
@@ -140,10 +140,10 @@ class Config(object):
 
         file_format = filename.split('.')[-1]
         if file_format == 'py':
-            with TemporaryDirectory() as temp_config_dir:
-                copyfile(filename, osp.join(temp_config_dir, '_tmp.py'))
-                sys.path.insert(0, temp_config_dir)
-                mod = import_module('_tmp')
+            with TemporaryDirectory() as tmp_dir:
+                copyfile(filename, osp.join(tmp_dir, '_tmp_config.py'))
+                sys.path.insert(0, tmp_dir)
+                mod = import_module('_tmp_config')
                 sys.path.pop(0)
                 cfg = {
                     k: v
