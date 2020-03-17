@@ -49,10 +49,10 @@ class Hook(object):
     def after_epoch(self, engine):
         pass
 
-    def before_step(self, engine):
+    def before_iter(self, engine):
         pass
 
-    def after_step(self, engine):
+    def after_iter(self, engine):
         pass
 
     def before_train_epoch(self, engine):
@@ -67,14 +67,29 @@ class Hook(object):
     def after_val_epoch(self, engine):
         self.after_epoch(engine)
 
-    def before_train_step(self, engine):
-        self.before_step(engine)
+    def before_train_iter(self, engine):
+        self.before_iter(engine)
 
-    def after_train_step(self, engine):
-        self.after_step(engine)
+    def after_train_iter(self, engine):
+        self.after_iter(engine)
 
-    def before_val_step(self, engine):
-        self.before_step(engine)
+    def before_val_iter(self, engine):
+        self.before_iter(engine)
 
-    def after_val_step(self, engine):
-        self.after_step(engine)
+    def after_val_iter(self, engine):
+        self.after_iter(engine)
+
+    def end_of_stage(self, engine):
+        return engine.period + 1 == engine.cur_stage.epochs
+
+    def end_of_epoch(self, engine):
+        return engine.step + 1 == len(engine.data_loader)
+
+    def every_n_epochs(self, engine, n):
+        return (engine.epoch + 1) % n == 0 if n > 0 else False
+
+    def every_n_iters(self, engine, n):
+        return (engine.iter + 1) % n == 0 if n > 0 else False
+
+    def every_n_steps(self, engine, n):
+        return (engine.step + 1) % n == 0 if n > 0 else False

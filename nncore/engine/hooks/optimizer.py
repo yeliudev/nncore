@@ -7,6 +7,7 @@ from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 from torch.nn.utils import clip_grad
 
+from ..comm import is_distributed
 from .base import HOOKS, Hook
 
 
@@ -49,6 +50,7 @@ def _allreduce_grads(params, coalesce, bucket_size_mb):
 class OptimizerHook(Hook):
 
     def __init__(self, grad_clip=None):
+        assert not is_distributed()
         self.grad_clip = grad_clip
 
     def clip_grads(self, params):
@@ -57,7 +59,7 @@ class OptimizerHook(Hook):
 
     def after_train_iter(self, engine):
         engine.optimizer.zero_grad()
-        engine.outputs['loss'].backward()
+        engine.iter_output[engine.cur_stage.loss].backward()
         if self.grad_clip is not None:
             self.clip_grads(engine.model.parameters())
         engine.optimizer.step()
@@ -67,13 +69,14 @@ class OptimizerHook(Hook):
 class DistOptimizerHook(OptimizerHook):
 
     def __init__(self, grad_clip=None, coalesce=True, bucket_size_mb=-1):
+        assert is_distributed()
         self.grad_clip = grad_clip
         self.coalesce = coalesce
         self.bucket_size_mb = bucket_size_mb
 
     def after_train_iter(self, engine):
         engine.optimizer.zero_grad()
-        engine.outputs[engine.loss].backward()
+        engine.iter_output[engine.cur_stage.loss].backward()
         _allreduce_grads(engine.model.parameters(), self.coalesce,
                          self.bucket_size_mb)
         if self.grad_clip is not None:

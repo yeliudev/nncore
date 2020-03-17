@@ -167,7 +167,8 @@ def bind_getter(*vars):
     def _wrapper(cls):
         for var in vars:
             method = partial(
-                lambda self, key: getattr(self, key), key='_{}'.format(var))
+                lambda self, key: getattr(self, key, None),
+                key='_{}'.format(var))
             setattr(cls, var, property(method))
         return cls
 

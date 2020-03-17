@@ -18,15 +18,15 @@ from .comm import is_main_process, synchronize
 _HOOKS = [
     'before_launch', 'after_launch', 'before_stage', 'after_stage',
     'before_train_epoch', 'after_train_epoch', 'before_val_epoch',
-    'after_val_epoch', 'before_train_step', 'after_train_step',
-    'before_val_step', 'after_val_step'
+    'after_val_epoch', 'before_train_iter', 'after_train_iter',
+    'before_val_iter', 'after_val_iter'
 ]
 
 
 def bind_hooks(cls):
 
     def _call_hook(self, name):
-        for hook in self._hooks:
+        for hook in self._hooks.values():
             getattr(hook, name)(self)
 
     for hook in _HOOKS:

@@ -2,8 +2,8 @@
 
 from .base import HOOKS, Hook
 from .checkpoint import CheckpointHook
-from .utils import every_n_epochs, every_n_steps
+from .OptimizerHook import DistOptimizerHook, OptimizerHook
 
 __all__ = [
-    'HOOKS', 'Hook', 'CheckpointHook', 'every_n_epochs', 'every_n_steps'
+    'HOOKS', 'Hook', 'CheckpointHook', 'DistOptimizerHook', 'OptimizerHook'
 ]
