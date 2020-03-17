@@ -1,152 +1,64 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-import sys
-from collections.abc import Iterable
-from multiprocessing import Pool
+from functools import partial
+from math import ceil
 from shutil import get_terminal_size
 
 from .timer import Timer
 
 
 class ProgressBar(object):
-    """A progress bar which can print the progress"""
+    """
+    A progress bar which can show the state of a progress.
+    """
 
-    def __init__(self, task_num=0, distributed=False, stream=sys.stdout):
-        self.task_num = task_num
-        self.stream = stream
-        self.completed = 0
-        self.start()
+    _with_bar = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s{}'
+    _wo_bar = '\rcompleted: {}, elapsed: {}s, {:.1f} tasks/s'
+
+    def __init__(self, task_num=None, distributed=False):
+        self.write = partial(print, end='')
+        self._task_num = task_num
+        self._completed = 0
+        self._timer = Timer()
 
         if distributed:
             from nncore.ops.comm import is_main_process
-            self.dummy_update = not is_main_process()
+            self.enabled = is_main_process()
         else:
-            self.dummy_update = False
+            self.enabled = True
 
-    @property
-    def terminal_width(self):
+        if self.enabled:
+            if self._task_num is not None:
+                msg = self._with_bar.format(0, self._task_num, 0, 0, 0, '')
+                bar_width = self._get_bar_width(msg)
+                self.write(msg.format(' ' * bar_width))
+            else:
+                self.write(self._wo_bar.format(0, 0, 0))
+
+    def _get_bar_width(self, msg):
         width, _ = get_terminal_size()
-        return width
-
-    def start(self):
-        if self.task_num > 0:
-            self.stream.write('[{}] 0/{}, elapsed: 0s, ETA:'.format(
-                ' ' * 50, self.task_num))
-        else:
-            self.stream.write('completed: 0, elapsed: 0s')
-        self.stream.flush()
-        self.timer = Timer()
+        bar_width = min(int(width - len(msg)) + 2, int(width * 0.6), 50)
+        return max(2, bar_width)
 
     def update(self):
-        if self.dummy_update:
+        if not self.enabled:
             return
 
-        self.completed += 1
-        elapsed = self.timer.since_start()
-        if elapsed > 0:
-            fps = self.completed / elapsed
-        else:
-            fps = float('inf')
-        if self.task_num > 0:
-            percentage = self.completed / float(self.task_num)
-            eta = int(elapsed * (1 - percentage) / percentage + 0.5)
-            msg = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s' \
-                  ''.format(self.completed, self.task_num, fps,
-                            int(elapsed + 0.5), eta)
+        self._completed += 1
+        elapsed = self._timer.seconds()
+        fps = self._completed / elapsed
 
-            bar_width = min(
-                int(self.terminal_width - len(msg)) + 2,
-                int(self.terminal_width * 0.6), 50)
-            bar_width = max(2, bar_width)
+        if self._task_num is not None:
+            percentage = self._completed / float(self._task_num)
+            eta = int(elapsed * (1 - percentage) / percentage + 0.5)
+            msg = self._with_bar.format(
+                self._completed, self._task_num, fps, ceil(elapsed), eta,
+                '\n' if self._task_num == self._completed else '')
+
+            bar_width = self._get_bar_width(msg)
             mark_width = int(bar_width * percentage)
             bar_chars = '>' * mark_width + ' ' * (bar_width - mark_width)
-            self.stream.write(msg.format(bar_chars))
+            self.write(msg.format(bar_chars))
         else:
-            self.stream.write(
-                'completed: {}, elapsed: {}s, {:.1f} tasks/s'.format(
-                    self.completed, int(elapsed + 0.5), fps))
-        self.stream.flush()
-
-        if self.task_num == self.completed:
-            self.stream.write('\n')
-
-
-def _parse_tasks(tasks):
-    if isinstance(tasks, tuple):
-        assert len(tasks) == 2
-        assert isinstance(tasks[0], Iterable)
-        assert isinstance(tasks[1], int)
-        task_num = tasks[1]
-        tasks = tasks[0]
-    elif isinstance(tasks, Iterable):
-        task_num = len(tasks)
-    else:
-        raise TypeError(
-            "'tasks' must be an iterable object or a (iterator, int) tuple")
-
-    return tasks, task_num
-
-
-def track_progress(func, tasks, stream=sys.stdout, **kwargs):
-    """
-    Track the progress of tasks execution with a progress bar.
-
-    Args:
-        func (callable): the function to be applied to each task
-        tasks (list or tuple[Iterable, int]): a list of tasks or
-            (tasks, task_num)
-
-    Returns:
-        results (list): the task results
-    """
-    tasks, task_num = _parse_tasks(tasks)
-    prog_bar = ProgressBar(task_num, stream=stream)
-    results = []
-    for task in tasks:
-        results.append(func(task, **kwargs))
-        prog_bar.update()
-    return results
-
-
-def track_parallel_progress(func, tasks, nproc=None, stream=sys.stdout):
-    """
-    Track the progress of parallel task execution with a progress bar
-
-    Args:
-        func (callable): the function to be applied to each task
-        tasks (list or tuple[Iterable, int]): a list of tasks or
-            (tasks, task_num)
-        nproc (int or None, optional): number of processes
-
-    Returns:
-        results (list): the task results
-    """
-    tasks, task_num = _parse_tasks(tasks)
-    pool = Pool(nproc)
-    prog_bar = ProgressBar(task_num, stream=stream)
-    results = []
-    gen = pool.imap(func, tasks)
-    for result in gen:
-        results.append(result)
-        prog_bar.update()
-    pool.close()
-    pool.join()
-    return results
-
-
-def track_iter_progress(tasks, stream=sys.stdout, **kwargs):
-    """
-    Track the progress of tasks iteration or enumeration with a progress bar.
-
-    Args:
-        tasks (list or tuple[Iterable, int]): a list of tasks or
-            (tasks, task_num)
-
-    Yields:
-        results (list): the task results
-    """
-    tasks, task_num = _parse_tasks(tasks)
-    prog_bar = ProgressBar(task_num, stream=stream)
-    for task in tasks:
-        yield task
-        prog_bar.update()
+            self.write(
+                self._wo_bar.format(self._completed, ceil(elapsed), fps))

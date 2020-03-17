@@ -1,70 +1,69 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-from time import time
-
-from .misc import bind_getter
+from time import perf_counter
 
 
-@bind_getter('is_running')
 class Timer(object):
     """
     A flexible timer class.
-
-    Example:
-        >>> import time
-        >>> import mmcv
-        >>> with mmcv.Timer():
-        >>>     # simulate a code block that will run for 1s
-        >>>     time.sleep(1)
-        1.000
-
-        >>> with mmcv.Timer(print_tmpl='it takes {:.1f} seconds'):
-        >>>     # simulate a code block that will run for 1s
-        >>>     time.sleep(1)
-        it takes 1.0 seconds
-
-        >>> timer = mmcv.Timer()
-        >>> time.sleep(0.5)
-        >>> print(timer.since_start())
-        0.500
-
-        >>> time.sleep(0.5)
-        >>> print(timer.since_last_check())
-        0.500
-
-        >>> print(timer.since_start())
-        1.000
     """
 
-    def __init__(self, start=True, print_tmpl=None):
-        self._is_running = False
-        self.print_tmpl = print_tmpl if print_tmpl else '{:.3f}'
-        if start:
-            self.start()
+    def __init__(self):
+        self.reset()
 
-    def __enter__(self):
-        self.start()
-        return self
+    def reset(self):
+        """
+        Reset the timer.
+        """
+        self._start = perf_counter()
+        self._paused = None
+        self._total_paused = 0
+        self._count_start = 1
 
-    def __exit__(self, type, value, traceback):
-        print(self.print_tmpl.format(self.since_last_check()))
-        self._is_running = False
+    def pause(self):
+        """
+        Pause the timer.
+        """
+        if self._paused is not None:
+            raise ValueError('Trying to pause a Timer that is already paused!')
 
-    def start(self):
-        if not self._is_running:
-            self._t_start = time()
-            self._is_running = True
-        self._t_last = time()
+        self._paused = perf_counter()
 
-    def since_start(self):
-        if not self._is_running:
-            raise RuntimeError('timer is not running')
-        self._t_last = time()
-        return self._t_last - self._t_start
+    def is_paused(self):
+        """
+        Returns:
+            paused (bool): whether the timer is currently paused
+        """
+        return self._paused is not None
 
-    def since_last_check(self):
-        if not self._is_running:
-            raise RuntimeError('timer is not running')
-        dur = time() - self._t_last
-        self._t_last = time()
-        return dur
+    def resume(self):
+        """
+        Resume the timer.
+        """
+        if self._paused is None:
+            raise ValueError('Trying to resume a Timer that is not paused!')
+
+        self._total_paused += perf_counter() - self._paused
+        self._paused = None
+        self._count_start += 1
+
+    def seconds(self, reset=False):
+        """
+        Returns:
+            seconds (float): the total number of seconds since the start/reset
+                of the timer, excluding the time when the timer is paused
+        """
+        if self._paused is not None:
+            end_time = self._paused
+        else:
+            end_time = perf_counter()
+
+        return end_time - self._start - self._total_paused
+
+    def avg_seconds(self):
+        """
+        Returns:
+            seconds (float): the average number of seconds between every
+                start/reset and pause
+        """
+        return self.seconds() / self._count_start
