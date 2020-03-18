@@ -114,9 +114,9 @@ install:
   - pip3 install -e .
 
 before_script:
-  - isort -rc -df nncore/ tests/ setup.py
-  - yapf -r -d nncore/ tests/ setup.py
-  - flake8 nncore/ tests/ setup.py
+  - isort -rc -df nncore/ tests/ examples/ setup.py
+  - yapf -r -d nncore/ tests/ examples/ setup.py
+  - flake8 nncore/ tests/ examples/ setup.py
 
 script:
   - coverage run --source=nncore setup.py test
