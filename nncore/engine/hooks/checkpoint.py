@@ -16,6 +16,7 @@ class CheckpointHook(Hook):
                  save_optimizer=True,
                  create_symlink=True,
                  out_dir=None):
+        super(CheckpointHook, self).__init__()
         self.interval = interval
         self.save_optimizer = save_optimizer
         self.create_symlink = create_symlink

@@ -1,69 +1,121 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-import numpy as np
+from collections import OrderedDict
+
+import torch
 
 
 class Buffer(object):
     """
-    Track a series of scalar values and provide access to smoothed values over
-    a window or the global average of the series.
+    A buffer that can track a series of values and provide access to smoothed
+    scalar values over a window.
     """
 
-    def __init__(self, max_length=19990125):
+    def __init__(self, max_size=100000):
         """
         Args:
             max_length (int, optional): maximal number of values that can be
                 stored in the buffer. When the capacity of the buffer is
                 exhausted, old values will be removed.
         """
-        self._max_length = max_length
-        self._data = []  # (value, iteration) pairs
-        self._count = 0
-        self._global_avg = 0
+        self._max_size = max_size
+        self._data = OrderedDict()
 
-    def update(self, value, iteration=None):
+    def keys(self):
         """
-        Add a new scalar value produced at certain iteration. If the length of
-        the buffer exceeds self._max_length, the oldest element will be removed
-        from the buffer.
+        Return the keys in the buffer.
         """
-        if iteration is None:
-            iteration = self._count
-        if len(self._data) == self._max_length:
-            self._data.pop(0)
-        self._data.append((value, iteration))
+        return self._data.keys()
 
-        self._count += 1
-        self._global_avg += (value - self._global_avg) / self._count
-
-    def latest(self):
+    def values(self, key):
         """
-        Return the latest scalar value added to the buffer.
-        """
-        return self._data[-1][0]
+        Return the values in the buffer according to the key.
 
-    def median(self, window_size):
+        Args:
+            key (str): the key of the values
+
+        Returns:
+            values (list): the values in the buffer according to the key
+        """
+        return self._data[key]
+
+    def update(self, key, value):
+        """
+        Add a new value. If the length of the buffer exceeds self._max_size,
+        the oldest element will be removed from the buffer.
+
+        Args:
+            key (str): the key of the values
+            value (number): the value of the values
+        """
+        if key not in self._data:
+            self._data[key] = []
+        elif len(self._data[key]) == self._max_size:
+            self._data[key].pop(0)
+
+        self._data[key].append(value)
+
+    def count(self, key):
+        """
+        Return the number of values according to the key.
+
+        Args:
+            key (str): the key of the values
+        """
+        return len(self._data[key])
+
+    def latest(self, key):
+        """
+        Return the latest value added to the buffer.
+
+        Args:
+            key (str): the key of the values
+        """
+        return self._data[key][-1]
+
+    def clear(self, key=None):
+        """
+        Clear the buffer according to the key.
+
+        Args:
+            key (str or None, optional): the key of the values. If None, clear
+                all the values in the buffer.
+        """
+        if key is None:
+            self._data = OrderedDict()
+        elif isinstance(key, str) and key in self._data:
+            del self._data[key]
+
+    def median(self, key, window_size=None):
         """
         Return the median of the latest `window_size` values in the buffer.
-        """
-        return np.median([x[0] for x in self._data[-window_size:]])
 
-    def avg(self, window_size):
+        Args:
+            key (str): the key of the values
+            window_size (int or None, optional): the window_size of the values
+                to be computed
+
+        Returns:
+            median (number): the median of the latest `window_size` values
+        """
+        if window_size is None:
+            window_size = len(self._data[key])
+
+        return torch.Tensor(self._data[key][-window_size:]).median().item()
+
+    def avg(self, key, window_size=None):
         """
         Return the mean of the latest `window_size` values in the buffer.
-        """
-        return np.mean([x[0] for x in self._data[-window_size:]])
 
-    def global_avg(self):
-        """
-        Return the mean of all the elements in the buffer. Note that this
-        includes those getting removed due to limited buffer storage.
-        """
-        return self._global_avg
+        Args:
+            key (str): the key of the values
+            window_size (int or None, optional): the window_size of the values
+                to be computed
 
-    def values(self):
-        """
         Returns:
-            data (list[(number, iteration)]): content of the current buffer
+            avg (number): the average of the latest `window_size` values
         """
-        return self._data
+        if window_size is None:
+            window_size = len(self._data[key])
+
+        return torch.Tensor(self._data[key][-window_size:]).mean().item()

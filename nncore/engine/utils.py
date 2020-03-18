@@ -4,7 +4,6 @@ import hashlib
 import os.path as osp
 import subprocess
 from collections import OrderedDict
-from functools import partial
 from importlib import import_module
 from pkgutil import walk_packages
 from time import asctime
@@ -14,25 +13,6 @@ import torchvision
 
 import nncore
 from .comm import is_main_process, synchronize
-
-_HOOKS = [
-    'before_launch', 'after_launch', 'before_stage', 'after_stage',
-    'before_train_epoch', 'after_train_epoch', 'before_val_epoch',
-    'after_val_epoch', 'before_train_iter', 'after_train_iter',
-    'before_val_iter', 'after_val_iter'
-]
-
-
-def bind_hooks(cls):
-
-    def _call_hook(self, name):
-        for hook in self._hooks.values():
-            getattr(hook, name)(self)
-
-    for hook in _HOOKS:
-        setattr(cls, hook, partial(_call_hook, name=hook))
-
-    return cls
 
 
 def get_torchvision_models():

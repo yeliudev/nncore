@@ -14,11 +14,11 @@ class FileHandler(object):
         pass
 
     @abstractmethod
-    def load_from_bytes(self, bytes, **kwargs):
+    def load_from_str(self, string, **kwargs):
         pass
 
     @abstractmethod
-    def dump_to_bytes(self, obj, **kwargs):
+    def dump_to_str(self, obj, **kwargs):
         pass
 
     def load_from_path(self, filename, mode='r', **kwargs):

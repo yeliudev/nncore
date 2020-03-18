@@ -15,10 +15,10 @@ class PickleHandler(FileHandler):
         return super(PickleHandler, self).load_from_path(
             filename, mode='rb', **kwargs)
 
-    def load_from_bytes(self, bytes, **kwargs):
-        return pickle.loads(bytes, **kwargs)
+    def load_from_str(self, string, **kwargs):
+        return pickle.loads(string, **kwargs)
 
-    def dump_to_bytes(self, obj, protocol=2, **kwargs):
+    def dump_to_str(self, obj, protocol=2, **kwargs):
         return pickle.dumps(obj, protocol=protocol, **kwargs)
 
     def dump_to_fileobj(self, obj, file, protocol=2, **kwargs):

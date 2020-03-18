@@ -16,12 +16,13 @@ def _check_format(file_format, supported_formats):
         raise TypeError('unsupported format: {}'.format(file_format))
 
 
-def load(filename, file_format=None, **kwargs):
+def load(file_obj, file_format=None, **kwargs):
     """
     Load data from json/yaml/pickle files.
 
     Args:
-        filename (str): name of the file
+        file_obj (str or file-like object): name of the file or a file-like
+            object
         file_format (str, optional): if not specified, the file format will be
             inferred from the file extension, otherwise use the specified one.
             Currently supported formats include `json`, `yaml/yml` and
@@ -30,43 +31,56 @@ def load(filename, file_format=None, **kwargs):
     Returns:
         obj (any): the content from the file
     """
-    assert isinstance(filename, str)
-
-    file_format = file_format or filename.split('.')[-1]
+    file_format = file_format or file_obj.split('.')[-1]
     _check_format(file_format, file_handlers)
 
     handler = file_handlers[file_format]
-    return handler.load_from_path(filename, **kwargs)
+
+    if isinstance(file_obj, str):
+        return handler.load_from_path(file_obj, **kwargs)
+    elif hasattr(file_obj, 'read'):
+        return handler.load_from_fileobj(file_obj, **kwargs)
+    else:
+        raise TypeError(
+            'file_obj must be a str of a file-like object, but got {}'.format(
+                type(file_obj)))
 
 
-def dump(obj, filename, file_format=None, **kwargs):
+def dump(obj, file_obj, file_format=None, **kwargs):
     """
     Dump data to json/yaml/pickle files.
 
     Args:
         obj (any): the python object to be dumped
-        filename (str): name of the dumped file
+        file_obj (str or file-like object): name of the dumped file or a
+            file-like object
         file_format (str, optional): if not specified, the file format will be
             inferred from the file extension, otherwise use the specified one.
             Currently supported formats include `json`, `yaml/yml` and
             `pickle/pkl`.
     """
-    assert isinstance(filename, str)
-
-    file_format = file_format or filename.split('.')[-1]
+    file_format = file_format or file_obj.split('.')[-1]
     _check_format(file_format, file_handlers)
 
     handler = file_handlers[file_format]
-    handler.dump_to_path(obj, filename, **kwargs)
+
+    if isinstance(file_obj, str):
+        handler.dump_to_path(obj, file_obj, **kwargs)
+    elif hasattr(file_obj, 'write'):
+        handler.dump_to_fileobj(obj, file_obj, **kwargs)
+    else:
+        raise TypeError(
+            'file_obj must be a str of a file-like object, but got {}'.format(
+                type(file_obj)))
 
 
-def loads(bytes, file_format='pickle', **kwargs):
+def loads(string, file_format='pickle', **kwargs):
     """
-    Load data from json/yaml/pickle bytes objects.
+    Load data from json/yaml/pickle string.
 
     Args:
-        bytes (str or btyearray): bytes object of the file
-        file_format (str, optional): format of the bytes object. Only supports
+        string (str or btyearray): string of the file
+        file_format (str, optional): format of the string. Only supports
             `pickle/pkl` currently.
 
     Returns:
@@ -74,21 +88,21 @@ def loads(bytes, file_format='pickle', **kwargs):
     """
     _check_format(file_format, ['pickle', 'pkl'])
     handler = file_handlers[file_format]
-    return handler.load_from_bytes(bytes, **kwargs)
+    return handler.load_from_str(string, **kwargs)
 
 
 def dumps(obj, file_format='pickle', **kwargs):
     """
-    Dump data to json/yaml/pickle bytes objects.
+    Dump data to json/yaml/pickle string.
 
     Args:
         obj (any): the python object to be dumped
-        file_format (str, optional): format of the bytes object. Currently
-            supported formats include `json`, `yaml/yml` and `pickle/pkl`.
+        file_format (str, optional): format of the string. Currently supported
+            formats include `json`, `yaml/yml` and `pickle/pkl`.
 
     Returns:
         string (str): the string of the dumped file
     """
     _check_format(file_format, file_handlers)
     handler = file_handlers[file_format]
-    return handler.dump_to_bytes(obj, **kwargs)
+    return handler.dump_to_str(obj, **kwargs)
