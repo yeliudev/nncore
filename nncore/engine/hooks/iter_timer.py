@@ -38,7 +38,7 @@ class IterTimerHook(Hook):
 
         if num_iter > 0 and train_time > 0:
             engine.logger.info(
-                'Overall training speed: {} iterations in {} ({:.4f}s / it)'.
+                'Overall training speed: {} iterations in {} ({:.4f} s / it)'.
                 format(num_iter, timedelta(seconds=int(train_time)),
                        train_time / num_iter))
 
@@ -49,7 +49,10 @@ class IterTimerHook(Hook):
     @master_only
     def before_epoch(self, engine):
         for key in list(engine.buffer.keys()):
-            if key.startswith('_') and key.endswith('_time'):
+            if key in [
+                    '_total_time', '_step_time', '_data_time', '_train_time',
+                    '_val_time'
+            ]:
                 engine.buffer.clear(key)
 
     @master_only

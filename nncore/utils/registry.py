@@ -1,17 +1,15 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-from inspect import isclass
-
 from .misc import bind_getter
 
 
 @bind_getter('name', 'items')
 class Registry(object):
     """
-    A registry to map strings to classes.
+    A registry to map strings to objects.
 
-    Records in the `self._items` maintain the registry of classes. For each
-    record, the key is the class name and the value is the class itself. The
+    Records in the `self._items` maintain the registry of objects. For each
+    record, the key is the object name and the value is the object itself. The
     method `self.register` can be used as a decorator or a normal function.
 
     Example:
@@ -44,16 +42,13 @@ class Registry(object):
                                               self._name,
                                               list(self._items.keys()))
 
-    def register(self, obj_cls):
-        if not isclass(obj_cls):
-            raise TypeError('obj_cls must be a class, but got {}'.format(
-                type(obj_cls)))
-        name = obj_cls.__name__
+    def register(self, obj):
+        name = obj.__name__
         if name in self._items:
             raise KeyError('{} is already registered in {}'.format(
                 name, self.name))
-        self._items[name] = obj_cls
-        return obj_cls
+        self._items[name] = obj
+        return obj
 
     def get(self, key):
         return self.__getattr__(key)

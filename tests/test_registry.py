@@ -41,9 +41,6 @@ def test_registry():
         "Registry(name=cat, items=['Munchkin', 'BritishShorthair'])"
     ]
 
-    with pytest.raises(TypeError):
-        CATS.register(0)
-
 
 def test_build_object():
     BACKBONES = nncore.Registry('backbone')

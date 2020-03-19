@@ -166,8 +166,6 @@ class Engine(object):
 
     def run_stage(self):
         self._call_hook('before_stage')
-        if self.period == 0:
-            self.build_optimizer(self.cur_stage.optimizer)
 
         n = getattr(self.cur_stage, 'val_interval', 0)
         while self.period < self.cur_stage.epochs:
@@ -184,6 +182,8 @@ class Engine(object):
         self._call_hook('before_launch')
 
         while self._stage < self._max_stages:
+            if self.period == 0:
+                self.build_optimizer(self.cur_stage.optimizer)
             self.run_stage()
 
         self._call_hook('after_launch')

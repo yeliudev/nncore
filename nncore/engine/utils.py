@@ -38,7 +38,7 @@ def load_url_dist(url):
 
 def get_checkpoint(filename, map_location=None):
     """
-    Get checkpoint from file or url.
+    Get checkpoint from a file or a url.
 
     Args:
         filename (str): a filepath or URI
@@ -119,18 +119,17 @@ def load_checkpoint(model,
                     map_location=None,
                     strict=False,
                     logger=None):
-    """Load checkpoint from a file or URI.
+    """
+    Load checkpoint from a file or URI.
 
     Args:
-        model (Module): Module to load checkpoint.
-        filename (str): Either a filepath or URL or modelzoo://xxxxxxx.
-        map_location (str): Same as :func:`torch.load`.
-        strict (bool): Whether to allow different params for the model and
-            checkpoint.
-        logger (:mod:`logging.Logger` or None): The logger for error message.
-
-    Returns:
-        dict or OrderedDict: The loaded checkpoint.
+        model (Module): module to load checkpoint
+        filename (str): either a filepath or URL or torchvision://<model_name>
+        map_location (str, optional): same as :func:`torch.load`
+        strict (bool, optional): whether to allow different params for the
+            model and checkpoint
+        logger (:mod:`logging.Logger` or None, optional): the logger for error
+            message
     """
     checkpoint = get_checkpoint(filename, map_location=map_location)
 
@@ -202,7 +201,7 @@ def publish_model(in_file,
         hash_type (str, optional): type of the hash algorithm. Currently
             supported algorithms include `md5`, `sha1`, `sha224`, `sha256`,
             `sha384`, `sha512`, `blake2b`, `blake2s`, `sha3_224`, `sha3_256`,
-            `sha3_384`, `sha3_512`, `shake_128`, and `shake_256`.
+            `sha3_384`, `sha3_512`, `shake_128` and `shake_256`.
     """
     checkpoint = torch.load(in_file, map_location='cpu')
     for key in keys_to_remove:

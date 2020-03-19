@@ -2,11 +2,15 @@
 
 from .base import HOOKS, Hook
 from .checkpoint import CheckpointHook
-from .logger import CommandLineWriter, JSONWriter, LoggerHook
+from .events import CommandLineWriter, EventWriterHook, JSONWriter
+from .iter_timer import IterTimerHook
+from .lr_updater import LrUpdaterHook
+from .memory import EmptyCacheHook
 from .optimizer import DistOptimizerHook, OptimizerHook
-from .timer import IterTimerHook
+from .sampler_seed import DistSamplerSeedHook
 
 __all__ = [
-    'HOOKS', 'Hook', 'CheckpointHook', 'CommandLineWriter', 'JSONWriter',
-    'LoggerHook', 'DistOptimizerHook', 'OptimizerHook', 'IterTimerHook'
+    'HOOKS', 'Hook', 'CheckpointHook', 'CommandLineWriter', 'EventWriterHook',
+    'JSONWriter', 'IterTimerHook', 'LrUpdaterHook', 'EmptyCacheHook',
+    'DistOptimizerHook', 'OptimizerHook', 'DistSamplerSeedHook'
 ]
