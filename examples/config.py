@@ -13,7 +13,7 @@ hooks = [
     dict(
         type='LoggerHook',
         interval=100,
-        writers=[dict(type='MetricWriter'),
+        writers=[dict(type='CommandLineWriter'),
                  dict(type='JSONWriter')])
 ]
 

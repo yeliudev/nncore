@@ -64,15 +64,6 @@ class Buffer(object):
         """
         return len(self._data[key])
 
-    def latest(self, key):
-        """
-        Return the latest value added to the buffer.
-
-        Args:
-            key (str): the key of the values
-        """
-        return self._data[key][-1]
-
     def clear(self, key=None):
         """
         Clear the buffer according to the key.
@@ -86,6 +77,15 @@ class Buffer(object):
         elif isinstance(key, str) and key in self._data:
             del self._data[key]
 
+    def latest(self, key):
+        """
+        Return the latest value added to the buffer.
+
+        Args:
+            key (str): the key of the values
+        """
+        return self._data[key][-1]
+
     def median(self, key, window_size=None):
         """
         Return the median of the latest `window_size` values in the buffer.
@@ -98,12 +98,12 @@ class Buffer(object):
         Returns:
             median (number): the median of the latest `window_size` values
         """
-        if window_size is None:
+        if window_size is None or window_size > len(self._data[key]):
             window_size = len(self._data[key])
 
         return torch.Tensor(self._data[key][-window_size:]).median().item()
 
-    def avg(self, key, window_size=None):
+    def mean(self, key, window_size=None):
         """
         Return the mean of the latest `window_size` values in the buffer.
 
@@ -113,9 +113,26 @@ class Buffer(object):
                 to be computed
 
         Returns:
-            avg (number): the average of the latest `window_size` values
+            mean (number): the mean of the latest `window_size` values
         """
-        if window_size is None:
+        if window_size is None or window_size > len(self._data[key]):
             window_size = len(self._data[key])
 
         return torch.Tensor(self._data[key][-window_size:]).mean().item()
+
+    def sum(self, key, window_size=None):
+        """
+        Return the sum of the latest `window_size` values in the buffer.
+
+        Args:
+            key (str): the key of the values
+            window_size (int or None, optional): the window_size of the values
+                to be computed
+
+        Returns:
+            sum (number): the sum of the latest `window_size` values
+        """
+        if window_size is None or window_size > len(self._data[key]):
+            window_size = len(self._data[key])
+
+        return torch.Tensor(self._data[key][-window_size:]).sum().item()

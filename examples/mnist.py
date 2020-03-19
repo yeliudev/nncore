@@ -1,5 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+import torch
 import torch.nn as nn
 import torchvision
 from torch.utils.data import DataLoader
@@ -37,8 +38,12 @@ class LeNet(nn.Module):
         x = self.convs(x)
         x = x.view(x.size()[0], -1)
         x = self.fcs(x)
+
+        _, pred = torch.max(x, dim=1)
+        acc = torch.eq(pred, labels).sum() / labels.numel()
         loss = self.criterion(x, labels)
-        return dict(loss=loss)
+
+        return dict(acc=acc, loss=loss)
 
 
 def main():

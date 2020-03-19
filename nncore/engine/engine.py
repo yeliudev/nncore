@@ -9,8 +9,8 @@ from .buffer import Buffer
 from .hooks import HOOKS, Hook
 
 
-@nncore.bind_getter('hooks', 'max_stages', 'max_epochs', 'start_iter', 'stage',
-                    'epoch', 'iter', 'step')
+@nncore.bind_getter('hooks', 'max_stages', 'max_epochs', 'max_iters',
+                    'start_iter', 'stage', 'epoch', 'iter', 'step')
 class Engine(object):
 
     def __init__(self,
@@ -54,6 +54,7 @@ class Engine(object):
     def flush_states(self):
         self._max_stages = len(self.stages)
         self._max_epochs = sum(stage.epochs for stage in self.stages)
+        self._max_iters = len(self.data_loaders['train']) * self._max_epochs
         self._start_iter = 0
         self._stage = 0
         self._epoch = 0
@@ -149,13 +150,17 @@ class Engine(object):
         self._epoch += 1
 
     def val_epoch(self):
+        self.logger.info('Validating...')
+
         self.model.eval()
         self._call_hook('before_val_epoch')
 
         self.data_loader = self.data_loaders['val']
+        prog_bar = nncore.ProgressBar(len(self.data_loader))
         for step, data in enumerate(self.data_loader):
             self._step = step
             self.val_iter(data)
+            prog_bar.update()
 
         self._call_hook('after_val_epoch')
 
