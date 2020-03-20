@@ -54,8 +54,9 @@ class OptimizerHook(Hook):
 
     def after_train_iter(self, engine):
         engine.optimizer.zero_grad()
-        engine.losses[engine.cur_stage.loss].backward()
-        grad_clip = engine.cur_stage.grad_clip
+        loss = engine.cur_stage.getdefault('loss', 'loss')
+        engine.losses[loss].backward()
+        grad_clip = engine.cur_stage.getdefault('grad_clip', None)
         if grad_clip is not None:
             self.clip_grads(engine.model.parameters(), grad_clip)
         engine.optimizer.step()
@@ -71,10 +72,11 @@ class DistOptimizerHook(OptimizerHook):
 
     def after_train_iter(self, engine):
         engine.optimizer.zero_grad()
-        engine.losses[engine.cur_stage.loss].backward()
+        loss = engine.cur_stage.getdefault('loss', 'loss')
+        engine.losses[loss].backward()
         _allreduce_grads(engine.model.parameters(), self._coalesce,
                          self._bucket_size_mb)
-        grad_clip = engine.cur_stage.grad_clip
+        grad_clip = engine.cur_stage.getdefault('grad_clip', None)
         if grad_clip is not None:
             self.clip_grads(engine.model.parameters(), grad_clip)
         engine.optimizer.step()

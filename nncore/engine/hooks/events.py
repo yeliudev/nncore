@@ -19,7 +19,7 @@ def _collect_metrics(engine, mode, window_size):
 
     metrics['mode'] = mode
     metrics['epoch'] = engine.epoch
-    metrics['iter'] = engine.step
+    metrics['iter'] = engine.iter_in_epoch
 
     if len(engine.optimizer.param_groups) == 1:
         metrics['lr'] = round(engine.optimizer.param_groups[0]['lr'], 4)
@@ -32,7 +32,7 @@ def _collect_metrics(engine, mode, window_size):
         metrics['epoch'] += 1
         metrics['iter'] += 1
         metrics['time'] = engine.buffer.mean(
-            '_step_time', window_size=window_size)
+            '_iter_time', window_size=window_size)
         metrics['data_time'] = engine.buffer.mean(
             '_data_time', window_size=window_size)
 
@@ -123,8 +123,8 @@ class EventWriterHook(Hook):
 
     @master_only
     def after_train_iter(self, engine):
-        if not self.every_n_iters(
-                engine, self._interval) and not self.end_of_epoch(engine):
+        if not self.last_iter_in_epoch(engine) and not self.every_n_iters(
+                engine, self._interval):
             return
 
         self._log(engine, 'train')

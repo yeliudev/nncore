@@ -13,7 +13,7 @@ class IterTimerHook(Hook):
     def __init__(self):
         super(IterTimerHook, self).__init__()
         self._total_timer = Timer()
-        self._step_timer = Timer()
+        self._iter_timer = Timer()
         self._data_timer = Timer()
         self._train_timer = Timer()
         self._val_timer = Timer()
@@ -34,7 +34,7 @@ class IterTimerHook(Hook):
         val_time = self._val_timer.seconds()
         hook_time = total_time - train_time - val_time
 
-        num_iter = engine.iter + 1 - engine.start_iter
+        num_iter = engine.iter - engine.start_iter
 
         if num_iter > 0 and train_time > 0:
             engine.logger.info(
@@ -50,7 +50,7 @@ class IterTimerHook(Hook):
     def before_epoch(self, engine):
         for key in list(engine.buffer.keys()):
             if key in [
-                    '_total_time', '_step_time', '_data_time', '_train_time',
+                    '_total_time', '_iter_time', '_data_time', '_train_time',
                     '_val_time'
             ]:
                 engine.buffer.clear(key)
@@ -60,7 +60,7 @@ class IterTimerHook(Hook):
         data_time = self._data_timer.seconds()
         engine.buffer.update('_data_time', data_time)
 
-        self._step_timer.reset()
+        self._iter_timer.reset()
         self._train_timer.resume()
 
     @master_only
@@ -68,8 +68,8 @@ class IterTimerHook(Hook):
         total_time = self._total_timer.seconds()
         engine.buffer.update('_total_time', total_time)
 
-        step_time = self._step_timer.seconds()
-        engine.buffer.update('_step_time', step_time)
+        step_time = self._iter_timer.seconds()
+        engine.buffer.update('_iter_time', step_time)
 
         train_time = self._train_timer.seconds()
         engine.buffer.update('_train_time', train_time)
@@ -82,7 +82,7 @@ class IterTimerHook(Hook):
         data_time = self._data_timer.seconds()
         engine.buffer.update('_data_time', data_time)
 
-        self._step_timer.reset()
+        self._iter_timer.reset()
         self._val_timer.resume()
 
     @master_only
@@ -90,8 +90,8 @@ class IterTimerHook(Hook):
         total_time = self._total_timer.seconds()
         engine.buffer.update('_total_time', total_time)
 
-        step_time = self._step_timer.seconds()
-        engine.buffer.update('_step_time', step_time)
+        step_time = self._iter_timer.seconds()
+        engine.buffer.update('_iter_time', step_time)
 
         val_time = self._val_timer.seconds()
         engine.buffer.update('_val_time', val_time)

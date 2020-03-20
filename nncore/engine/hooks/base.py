@@ -15,8 +15,8 @@ class Hook(object):
     All the hooks will be called one by one according to the order in
     `engine.hooks`.
 
-    Note that :meth:`self.on_register` will be called automatically when the
-    hook is being registerd into an engine.
+    Note that :meth:`self.on_register` will be called when the hook is being
+    registerd into an engine.
     """
 
     def __init__(self, name=None):
@@ -79,17 +79,27 @@ class Hook(object):
     def after_val_iter(self, engine):
         self.after_iter(engine)
 
-    def end_of_stage(self, engine):
-        return engine.period + 1 == engine.cur_stage.epochs
+    def first_epoch_in_stage(self, engine):
+        return engine.epoch_in_stage == 0
 
-    def end_of_epoch(self, engine):
-        return engine.step + 1 == len(engine.data_loader)
+    def first_iter_in_stage(self, engine):
+        return engine.iter_in_stage == 0
+
+    def first_iter_in_epoch(self, engine):
+        return engine.iter_in_epoch == 0
+
+    def last_epoch_in_stage(self, engine):
+        return engine.epoch_in_stage + 1 == engine.cur_stage.epochs
+
+    def last_iter_in_stage(self, engine):
+        return engine.iter_in_stage + 1 == len(
+            engine.data_loaders['train']) * engine.cur_stage.epochs
+
+    def last_iter_in_epoch(self, engine):
+        return engine.iter_in_epoch + 1 == len(engine.data_loaders['train'])
 
     def every_n_epochs(self, engine, n):
         return (engine.epoch + 1) % n == 0 if n > 0 else False
 
     def every_n_iters(self, engine, n):
         return (engine.iter + 1) % n == 0 if n > 0 else False
-
-    def every_n_steps(self, engine, n):
-        return (engine.step + 1) % n == 0 if n > 0 else False

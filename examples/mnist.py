@@ -49,6 +49,7 @@ class LeNet(nn.Module):
 def main():
     # Load config from files
     cfg = nncore.Config.from_file('examples/config.py')
+    cfg.freeze()
 
     # Prepare the dataset and model
     transform = torchvision.transforms.Compose([

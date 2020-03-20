@@ -10,7 +10,7 @@ from .hooks import HOOKS, Hook
 
 
 @nncore.bind_getter('hooks', 'max_stages', 'max_epochs', 'max_iters',
-                    'start_iter', 'stage', 'epoch', 'iter', 'step')
+                    'start_iter', 'stage', 'epoch', 'iter')
 class Engine(object):
 
     def __init__(self,
@@ -43,13 +43,24 @@ class Engine(object):
         return self.stages[self._stage]
 
     @property
-    def period(self):
+    def epoch_in_stage(self):
         cumsum = 0
         for stage in self.stages:
             if self._epoch + 1 <= cumsum + stage.epochs:
                 return self._epoch - cumsum
             cumsum += stage.epochs
         return self.stages[-1].epochs
+
+    @property
+    def iter_in_stage(self):
+        cumsum = 0
+        for i in range(self._stage):
+            cumsum += len(self.data_loaders['train']) * self.stages[i].epochs
+        return self._iter - cumsum
+
+    @property
+    def iter_in_epoch(self):
+        return self._iter - len(self.data_loaders['train']) * self._epoch
 
     def flush_states(self):
         self._max_stages = len(self.stages)
@@ -59,7 +70,6 @@ class Engine(object):
         self._stage = 0
         self._epoch = 0
         self._iter = 0
-        self._step = 0
 
     def _call_hook(self, name):
         for hook in self._hooks.values():
@@ -138,12 +148,12 @@ class Engine(object):
         self._call_hook('after_val_iter')
 
     def train_epoch(self):
+        self.mode = 'train'
         self.model.train()
+        self.data_loader = self.data_loaders['train']
         self._call_hook('before_train_epoch')
 
-        self.data_loader = self.data_loaders['train']
-        for step, data in enumerate(self.data_loader):
-            self._step = step
+        for data in self.data_loader:
             self.train_iter(data)
 
         self._call_hook('after_train_epoch')
@@ -152,25 +162,27 @@ class Engine(object):
     def val_epoch(self):
         self.logger.info('Validating...')
 
+        self.mode = 'val'
         self.model.eval()
+        self.data_loader = self.data_loaders['val']
         self._call_hook('before_val_epoch')
 
-        self.data_loader = self.data_loaders['val']
         prog_bar = nncore.ProgressBar(len(self.data_loader))
-        for step, data in enumerate(self.data_loader):
-            self._step = step
+        for data in self.data_loader:
             self.val_iter(data)
             prog_bar.update()
 
         self._call_hook('after_val_epoch')
 
     def run_stage(self):
+        if self.epoch_in_stage == 0:
+            self.build_optimizer(self.cur_stage.optimizer)
         self._call_hook('before_stage')
 
-        n = getattr(self.cur_stage, 'val_interval', 0)
-        while self.period < self.cur_stage.epochs:
+        interval = self.cur_stage.getdefault('val_interval', 0)
+        while self.epoch_in_stage < self.cur_stage.epochs:
             self.train_epoch()
-            if n > 0 and self.period % n == 0:
+            if interval > 0 and self.epoch_in_stage % interval == 0:
                 self.val_epoch()
 
         self._call_hook('after_stage')
@@ -182,8 +194,6 @@ class Engine(object):
         self._call_hook('before_launch')
 
         while self._stage < self._max_stages:
-            if self.period == 0:
-                self.build_optimizer(self.cur_stage.optimizer)
             self.run_stage()
 
         self._call_hook('after_launch')

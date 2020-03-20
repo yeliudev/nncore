@@ -23,6 +23,16 @@ class CfgNode(OrderedDict):
     or several named parameters.
     """
 
+    @staticmethod
+    def _set_freeze_state(obj, state):
+        if isinstance(obj, CfgNode):
+            super(CfgNode, obj).__setattr__('_frozen', state)
+            for v in obj.values():
+                CfgNode._set_freeze_state(v, state)
+        elif isinstance(obj, (list, tuple)):
+            for v in obj:
+                CfgNode._set_freeze_state(v, state)
+
     def __init__(self, *args, **kwargs):
         if len(args) > 1:
             raise TypeError('too many arguments')
@@ -33,33 +43,28 @@ class CfgNode(OrderedDict):
             else:
                 raise TypeError("unsupported type '{}'".format(type(args[0])))
 
+        super(CfgNode, self).__setattr__('_frozen', False)
         for k, v in kwargs.items():
-            self[k] = self._parse_value(v)
-
-    def _parse_value(self, value):
-        if isinstance(value, dict):
-            value = self.__class__(**value)
-        elif isinstance(value, (list, tuple)):
-            value = type(value)(self._parse_value(v) for v in value)
-        elif isinstance(value, MutableSequence):
-            value = [self._parse_value(v) for v in value]
-        return value
+            self[k] = v
 
     def __setitem__(self, key, value):
+        self._check_freeze_state()
         super(CfgNode, self).__setitem__(key, self._parse_value(value))
 
     def __getattr__(self, key):
-        return self.__getitem__(key)
+        return self[key]
 
     def __setattr__(self, key, value):
         if hasattr(self.__class__, key):
             raise AttributeError("attribute '{}' is read-only".format(key))
+        self._check_freeze_state()
         self[key] = value
 
     def __getstate__(self):
         return self
 
     def __setstate__(self, state):
+        self._check_freeze_state()
         self.update(state)
 
     def __repr__(self):
@@ -71,6 +76,25 @@ class CfgNode(OrderedDict):
         for key, value in self.items():
             other[deepcopy(key, memo)] = deepcopy(value, memo)
         return other
+
+    def _parse_value(self, value):
+        if isinstance(value, dict):
+            value = self.__class__(**value)
+        elif isinstance(value, (list, tuple)):
+            value = type(value)(self._parse_value(v) for v in value)
+        elif isinstance(value, MutableSequence):
+            value = list(self._parse_value(v) for v in value)
+        return value
+
+    def _check_freeze_state(self):
+        if self._frozen:
+            raise RuntimeError('can not modify a frozen cfgnode')
+
+    def freeze(self):
+        self._set_freeze_state(self, True)
+
+    def unfreeze(self):
+        self._set_freeze_state(self, False)
 
     def copy(self):
         return deepcopy(self)
@@ -89,24 +113,19 @@ class CfgNode(OrderedDict):
             else:
                 self[k].update(v)
 
-    def setdefault(self, key, value):
-        if key in self:
-            return self[key]
-        else:
-            self[key] = value
-            return value
+    def getdefault(self, key, default):
+        return self[key] if key in self else default
 
-    def to_dict(self):
-        base = dict()
-        for key, value in self.items():
-            if isinstance(value, type(self)):
-                base[key] = value.to_dict()
-            elif isinstance(value, (list, tuple)):
-                base[key] = type(value)(
-                    item.to_dict() if isinstance(item, type(self)) else item
-                    for item in value)
+    def to_dict(self, ordered=False):
+        base = OrderedDict() if ordered else dict()
+        for k, v in self.items():
+            if isinstance(v, type(self)):
+                base[k] = v.to_dict()
+            elif isinstance(v, (list, tuple)):
+                base[k] = type(v)(
+                    o.to_dict() if isinstance(o, type(self)) else o for o in v)
             else:
-                base[key] = value
+                base[k] = v
         return base
 
     def to_json(self):
@@ -196,8 +215,23 @@ class Config(object):
     def __iter__(self):
         return iter(self._cfg)
 
-    def setdefault(self, key, value):
-        return self._cfg.setdefault(key, value)
+    def freeze(self):
+        self._cfg.freeze()
 
-    def to_dict(self):
-        return self._cfg.to_dict()
+    def unfreeze(self):
+        self._cfg.unfreeze()
+
+    def getdefault(self, key, default):
+        return self._cfg.getdefault(key, default)
+
+    def setdefault(self, key, default):
+        return self._cfg.setdefault(key, default)
+
+    def copy(self):
+        return self._cfg.copy()
+
+    def pop(self, key, default):
+        return self._cfg.pop(key, default)
+
+    def to_dict(self, ordered=False):
+        return self._cfg.to_dict(ordered=ordered)
