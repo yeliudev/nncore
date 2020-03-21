@@ -9,6 +9,8 @@ from torchvision.datasets import MNIST
 import nncore
 from nncore.engine import Engine
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 
 class LeNet(nn.Module):
 
@@ -34,7 +36,7 @@ class LeNet(nn.Module):
         self.criterion = nn.CrossEntropyLoss()
 
     def forward(self, data, **kwargs):
-        x, labels = data
+        x, labels = data[0].to(device), data[1].to(device)
         x = self.convs(x)
         x = x.view(labels.numel(), -1)
         x = self.fcs(x)
@@ -64,7 +66,7 @@ def main():
     testloader = DataLoader(test, batch_size=64, shuffle=False, num_workers=2)
 
     data_loaders = dict(train=trainloader, val=testloader)
-    model = LeNet()
+    model = LeNet().to(device)
 
     # Initialize and launch engine
     engine = Engine(model, data_loaders, **cfg)

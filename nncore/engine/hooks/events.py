@@ -62,7 +62,7 @@ class CommandLineWriter(object):
 
             if torch.cuda.is_available():
                 mem = torch.cuda.max_memory_allocated()
-                mem_mb = torch.IntTensor([mem / (1024 * 1024)]).to('cuda')
+                mem_mb = torch.IntTensor([mem / (1024 * 1024)]).cuda()
                 if get_world_size() > 1:
                     dist.reduce(mem_mb, 0, op=dist.ReduceOp.MAX)
                 log += 'memory: {}, '.format(mem_mb.item())

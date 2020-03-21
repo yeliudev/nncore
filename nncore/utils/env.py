@@ -134,31 +134,31 @@ def collect_env_info():
     cuda_home, cuda_arch_list, nvcc, devices = _collect_cuda_env()
     if cuda_home is not None:
         _c.append(('CUDA_HOME', cuda_home))
-        _c.append(('TORCH_CUDA_ARCH_LIST', cuda_arch_list or '<not found>'))
-        _c.append(('NVCC', nvcc or '<not found>'))
+        _c.append(('TORCH_CUDA_ARCH_LIST', cuda_arch_list or '<not-found>'))
+        _c.append(('NVCC', nvcc or '<not-found>'))
         if devices is not None:
             for name, ids in devices.items():
                 _c.append(('GPU ' + ','.join(ids), name))
         else:
-            _c.append(('GPU', '<not found>'))
+            _c.append(('GPU', '<not-found>'))
     else:
-        _c.append(('CUDA', '<not found>'))
+        _c.append(('CUDA', '<not-found>'))
 
     # pytorch info
     torch_env, torch_debug_build = _collect_torch_env()
-    _c.append(('PyTorch', torch_env or '<not found>'))
+    _c.append(('PyTorch', torch_env or '<not-found>'))
     if torch_debug_build is not None:
         _c.append(('PyTorch debug build', torch_debug_build))
 
     # torchvison info
     torchvision_env, torchvision_arch_flags = _collect_torchvision_env()
-    _c.append(('torchvision', torchvision_env or '<not found>'))
+    _c.append(('torchvision', torchvision_env or '<not-found>'))
     if torchvision_arch_flags is not None:
         _c.append(('torchvision arch flags', torchvision_arch_flags))
 
     # other libraries
     for module in ['nncore', 'numpy', 'PIL', 'cv2']:
-        _c.append((module, _get_module_version(module) or '<not found>'))
+        _c.append((module, _get_module_version(module) or '<not-found>'))
 
     env_info = tabulate(_c)
     torch_build_env = _collect_torch_build_env()
