@@ -17,12 +17,12 @@ class LeNet(nn.Module):
 
         # yapf:disable
         self.convs = nn.Sequential(
-            nn.Conv2d(1, 6, 5, stride=1, padding=2),
+            nn.Conv2d(1, 6, 5, padding=1),
             nn.ReLU(inplace=True),
             nn.MaxPool2d(2, stride=2),
-            nn.Conv2d(6, 16, 5),
+            nn.Conv2d(6, 16, 5, padding=1),
             nn.ReLU(inplace=True),
-            nn.MaxPool2d(2, 2))
+            nn.MaxPool2d(2, stride=2))
         self.fcs = nn.Sequential(
             nn.Linear(16 * 5 * 5, 120),
             nn.ReLU(inplace=True),
@@ -36,14 +36,14 @@ class LeNet(nn.Module):
     def forward(self, data, **kwargs):
         x, labels = data
         x = self.convs(x)
-        x = x.view(x.size()[0], -1)
+        x = x.view(labels.numel(), -1)
         x = self.fcs(x)
 
         _, pred = torch.max(x, dim=1)
-        acc = torch.eq(pred, labels).sum() / labels.numel()
+        acc = torch.eq(pred, labels).sum().float() / labels.numel()
         loss = self.criterion(x, labels)
 
-        return dict(acc=acc, loss=loss)
+        return dict(_num_samples=labels.numel(), acc=acc, loss=loss)
 
 
 def main():
@@ -61,7 +61,7 @@ def main():
     trainloader = DataLoader(train, batch_size=16, shuffle=True, num_workers=2)
 
     test = MNIST('data', train=False, transform=transform, download=True)
-    testloader = DataLoader(test, batch_size=16, shuffle=False, num_workers=2)
+    testloader = DataLoader(test, batch_size=64, shuffle=False, num_workers=2)
 
     data_loaders = dict(train=trainloader, val=testloader)
     model = LeNet()

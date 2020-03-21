@@ -22,10 +22,10 @@ def _collect_metrics(engine, mode, window_size):
     metrics['iter'] = engine.iter_in_epoch
 
     if len(engine.optimizer.param_groups) == 1:
-        metrics['lr'] = round(engine.optimizer.param_groups[0]['lr'], 4)
+        metrics['lr'] = round(engine.optimizer.param_groups[0]['lr'], 5)
     else:
         metrics['lr'] = [
-            round(group['lr'], 4) for group in engine.optimizer.param_groups
+            round(group['lr'], 5) for group in engine.optimizer.param_groups
         ]
 
     if mode == 'train':
@@ -42,7 +42,7 @@ def _collect_metrics(engine, mode, window_size):
 @WRITERS.register
 class CommandLineWriter(object):
 
-    _t_log = 'Epoch [{}][{}/{}] lr: {:.4f}, eta: {}, time: {:.3f}, data_time: {:.3f}, '  # noqa:E501
+    _t_log = 'Epoch [{}][{}/{}] lr: {:.5f}, eta: {}, time: {:.3f}, data_time: {:.3f}, '  # noqa:E501
     _v_log = 'Epoch({}) [{}][{}] '
 
     def write(self, engine, mode, window_size):
@@ -62,8 +62,7 @@ class CommandLineWriter(object):
 
             if torch.cuda.is_available():
                 mem = torch.cuda.max_memory_allocated()
-                mem_mb = torch.IntTensor([mem / (1024 * 1024)],
-                                         device=torch.device('cuda'))
+                mem_mb = torch.IntTensor([mem / (1024 * 1024)]).to('cuda')
                 if get_world_size() > 1:
                     dist.reduce(mem_mb, 0, op=dist.ReduceOp.MAX)
                 log += 'memory: {}, '.format(mem_mb.item())
@@ -75,7 +74,7 @@ class CommandLineWriter(object):
         for key in engine.buffer.keys():
             if not key.startswith('_'):
                 extra.append('{}: {:.4f}'.format(
-                    key, engine.buffer.mean(key, window_size=window_size)))
+                    key, engine.buffer.avg(key, window_size=window_size)))
 
         log += ', '.join(extra)
         engine.logger.info(log)
@@ -96,7 +95,7 @@ class JSONWriter(object):
 
         for key in engine.buffer.keys():
             if not key.startswith('_') and not key.endswith('_'):
-                metrics[key] = engine.buffer.mean(key, window_size=window_size)
+                metrics[key] = engine.buffer.avg(key, window_size=window_size)
 
         filename = osp.join(engine.work_dir, self._filename)
         with open(filename, 'a+') as f:

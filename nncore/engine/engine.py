@@ -7,6 +7,7 @@ import torch
 import nncore
 from .buffer import Buffer
 from .hooks import HOOKS, Hook
+from .utils import get_checkpoint, load_checkpoint
 
 
 @nncore.bind_getter('hooks', 'max_stages', 'max_epochs', 'max_iters',
@@ -94,7 +95,6 @@ class Engine(object):
         if hook.name in self._hooks:
             raise ValueError("hook '{}' exists".format(hook.name))
 
-        hook.on_register(self)
         self._hooks[hook.name] = hook
 
         if before is not None:
@@ -121,6 +121,53 @@ class Engine(object):
             self.optimizer = optimizer
         else:
             raise TypeError("invalid optimizer: {}".format(optimizer))
+
+    def load_checkpoint(self, checkpoint, strict=False):
+        load_checkpoint(
+            self.model,
+            checkpoint,
+            map_location=next(self.model.parameters()).device,
+            strict=strict,
+            logger=self.logger)
+
+        if isinstance(checkpoint, str):
+            self.logger.info('Loaded checkpoint from {}'.format(checkpoint))
+        else:
+            self.logger.info('Loaded checkpoint')
+
+    def resume(self, checkpoint, with_optimizer=True, strict=False):
+        if isinstance(checkpoint, str):
+            checkpoint = get_checkpoint(
+                checkpoint, map_location=next(self.model.parameters()).device)
+
+        stages = [nncore.CfgNode(stage) for stage in self.stages]
+        if self.stages != stages:
+            self.logger.warn(
+                'Stages in the engine and checkpoint are mismatch')
+
+        load_checkpoint(
+            self.model, checkpoint, strict=strict, logger=self.logger)
+
+        self._epoch = checkpoint['meta']['epoch']
+        self._iter = self._start_iter = checkpoint['meta']['iter']
+
+        cumsum, count = 0, 0
+        for stage in self.stages:
+            if self._epoch + 1 <= cumsum + stage.epochs:
+                break
+            count += 1
+        self._stage = count
+
+        if with_optimizer:
+            if 'optimizer' in checkpoint:
+                self.build_optimizer(self.cur_stage.optimizer)
+                self.optimizer.load_state_dict(checkpoint['optimizer'])
+                self._res_optim = True
+            else:
+                self.logger.warn('Optimizer not found in the checkpoint')
+
+        self.logger.info('Resumed stage {}, epoch {}, iter {}'.format(
+            self._stage + 1, self._epoch, self._iter))
 
     def train_iter(self, data):
         self._call_hook('before_train_iter')
@@ -175,8 +222,15 @@ class Engine(object):
         self._call_hook('after_val_epoch')
 
     def run_stage(self):
-        if self.epoch_in_stage == 0:
+        self.logger.info('Stage: {}, epochs: {}, optimizer: {}'.format(
+            self._stage + 1, self.cur_stage.epochs,
+            self.cur_stage.optimizer.type if isinstance(
+                self.cur_stage.optimizer,
+                dict) else self.cur_stage.optimizer.__class__.__name__))
+
+        if self.epoch_in_stage == 0 and not getattr(self, '_res_optim', False):
             self.build_optimizer(self.cur_stage.optimizer)
+
         self._call_hook('before_stage')
 
         interval = self.cur_stage.getdefault('val_interval', 0)

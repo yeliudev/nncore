@@ -115,7 +115,7 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
 
 def load_checkpoint(model,
-                    filename,
+                    checkpoint,
                     map_location=None,
                     strict=False,
                     logger=None):
@@ -124,22 +124,27 @@ def load_checkpoint(model,
 
     Args:
         model (Module): module to load checkpoint
-        filename (str): either a filepath or URL or torchvision://<model_name>
+        checkpoint (dict or OrderedDict or str): either a checkpoint file or
+            filepath or URL or torchvision://<model_name>
         map_location (str, optional): same as :func:`torch.load`
         strict (bool, optional): whether to allow different params for the
-            model and checkpoint
+            model and checkpoint. If True, raise an error when the params do
+            not match exactly.
         logger (:mod:`logging.Logger` or None, optional): the logger for error
             message
     """
-    checkpoint = get_checkpoint(filename, map_location=map_location)
+    if isinstance(checkpoint, str):
+        checkpoint = get_checkpoint(checkpoint, map_location=map_location)
+    elif not isinstance(checkpoint, dict):
+        raise ValueError("checkpoint must be a dict or str, but got {}".format(
+            type(checkpoint)))
 
     if isinstance(checkpoint, OrderedDict):
         state_dict = checkpoint
     elif isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
         state_dict = checkpoint['state_dict']
     else:
-        raise RuntimeError(
-            'no state_dict found in checkpoint file {}'.format(filename))
+        raise RuntimeError('no state_dict found in the checkpoint file')
 
     if list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}

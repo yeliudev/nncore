@@ -22,25 +22,24 @@ class CheckpointHook(Hook):
         self._create_symlink = create_symlink
         self._out_dir = out_dir
 
-    def on_register(self, engine):
-        if self._out_dir is None:
-            self._out_dir = engine.work_dir
-
-        if not nncore.dir_exist(self._out_dir):
-            raise ValueError("invalid out_dir: {}".format(self._out_dir))
-
     @master_only
     def after_train_epoch(self, engine):
         if not self.every_n_epochs(engine, self._interval):
             return
 
+        out_dir = self._out_dir or engine.work_dir
+        if not nncore.dir_exist(out_dir):
+            raise ValueError("invalid out_dir: {}".format(out_dir))
+
         filename = 'epoch_{}.pth'.format(engine.epoch + 1)
-        filepath = osp.join(self._out_dir, filename)
+        filepath = osp.join(out_dir, filename)
         optimizer = engine.optimizer if self._save_optimizer else None
-        meta = dict(epoch=engine.epoch + 1, iter=engine.iter)
+
+        stages = [stage.to_dict() for stage in engine.stages]
+        meta = dict(epoch=engine.epoch + 1, iter=engine.iter, stages=stages)
 
         engine.logger.info('Saving checkpoint to {}...'.format(filepath))
         save_checkpoint(engine.model, filepath, optimizer=optimizer, meta=meta)
 
         if self._create_symlink:
-            nncore.symlink(filename, osp.join(self._out_dir, 'latest.pth'))
+            nncore.symlink(filename, osp.join(out_dir, 'latest.pth'))

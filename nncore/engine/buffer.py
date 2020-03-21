@@ -136,3 +136,28 @@ class Buffer(object):
             window_size = len(self._data[key])
 
         return torch.Tensor(self._data[key][-window_size:]).sum().item()
+
+    def avg(self, key, by='_num_samples', window_size=None):
+        """
+        Return the average of the latest `window_size` values in the buffer.
+        Note that since not all the values in the buffer are count from the
+        same number of samples, the exact average of these values should be
+        computed with the number of samples.
+
+        Args:
+            key (str): the key of the values
+            by (str, optional): the key of the number of samples
+            window_size (int or None, optional): the window_size of the values
+                to be computed
+
+        Returns:
+            avg (number): the average of the latest `window_size` values
+        """
+        if window_size is None or window_size > len(self._data[key]):
+            window_size = len(self._data[key])
+
+        scalar = torch.Tensor(self._data[key][-window_size:])
+        num_samples = torch.Tensor(self._data[by][-window_size:])
+        cumsum = scalar * num_samples
+
+        return (cumsum.sum() / num_samples.sum()).item()

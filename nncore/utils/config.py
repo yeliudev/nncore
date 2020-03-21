@@ -77,6 +77,18 @@ class CfgNode(OrderedDict):
             other[deepcopy(key, memo)] = deepcopy(value, memo)
         return other
 
+    def __eq__(self, other):
+        if isinstance(other, Config):
+            return self.__eq__(other._cfg)
+        elif not isinstance(other, dict):
+            return False
+        elif list(self.keys()) != list(other.keys()):
+            return False
+        for key in self.keys():
+            if self[key] != other[key]:
+                return False
+        return True
+
     def _parse_value(self, value):
         if isinstance(value, dict):
             value = self.__class__(**value)
@@ -88,7 +100,7 @@ class CfgNode(OrderedDict):
 
     def _check_freeze_state(self):
         if self._frozen:
-            raise RuntimeError('can not modify a frozen cfgnode')
+            raise RuntimeError('can not modify a frozen CfgNode')
 
     def freeze(self):
         self._set_freeze_state(self, True)
@@ -214,6 +226,9 @@ class Config(object):
 
     def __iter__(self):
         return iter(self._cfg)
+
+    def __eq__(self, other):
+        return self._cfg.__eq__(other)
 
     def freeze(self):
         self._cfg.freeze()
