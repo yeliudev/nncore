@@ -140,8 +140,7 @@ class Engine(object):
             checkpoint = get_checkpoint(
                 checkpoint, map_location=next(self.model.parameters()).device)
 
-        stages = [nncore.CfgNode(stage) for stage in self.stages]
-        if self.stages != stages:
+        if self.stages != checkpoint['meta']['stages']:
             self.logger.warn(
                 'Stages in the engine and checkpoint are mismatch')
 
@@ -222,18 +221,23 @@ class Engine(object):
         self._call_hook('after_val_epoch')
 
     def run_stage(self):
+        if isinstance(self.cur_stage.optimizer, dict):
+            optim = self.cur_stage.optimizer.copy()
+            optim_type = optim.pop('type')
+            optim_args = ['{}: {}'.format(k, v) for k, v in optim.items()]
+            optim = '{}({})'.format(optim_type, ', '.join(optim_args))
+        else:
+            optim = '{}()'.format(self.cur_stage.optimizer.__class__.__name__)
+
         self.logger.info('Stage: {}, epochs: {}, optimizer: {}'.format(
-            self._stage + 1, self.cur_stage.epochs,
-            self.cur_stage.optimizer.type if isinstance(
-                self.cur_stage.optimizer,
-                dict) else self.cur_stage.optimizer.__class__.__name__))
+            self._stage + 1, self.cur_stage.epochs, optim))
 
         if self.epoch_in_stage == 0 and not getattr(self, '_res_optim', False):
             self.build_optimizer(self.cur_stage.optimizer)
 
         self._call_hook('before_stage')
 
-        interval = self.cur_stage.getdefault('val_interval', 0)
+        interval = self.cur_stage.get('val_interval', 0)
         while self.epoch_in_stage < self.cur_stage.epochs:
             self.train_epoch()
             if interval > 0 and self.epoch_in_stage % interval == 0:

@@ -3,7 +3,7 @@
 import os.path as osp
 import sys
 from collections import OrderedDict
-from collections.abc import MutableSequence
+from collections.abc import Generator, Iterable, Iterator
 from copy import deepcopy
 from importlib import import_module
 from shutil import copyfile
@@ -15,7 +15,7 @@ from .misc import bind_getter
 
 class CfgNode(OrderedDict):
     """
-    An extended `dict` class with several practical methods.
+    An extended `OrderedDict` class with several practical methods.
 
     This class is an extension of the built-in type `OrderedDict`. The
     interface is the same as a dict object and also allows access config values
@@ -60,12 +60,8 @@ class CfgNode(OrderedDict):
         self._check_freeze_state()
         self[key] = value
 
-    def __getstate__(self):
-        return self
-
     def __setstate__(self, state):
-        self._check_freeze_state()
-        self.update(state)
+        self._set_freeze_state(self, state['_frozen'])
 
     def __repr__(self):
         return super(OrderedDict, self).__repr__()
@@ -73,8 +69,8 @@ class CfgNode(OrderedDict):
     def __deepcopy__(self, memo):
         other = self.__class__()
         memo[id(self)] = other
-        for key, value in self.items():
-            other[deepcopy(key, memo)] = deepcopy(value, memo)
+        for k, v in self.items():
+            other[deepcopy(k, memo)] = deepcopy(v, memo)
         return other
 
     def __eq__(self, other):
@@ -92,10 +88,10 @@ class CfgNode(OrderedDict):
     def _parse_value(self, value):
         if isinstance(value, dict):
             value = self.__class__(**value)
-        elif isinstance(value, (list, tuple)):
-            value = type(value)(self._parse_value(v) for v in value)
-        elif isinstance(value, MutableSequence):
+        elif isinstance(value, (Generator, Iterator, range)):
             value = list(self._parse_value(v) for v in value)
+        elif isinstance(value, Iterable) and not isinstance(value, str):
+            value = type(value)(self._parse_value(v) for v in value)
         return value
 
     def _check_freeze_state(self):
@@ -113,10 +109,10 @@ class CfgNode(OrderedDict):
 
     def update(self, *args, **kwargs):
         other = dict()
-        if len(args) > 1:
-            raise TypeError('too many arguments')
-        elif len(args) == 1:
+        if len(args) == 1:
             other.update(args[0])
+        elif len(args) > 1:
+            raise TypeError('too many arguments')
         other.update(kwargs)
         for k, v in other.items():
             if ((k not in self) or (not isinstance(self[k], dict))
@@ -124,9 +120,6 @@ class CfgNode(OrderedDict):
                 self[k] = self._parse_value(v)
             else:
                 self[k].update(v)
-
-    def getdefault(self, key, default):
-        return self[key] if key in self else default
 
     def to_dict(self, ordered=False):
         base = OrderedDict() if ordered else dict()
@@ -236,8 +229,12 @@ class Config(object):
     def unfreeze(self):
         self._cfg.unfreeze()
 
-    def getdefault(self, key, default):
-        return self._cfg.getdefault(key, default)
+    def update(self, *args, **kwargs):
+        args = [arg._cfg if isinstance(arg, Config) else arg for arg in args]
+        self._cfg.update(*args, **kwargs)
+
+    def get(self, key, default=None):
+        return self._cfg.get(key, default)
 
     def setdefault(self, key, default):
         return self._cfg.setdefault(key, default)

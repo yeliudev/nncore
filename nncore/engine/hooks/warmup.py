@@ -21,7 +21,7 @@ class WarmupHook(Hook):
             group['lr'] = group['warmup_lr'] = group['updated_lr'] * scale
 
     def before_stage(self, engine):
-        self._cfg = engine.cur_stage.getdefault('warmup', None)
+        self._cfg = engine.cur_stage.get('warmup', None)
         for group in engine.optimizer.param_groups:
             group.setdefault('updated_lr', group['lr'])
 
