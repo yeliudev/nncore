@@ -72,7 +72,7 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
         state_dict (OrderedDict): weights
         strict (bool, optional): whether to strictly enforce that the keys
             in :attr:`state_dict` match the keys returned by this module's
-            :meth:`~torch.nn.Module.state_dict` function.
+            :meth:`torch.nn.Module.state_dict` function.
         logger (:obj:`logging.Logger`, optional): the logger to log the error
             message. If not specified, `print` function will be used.
     """

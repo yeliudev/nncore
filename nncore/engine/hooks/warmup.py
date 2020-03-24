@@ -32,7 +32,7 @@ class WarmupHook(Hook):
         if engine.epoch_in_stage < self._cfg.steps:
             progress = 1 - engine.epoch_in_stage / self._cfg.steps
             self._set_warmup_lr(engine, progress)
-        if engine.epoch_in_stage == self._cfg.steps:
+        elif engine.epoch_in_stage == self._cfg.steps:
             for group in engine.optimizer.param_groups:
                 group['lr'] = group['updated_lr']
 

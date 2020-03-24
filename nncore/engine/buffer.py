@@ -4,6 +4,8 @@ from collections import OrderedDict
 
 import torch
 
+import nncore
+
 
 class Buffer(object):
     """
@@ -74,7 +76,7 @@ class Buffer(object):
         """
         if key is None:
             self._data = OrderedDict()
-        elif isinstance(key, str) and key in self._data:
+        else:
             del self._data[key]
 
     def latest(self, key):
@@ -101,7 +103,17 @@ class Buffer(object):
         if window_size is None or window_size > len(self._data[key]):
             window_size = len(self._data[key])
 
-        return torch.Tensor(self._data[key][-window_size:]).median().item()
+        if isinstance(self._data[key][0], dict):
+            data = nncore.to_dict_of_list(self._data[key][-window_size:])
+            median = {
+                k: torch.Tensor(v).median().item()
+                for k, v in data.items()
+            }
+        else:
+            median = torch.Tensor(
+                self._data[key][-window_size:]).median().item()
+
+        return median
 
     def mean(self, key, window_size=None):
         """
@@ -118,7 +130,13 @@ class Buffer(object):
         if window_size is None or window_size > len(self._data[key]):
             window_size = len(self._data[key])
 
-        return torch.Tensor(self._data[key][-window_size:]).mean().item()
+        if isinstance(self._data[key][0], dict):
+            data = nncore.to_dict_of_list(self._data[key][-window_size:])
+            mean = {k: torch.Tensor(v).mean().item() for k, v in data.items()}
+        else:
+            mean = torch.Tensor(self._data[key][-window_size:]).mean().item()
+
+        return mean
 
     def sum(self, key, window_size=None):
         """
@@ -135,7 +153,13 @@ class Buffer(object):
         if window_size is None or window_size > len(self._data[key]):
             window_size = len(self._data[key])
 
-        return torch.Tensor(self._data[key][-window_size:]).sum().item()
+        if isinstance(self._data[key][0], dict):
+            data = nncore.to_dict_of_list(self._data[key][-window_size:])
+            sum = {k: torch.Tensor(v).sum().item() for k, v in data.items()}
+        else:
+            sum = torch.Tensor(self._data[key][-window_size:]).sum().item()
+
+        return sum
 
     def avg(self, key, by='_num_samples', window_size=None):
         """
@@ -156,8 +180,17 @@ class Buffer(object):
         if window_size is None or window_size > len(self._data[key]):
             window_size = len(self._data[key])
 
-        scalar = torch.Tensor(self._data[key][-window_size:])
         num_samples = torch.Tensor(self._data[by][-window_size:])
-        cumsum = scalar * num_samples
 
-        return (cumsum.sum() / num_samples.sum()).item()
+        if isinstance(self._data[key][0], dict):
+            data = nncore.to_dict_of_list(self._data[key][-window_size:])
+            avg = {
+                k: ((torch.Tensor(v) * num_samples).sum() /
+                    num_samples.sum()).item()
+                for k, v in data.items()
+            }
+        else:
+            scalar = torch.Tensor(self._data[key][-window_size:])
+            avg = ((scalar * num_samples).sum() / num_samples.sum()).item()
+
+        return avg

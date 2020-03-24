@@ -3,7 +3,6 @@
 import os.path as osp
 import sys
 from collections import OrderedDict
-from collections.abc import Generator, Iterable, Iterator
 from copy import deepcopy
 from importlib import import_module
 from shutil import copyfile
@@ -88,10 +87,10 @@ class CfgNode(OrderedDict):
     def _parse_value(self, value):
         if isinstance(value, dict):
             value = self.__class__(**value)
-        elif isinstance(value, (Generator, Iterator, range)):
-            value = list(self._parse_value(v) for v in value)
-        elif isinstance(value, Iterable) and not isinstance(value, str):
+        elif isinstance(value, (list, tuple)):
             value = type(value)(self._parse_value(v) for v in value)
+        elif isinstance(value, range):
+            value = list(self._parse_value(v) for v in value)
         return value
 
     def _check_freeze_state(self):
@@ -177,7 +176,7 @@ class Config(object):
         elif file_format in ['json', 'yml', 'yaml']:
             cfg = nncore.load(filename)
         else:
-            raise TypeError('unsupported format: {}'.format(file_format))
+            raise TypeError("unsupported format: '{}'".format(file_format))
 
         return Config(cfg=cfg, filename=filename)
 

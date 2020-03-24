@@ -19,19 +19,19 @@ def iter_cast(inputs, dst_type, return_type=None):
             otherwise an iterator.
 
     Returns:
-        iterator or specified type: the converted object
+        out_iter (iterator or specified type): the converted object
     """
     if not isinstance(inputs, Iterable):
         raise TypeError('inputs must be an iterable object')
     if not isinstance(dst_type, type):
         raise TypeError("'dst_type' must be a valid type")
 
-    out_iterable = moves.map(dst_type, inputs)
+    out_iter = moves.map(dst_type, inputs)
 
-    if return_type is None:
-        return out_iterable
-    else:
-        return return_type(out_iterable)
+    if return_type is not None:
+        out_iter = return_type(out_iter)
+
+    return out_iter
 
 
 def list_cast(inputs, dst_type):
@@ -62,7 +62,7 @@ def is_seq_of(seq, expected_type, seq_type=None):
         seq_type (type, optional): expected sequence type
 
     Returns:
-        bool: whether the sequence is valid
+        flag (bool): whether the sequence is valid
     """
     if seq_type is None:
         exp_seq_type = Sequence
@@ -104,7 +104,7 @@ def slice_list(in_list, lens):
         lens (int or list): the expected length of each out list
 
     Returns:
-        list: a list of sliced list
+        out_list (list): a list of sliced list
     """
     if isinstance(lens, int):
         assert len(in_list) % lens == 0
@@ -128,12 +128,55 @@ def concat_list(in_list):
     Concatenate a list of list into a single list.
 
     Args:
-        in_list (list): the list of list to be merged.
+        in_list (list): the list of list to be merged
 
     Returns:
-        list: the concatenated flat list.
+        out_list (list): the concatenated flat list
     """
     return list(chain(*in_list))
+
+
+def to_dict_of_list(in_list):
+    """
+    Convert a list of dict to a dict of list.
+
+    Args:
+        in_list (list): the list of dict to be converted
+
+    Returns:
+        out_dict (dict): the converted dict of list
+    """
+    for i in range(len(in_list) - 1):
+        if in_list[i].keys() != in_list[i + 1].keys():
+            raise ValueError('dict keys are not consistent')
+
+    out_dict = dict()
+    for key in in_list[0]:
+        out_dict[key] = [item[key] for item in in_list]
+
+    return out_dict
+
+
+def to_list_of_dict(in_dict):
+    """
+    Convert a dict of list to a list of dict.
+
+    Args:
+        in_dict (dict): the dict of list to be converted
+
+    Returns:
+        out_list (list): the converted list of dict
+    """
+    values = in_dict.values()
+    for i in range(len(in_dict) - 1):
+        if len(values[i]) != len(values[i + 1]):
+            raise ValueError('lengths of lists are not consistent')
+
+    out_list = []
+    for i in range(len(in_dict)):
+        out_list.append({k: v[i] for k, v in in_dict.items()})
+
+    return out_list
 
 
 def bind_getter(*vars):

@@ -16,8 +16,11 @@ hooks = [
     dict(
         type='EventWriterHook',
         interval=50,
-        writers=[dict(type='CommandLineWriter'),
-                 dict(type='JSONWriter')])
+        writers=[
+            dict(type='CommandLineWriter'),
+            dict(type='JSONWriter'),
+            dict(type='TensorboardWriter')
+        ])
 ]
 
 work_dir = 'work_dirs/mnist'

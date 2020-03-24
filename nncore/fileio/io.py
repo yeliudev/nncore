@@ -13,7 +13,7 @@ file_handlers = {
 
 def _check_format(file_format, supported_formats):
     if file_format not in supported_formats:
-        raise TypeError('unsupported format: {}'.format(file_format))
+        raise TypeError("unsupported format: '{}'".format(file_format))
 
 
 def load(file_obj, file_format=None, **kwargs):
