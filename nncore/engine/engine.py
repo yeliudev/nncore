@@ -89,7 +89,7 @@ class Engine(object):
         if isinstance(hook, dict):
             hook = nncore.build_object(hook, HOOKS)
         elif not isinstance(hook, Hook):
-            raise TypeError('hook must be a Hook or dict, but got {}'.format(
+            raise TypeError("hook must be a Hook or dict, but got '{}'".format(
                 type(hook)))
 
         if hook.name in self._hooks:
@@ -234,6 +234,7 @@ class Engine(object):
 
         if self.epoch_in_stage == 0 and not getattr(self, '_res_optim', False):
             self.build_optimizer(self.cur_stage.optimizer)
+        self._res_optim = False
 
         self._call_hook('before_stage')
 

@@ -16,12 +16,12 @@ def _check_format(file_format, supported_formats):
         raise TypeError("unsupported format: '{}'".format(file_format))
 
 
-def load(file_obj, file_format=None, **kwargs):
+def load(name_or_file, file_format=None, **kwargs):
     """
     Load data from json/yaml/pickle files.
 
     Args:
-        file_obj (str or file-like object): name of the file or a file-like
+        name_or_file (str or file-like object): name of the file or a file-like
             object
         file_format (str, optional): if not specified, the file format will be
             inferred from the file extension, otherwise use the specified one.
@@ -29,54 +29,54 @@ def load(file_obj, file_format=None, **kwargs):
             `pickle/pkl`.
 
     Returns:
-        obj (any): the content from the file
+        obj (any): the name_or_file from the file
     """
-    file_format = file_format or file_obj.split('.')[-1]
+    file_format = file_format or name_or_file.split('.')[-1]
     _check_format(file_format, file_handlers)
 
     handler = file_handlers[file_format]
 
-    if isinstance(file_obj, str):
-        return handler.load_from_path(file_obj, **kwargs)
-    elif hasattr(file_obj, 'read'):
-        return handler.load_from_fileobj(file_obj, **kwargs)
+    if isinstance(name_or_file, str):
+        return handler.load_from_path(name_or_file, **kwargs)
+    elif hasattr(name_or_file, 'read'):
+        return handler.load_from_fileobj(name_or_file, **kwargs)
     else:
         raise TypeError(
-            'file_obj must be a str of a file-like object, but got {}'.format(
-                type(file_obj)))
+            "name_or_file must be a str or a file-like object, but got '{}'".
+            format(type(name_or_file)))
 
 
-def dump(obj, file_obj, file_format=None, **kwargs):
+def dump(obj, name_or_file, file_format=None, **kwargs):
     """
     Dump data to json/yaml/pickle files.
 
     Args:
         obj (any): the python object to be dumped
-        file_obj (str or file-like object): name of the dumped file or a
+        name_or_file (str or file-like object): name of the dumped file or a
             file-like object
         file_format (str, optional): if not specified, the file format will be
             inferred from the file extension, otherwise use the specified one.
             Currently supported formats include `json`, `yaml/yml` and
             `pickle/pkl`.
     """
-    file_format = file_format or file_obj.split('.')[-1]
+    file_format = file_format or name_or_file.split('.')[-1]
     _check_format(file_format, file_handlers)
 
     handler = file_handlers[file_format]
 
-    if isinstance(file_obj, str):
-        handler.dump_to_path(obj, file_obj, **kwargs)
-    elif hasattr(file_obj, 'write'):
-        handler.dump_to_fileobj(obj, file_obj, **kwargs)
+    if isinstance(name_or_file, str):
+        handler.dump_to_path(obj, name_or_file, **kwargs)
+    elif hasattr(name_or_file, 'write'):
+        handler.dump_to_fileobj(obj, name_or_file, **kwargs)
     else:
         raise TypeError(
-            'file_obj must be a str of a file-like object, but got {}'.format(
-                type(file_obj)))
+            "name_or_file must be a str or a file-like object, but got '{}'".
+            format(type(name_or_file)))
 
 
 def loads(string, file_format='pickle', **kwargs):
     """
-    Load data from json/yaml/pickle string.
+    Load data from a json/yaml/pickle style string.
 
     Args:
         string (str or btyearray): string of the file
@@ -84,7 +84,7 @@ def loads(string, file_format='pickle', **kwargs):
             `pickle/pkl` currently.
 
     Returns:
-        obj (any): the content from the file
+        obj (any): the name_or_file from the file
     """
     _check_format(file_format, ['pickle', 'pkl'])
     handler = file_handlers[file_format]
@@ -93,7 +93,7 @@ def loads(string, file_format='pickle', **kwargs):
 
 def dumps(obj, file_format='pickle', **kwargs):
     """
-    Dump data to json/yaml/pickle string.
+    Dump data to a json/yaml/pickle style string.
 
     Args:
         obj (any): the python object to be dumped

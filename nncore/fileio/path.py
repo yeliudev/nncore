@@ -6,6 +6,14 @@ from platform import system
 
 
 def dir_exist(dir_name, raise_error=False):
+    """
+    Check whether a directory exists.
+
+    Args:
+        dir_name (str): (positive or relative) path to the directory
+        raise_error (bool, optional): if True, raise a NotADirectoryError when
+            the directory not found
+    """
     isdir = osp.isdir(dir_name)
     if not isdir and raise_error:
         raise NotADirectoryError("directory '{}' not found".format(dir_name))
@@ -13,6 +21,14 @@ def dir_exist(dir_name, raise_error=False):
 
 
 def file_exist(filename, raise_error=False):
+    """
+    Check whether a file exists.
+
+    Args:
+        filename (str): (positive or relative) path to the file
+        raise_error (bool, optional): if True, raise a FileNotFoundError when
+            the file not found
+    """
     isfile = osp.isfile(filename)
     if not isfile and raise_error:
         raise FileNotFoundError("file '{}' not found".format(filename))

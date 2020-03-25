@@ -6,15 +6,15 @@ from setuptools import find_packages, setup
 
 
 def get_version():
-    version_file = osp.join(
-        osp.abspath(osp.dirname(__file__)), 'nncore', '__init__.py')
-    lines = open(version_file, 'r').readlines()
+    version_file = osp.join('nncore', '__init__.py')
+    with open(version_file, encoding='utf-8') as f:
+        lines = f.readlines()
     version_line = [l.strip() for l in lines if l.startswith('__version__')][0]
     version = version_line.split('=')[-1].strip().strip('"\'')
     return version
 
 
-def readme():
+def get_readme():
     with open('README.md', encoding='utf-8') as f:
         content = f.read()
     return content
@@ -28,7 +28,7 @@ setup(
     license='MIT',
     url='https://github.com/c1aris/nncore',
     description='A lightweight PyTorch code wrapper for ML researchers',
-    long_description=readme(),
+    long_description=get_readme(),
     long_description_content_type='text/markdown',
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -48,4 +48,4 @@ setup(
         'addict', 'joblib', 'pynvml', 'pyyaml', 'sentry-sdk', 'six',
         'tabulate', 'termcolor'
     ],
-    packages=find_packages(exclude=('tests', )))
+    packages=find_packages(include=('nncore', )))

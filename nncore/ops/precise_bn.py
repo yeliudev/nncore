@@ -38,7 +38,7 @@ def update_bn_stats(model, data_loader, num_iters=200):
     average of per-batch mean/variance instead of the running average.
 
     Args:
-        model (:obj:`nn.Module`): the model whose bn stats will be recomputed.
+        model (:obj:`nn.Module`): the model whose bn stats will be recomputed
 
             Note that:
 

@@ -136,8 +136,9 @@ def load_checkpoint(model,
     if isinstance(checkpoint, str):
         checkpoint = get_checkpoint(checkpoint, map_location=map_location)
     elif not isinstance(checkpoint, dict):
-        raise ValueError("checkpoint must be a dict or str, but got {}".format(
-            type(checkpoint)))
+        raise TypeError(
+            "checkpoint must be a dict or str, but got '{}'".format(
+                type(checkpoint)))
 
     if isinstance(checkpoint, OrderedDict):
         state_dict = checkpoint
@@ -172,7 +173,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     if meta is None:
         meta = dict()
     elif not isinstance(meta, dict):
-        raise TypeError('meta must be a dict or None, but got {}'.format(
+        raise TypeError("meta must be a dict or None, but got '{}'".format(
             type(meta)))
 
     meta.update(nncore_version=nncore.__version__, time=asctime())
