@@ -10,7 +10,7 @@ from .hooks import HOOKS, Hook
 from .utils import get_checkpoint, load_checkpoint
 
 
-@nncore.bind_getter('hooks', 'max_stages', 'max_epochs', 'max_iters',
+@nncore.bind_getter('mode', 'hooks', 'max_stages', 'max_epochs', 'max_iters',
                     'start_iter', 'stage', 'epoch', 'iter')
 class Engine(object):
 
@@ -18,6 +18,7 @@ class Engine(object):
                  model,
                  data_loaders,
                  stages,
+                 batch_processor=None,
                  buffer_size=990125,
                  hooks=None,
                  logger=None,
@@ -25,6 +26,7 @@ class Engine(object):
         self.model = model
         self.data_loaders = data_loaders
         self.stages = stages
+        self.batch_processor = batch_processor
         self.work_dir = work_dir
 
         if work_dir is not None:
@@ -37,7 +39,7 @@ class Engine(object):
 
         self.buffer = Buffer(max_size=buffer_size)
         self.logger = logger or nncore.get_logger()
-        self.flush_states()
+        self.reset_states()
 
     @property
     def cur_stage(self):
@@ -63,7 +65,7 @@ class Engine(object):
     def iter_in_epoch(self):
         return self._iter - len(self.data_loaders['train']) * self._epoch
 
-    def flush_states(self):
+    def reset_states(self):
         self._max_stages = len(self.stages)
         self._max_epochs = sum(stage.epochs for stage in self.stages)
         self._max_iters = len(self.data_loaders['train']) * self._max_epochs
@@ -168,10 +170,14 @@ class Engine(object):
         self.logger.info('Resumed stage {}, epoch {}, iter {}'.format(
             self._stage + 1, self._epoch, self._iter))
 
-    def train_iter(self, data):
+    def train_iter(self, data, **kwargs):
         self._call_hook('before_train_iter')
 
-        output = self.model(data, return_loss=True)
+        if callable(self.batch_processor):
+            output = self.batch_processor(
+                self.model, data, mode=self._mode, **kwargs)
+        else:
+            output = self.model(data, return_loss=True, **kwargs)
 
         self.losses = {k: v for k, v in output.items() if 'loss' in k}
         self.losses['loss'] = sum(v for v in self.losses.values())
@@ -182,45 +188,49 @@ class Engine(object):
         self._call_hook('after_train_iter')
         self._iter += 1
 
-    def val_iter(self, data):
+    def val_iter(self, data, **kwargs):
         self._call_hook('before_val_iter')
 
-        with torch.no_grad():
-            output = self.model(data, return_loss=True)
+        if callable(self.batch_processor):
+            output = self.batch_processor(
+                self.model, data, mode=self._mode, **kwargs)
+        else:
+            with torch.no_grad():
+                output = self.model(data, return_loss=True, **kwargs)
 
         for key in output:
             self.buffer.update(key, output[key])
 
         self._call_hook('after_val_iter')
 
-    def train_epoch(self):
-        self.mode = 'train'
+    def train_epoch(self, **kwargs):
+        self._mode = 'train'
         self.model.train()
         self.data_loader = self.data_loaders['train']
         self._call_hook('before_train_epoch')
 
         for data in self.data_loader:
-            self.train_iter(data)
+            self.train_iter(data, **kwargs)
 
         self._call_hook('after_train_epoch')
         self._epoch += 1
 
-    def val_epoch(self):
+    def val_epoch(self, **kwargs):
         self.logger.info('Validating...')
 
-        self.mode = 'val'
+        self._mode = 'val'
         self.model.eval()
         self.data_loader = self.data_loaders['val']
         self._call_hook('before_val_epoch')
 
         prog_bar = nncore.ProgressBar(len(self.data_loader))
         for data in self.data_loader:
-            self.val_iter(data)
+            self.val_iter(data, **kwargs)
             prog_bar.update()
 
         self._call_hook('after_val_epoch')
 
-    def run_stage(self):
+    def run_stage(self, **kwargs):
         if isinstance(self.cur_stage.optimizer, dict):
             optim = self.cur_stage.optimizer.copy()
             optim_type = optim.pop('type')
@@ -240,19 +250,19 @@ class Engine(object):
 
         interval = self.cur_stage.get('val_interval', 0)
         while self.epoch_in_stage < self.cur_stage.epochs:
-            self.train_epoch()
+            self.train_epoch(**kwargs)
             if interval > 0 and self.epoch_in_stage % interval == 0:
-                self.val_epoch()
+                self.val_epoch(**kwargs)
 
         self._call_hook('after_stage')
         self._stage += 1
 
-    def launch(self):
+    def launch(self, **kwargs):
         self.logger.info('Start running, host: {}, work_dir: {}'.format(
             nncore.get_host_info(), self.work_dir))
         self._call_hook('before_launch')
 
         while self._stage < self._max_stages:
-            self.run_stage()
+            self.run_stage(**kwargs)
 
         self._call_hook('after_launch')
