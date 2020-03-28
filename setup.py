@@ -48,4 +48,4 @@ setup(
         'addict', 'joblib', 'pynvml', 'pyyaml', 'sentry-sdk', 'six',
         'tabulate', 'termcolor'
     ],
-    packages=find_packages(include=('nncore', )))
+    packages=find_packages(exclude=('examples', 'tests')))

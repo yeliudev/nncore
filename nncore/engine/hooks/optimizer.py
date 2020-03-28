@@ -48,35 +48,51 @@ def _allreduce_grads(params, coalesce, bucket_size_mb):
 @HOOKS.register
 class OptimizerHook(Hook):
 
-    def clip_grads(self, params, cfg):
-        clip_grad.clip_grad_norm_(
-            filter(lambda p: p.requires_grad, params), **cfg)
+    def __init__(self, interval=1):
+        self._interval = interval
+
+    def _avg_grads(self, engine):
+        step_size = engine.iter_in_epoch - self._last_update_iter + 1
+        for param in engine.model.parameters():
+            if param.requires_grad and param.grad is not None:
+                param.grad.data.div_(step_size)
+        self._last_update_iter = engine.iter_in_epoch + 1
+
+    def _clip_grads(self, params, cfg):
+        params_with_grad = filter(
+            lambda p: p.requires_grad and p.grad is not None, params)
+        clip_grad.clip_grad_norm_(params_with_grad, **cfg)
+
+    def before_train_epoch(self, engine):
+        self._last_update_iter = 0
+        engine.optimizer.zero_grad()
 
     def after_train_iter(self, engine):
+        loss_type = engine.cur_stage.get('loss', 'loss')
+        engine.losses[loss_type].backward()
+
+        if self.every_n_iters_in_epoch(
+                engine, self._interval) or self.last_iter_in_epoch(engine):
+            self._avg_grads(engine)
+            grad_clip = engine.cur_stage.get('grad_clip', None)
+            if grad_clip is not None:
+                self._clip_grads(engine.model.parameters(), grad_clip)
+            engine.optimizer.step()
+            engine.optimizer.zero_grad()
+
+    def after_train_epoch(self, engine):
         engine.optimizer.zero_grad()
-        loss = engine.cur_stage.get('loss', 'loss')
-        engine.losses[loss].backward()
-        grad_clip = engine.cur_stage.get('grad_clip', None)
-        if grad_clip is not None:
-            self.clip_grads(engine.model.parameters(), grad_clip)
-        engine.optimizer.step()
 
 
 @HOOKS.register
 class DistOptimizerHook(OptimizerHook):
 
-    def __init__(self, coalesce=True, bucket_size_mb=-1):
-        super(DistOptimizerHook, self).__init__()
+    def __init__(self, interval=1, coalesce=True, bucket_size_mb=-1):
+        self._interval = interval
         self._coalesce = coalesce
         self._bucket_size_mb = bucket_size_mb
 
-    def after_train_iter(self, engine):
-        engine.optimizer.zero_grad()
-        loss = engine.cur_stage.get('loss', 'loss')
-        engine.losses[loss].backward()
+    def _avg_grads(self, engine):
+        super(DistOptimizerHook, self)._avg_grads(engine)
         _allreduce_grads(engine.model.parameters(), self._coalesce,
                          self._bucket_size_mb)
-        grad_clip = engine.cur_stage.get('grad_clip', None)
-        if grad_clip is not None:
-            self.clip_grads(engine.model.parameters(), grad_clip)
-        engine.optimizer.step()

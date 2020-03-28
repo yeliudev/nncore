@@ -73,6 +73,24 @@ class Hook(object):
     def after_val_iter(self, engine):
         self.after_iter(engine)
 
+    def every_n_stages(self, engine, n):
+        return (engine.stage + 1) % n == 0 if n > 0 else False
+
+    def every_n_epochs(self, engine, n):
+        return (engine.epoch + 1) % n == 0 if n > 0 else False
+
+    def every_n_iters(self, engine, n):
+        return (engine.iter + 1) % n == 0 if n > 0 else False
+
+    def every_n_epochs_in_stage(self, engine, n):
+        return (engine.epoch_in_stage + 1) % n == 0 if n > 0 else False
+
+    def every_n_iters_in_stage(self, engine, n):
+        return (engine.iter_in_stage + 1) % n == 0 if n > 0 else False
+
+    def every_n_iters_in_epoch(self, engine, n):
+        return (engine.iter_in_epoch + 1) % n == 0 if n > 0 else False
+
     def first_epoch_in_stage(self, engine):
         return engine.epoch_in_stage == 0
 
@@ -91,9 +109,3 @@ class Hook(object):
 
     def last_iter_in_epoch(self, engine):
         return engine.iter_in_epoch + 1 == len(engine.data_loaders['train'])
-
-    def every_n_epochs(self, engine, n):
-        return (engine.epoch + 1) % n == 0 if n > 0 else False
-
-    def every_n_iters(self, engine, n):
-        return (engine.iter + 1) % n == 0 if n > 0 else False

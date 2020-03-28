@@ -61,7 +61,7 @@ jobs:
       language: shell
       before_install:
         - brew update
-        - brew uninstall --ignore-dependencies python@2
+        - brew uninstall --ignore-dependencies python@3.8
         - brew upgrade python
       env: HOMEBREW_NO_INSTALL_CLEANUP=true
     - name: Python 3.8 on macOS 10.14
@@ -70,7 +70,7 @@ jobs:
       language: shell
       before_install:
         - brew update
-        - brew uninstall --ignore-dependencies python@2 python
+        - brew uninstall --ignore-dependencies python
         - brew upgrade python@3.8
         - pip3 install virtualenv
         - virtualenv python3.8
