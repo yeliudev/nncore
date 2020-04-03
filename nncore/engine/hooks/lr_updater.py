@@ -52,7 +52,7 @@ class LrUpdaterHook(Hook):
             group['lr'] = group['updated_lr'] = lr
 
     def before_stage(self, engine):
-        self._cfg = engine.cur_stage.get('lr_updater', None)
+        self._cfg = engine.cur_stage.get('lr_schedule', None)
         for group in engine.optimizer.param_groups:
             group.setdefault('initial_lr', group['lr'])
 

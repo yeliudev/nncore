@@ -35,10 +35,12 @@ class Writer(object):
         if engine.mode == 'train':
             metrics['epoch'] += 1
             metrics['iter'] += 1
-            metrics['time'] = engine.buffer.mean(
-                '_iter_time', window_size=window_size)
-            metrics['data_time'] = engine.buffer.mean(
-                '_data_time', window_size=window_size)
+            if '_iter_time' in engine.buffer.keys():
+                metrics['time'] = engine.buffer.mean(
+                    '_iter_time', window_size=window_size)
+            if '_data_time' in engine.buffer.keys():
+                metrics['data_time'] = engine.buffer.mean(
+                    '_data_time', window_size=window_size)
 
         return metrics
 
@@ -55,33 +57,35 @@ class Writer(object):
 @WRITERS.register
 class CommandLineWriter(Writer):
 
-    _t_log = 'Epoch [{}][{}/{}] lr: {:.5f}, eta: {}, time: {:.3f}, data_time: {:.3f}, '  # noqa:E501
-    _v_log = 'Epoch({}) [{}][{}] '
-
     def write(self, engine, window_size):
         metrics = self.collect_metrics(engine, window_size)
 
         if engine.mode == 'train':
-            total_time = engine.buffer.latest('_total_time')
-            num_iter_passed = engine.iter + 1 - engine.start_iter
-            num_iter_left = engine.max_iters - engine.iter - 1
-            eta = timedelta(
-                seconds=int(num_iter_left * total_time / num_iter_passed))
+            log = 'Epoch [{}][{}/{}] lr: {:.5f}, '.format(
+                metrics['epoch'], metrics['iter'], len(engine.data_loader),
+                metrics['lr'])
 
-            log = self._t_log.format(metrics['epoch'], metrics['iter'],
-                                     len(engine.data_loader), metrics['lr'],
-                                     eta, metrics['time'],
-                                     metrics['data_time'])
+            if '_total_time' in engine.buffer.keys():
+                total_time = engine.buffer.latest('_total_time')
+                num_iter_passed = engine.iter + 1 - engine.start_iter
+                num_iter_left = engine.max_iters - engine.iter - 1
+                eta = timedelta(
+                    seconds=int(num_iter_left * total_time / num_iter_passed))
+                log += 'eta: {}, '.format(eta)
 
-            if torch.cuda.is_available():
+            for key in ['time', 'data_time']:
+                if key in metrics:
+                    log += '{}: {:.3f}, '.format(key, metrics[key])
+
+            if next(engine.model.parameters()).device != torch.device('cpu'):
                 mem = torch.cuda.max_memory_allocated()
                 mem_mb = torch.IntTensor([mem / (1024 * 1024)]).cuda()
                 if get_world_size() > 1:
                     dist.reduce(mem_mb, 0, op=dist.ReduceOp.MAX)
                 log += 'memory: {}, '.format(mem_mb.item())
         else:
-            log = self._v_log.format(engine.mode, metrics['epoch'],
-                                     len(engine.data_loader))
+            log = 'Epoch({}) [{}][{}] '.format(engine.mode, metrics['epoch'],
+                                               len(engine.data_loader))
 
         ext = []
         for key in engine.buffer.keys():
@@ -220,7 +224,7 @@ class EventWriterHook(Hook):
     def _empty_buffer(self, engine):
         for key in list(engine.buffer.keys()):
             if not key.startswith('_'):
-                engine.buffer.clear(key)
+                engine.buffer.remove(key)
 
     @master_only
     def before_launch(self, engine):

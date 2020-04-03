@@ -66,6 +66,7 @@ class Engine(object):
         return self._iter - len(self.data_loaders['train']) * self._epoch
 
     def reset_states(self):
+        self.buffer.clear()
         self._max_stages = len(self.stages)
         self._max_epochs = sum(stage.epochs for stage in self.stages)
         self._max_iters = len(self.data_loaders['train']) * self._max_epochs

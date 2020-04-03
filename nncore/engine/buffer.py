@@ -7,6 +7,7 @@ import torch
 import nncore
 
 
+@nncore.bind_getter('max_size')
 class Buffer(object):
     """
     A buffer that can track a series of values and provide access to smoothed
@@ -66,18 +67,21 @@ class Buffer(object):
         """
         return len(self._data[key])
 
-    def clear(self, key=None):
+    def clear(self):
         """
-        Clear the buffer according to the key.
+        Remove all values from the buffer.
+        """
+        self._data = OrderedDict()
+
+    def remove(self, key):
+        """
+        Remove values from the buffer according to the key.
 
         Args:
             key (str or None, optional): the key of the values. If None, clear
                 all the values in the buffer.
         """
-        if key is None:
-            self._data = OrderedDict()
-        else:
-            del self._data[key]
+        del self._data[key]
 
     def latest(self, key):
         """
