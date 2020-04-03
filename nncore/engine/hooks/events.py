@@ -6,6 +6,7 @@ from datetime import timedelta
 
 import torch
 import torch.distributed as dist
+from torch.utils.data import DataLoader
 
 import nncore
 from ..comm import get_world_size, master_only
@@ -133,18 +134,18 @@ class JSONWriter(Writer):
 @nncore.bind_getter('writer')
 class TensorboardWriter(Writer):
 
-    def __init__(self, log_dir=None, graph_data_loader=None, **kwargs):
+    def __init__(self, log_dir=None, input_to_model=None, **kwargs):
         """
         Args:
             log_dir (str, optional): directory of the tensorboard logs
-            graph_data_loader (str or None, optional): name of the data_loader
-                for constructing the model graph. If None, the graph will not
-                be added.
+            input_to_model (Any, optional): the input data or data_loader or
+                name of the data_loader for constructing the model graph. If
+                None, the graph will not be added.
                 See `:meth:torch.utils.tensorboard.SummaryWriter.add_graph` for
                 details about adding a graph to tensorboard.
         """
         self._log_dir = log_dir
-        self._graph_data_loader = graph_data_loader
+        self._input_to_model = input_to_model
         self._kwargs = kwargs
 
     def open(self, engine):
@@ -152,15 +153,21 @@ class TensorboardWriter(Writer):
             from torch.utils.tensorboard import SummaryWriter
         except ImportError:
             raise ImportError(
-                "please install tensorboard to use the TensorboardWriter")
+                'please install tensorboard to use the TensorboardWriter')
 
         if self._log_dir is None:
             self._log_dir = osp.join(engine.work_dir, 'tf_logs')
 
         self._writer = SummaryWriter(self._log_dir, **self._kwargs)
 
-        if self._graph_data_loader is not None:
-            data = next(iter(engine.data_loaders[self._graph_data_loader]))
+        if self._input_to_model is not None:
+            if isinstance(self._input_to_model, DataLoader):
+                data = next(iter(self._input_to_model))
+            elif isinstance(self._input_to_model, str):
+                data = next(iter(engine.data_loaders[self._input_to_model]))
+            else:
+                data = self._input_to_model
+
             self._writer.add_graph(engine.model, input_to_model=data)
 
     def close(self, engine):

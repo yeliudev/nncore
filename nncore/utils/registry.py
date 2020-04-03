@@ -35,7 +35,7 @@ class Registry(object):
         return len(self._items)
 
     def __getattr__(self, key):
-        return self._items.get(key, None)
+        return self._items[key]
 
     def __repr__(self):
         return '{}(name={}, items={})'.format(self.__class__.__name__,
@@ -50,8 +50,8 @@ class Registry(object):
         self._items[name] = obj
         return obj
 
-    def get(self, key):
-        return self.__getattr__(key)
+    def get(self, key, default=None):
+        return self._items.get(key, default)
 
 
 def build_object(cfg, parent, default_args=None):

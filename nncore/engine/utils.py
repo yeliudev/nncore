@@ -9,6 +9,7 @@ from pkgutil import walk_packages
 from time import asctime
 
 import torch
+import torch.nn as nn
 import torchvision
 
 import nncore
@@ -189,6 +190,45 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         checkpoint['optimizer'] = optimizer.state_dict()
 
     torch.save(checkpoint, filename)
+
+
+def _fuse_conv_bn(conv, bn):
+    conv_w = conv.weight
+    conv_b = conv.bias if conv.bias is not None else torch.zeros_like(
+        bn.running_mean)
+
+    factor = bn.weight / torch.sqrt(bn.running_var + bn.eps)
+    conv.weight = nn.Parameter(conv_w *
+                               factor.reshape([conv.out_channels, 1, 1, 1]))
+    conv.bias = nn.Parameter((conv_b - bn.running_mean) * factor + bn.bias)
+    return conv
+
+
+def fuse_module(model):
+    """
+    During inference, the functionary of batch norm layers is turned off
+    but only the mean and var alone channels are used, which exposes the
+    chance to fuse it with the preceding conv layers to save computations and
+    simplify network structures.
+    """
+    last_conv = None
+    last_conv_name = None
+
+    for name, child in model.named_children():
+        if isinstance(child, (nn.BatchNorm2d, nn.SyncBatchNorm)):
+            if last_conv is None:
+                continue
+            fused_conv = _fuse_conv_bn(last_conv, child)
+            model._modules[last_conv_name] = fused_conv
+            model._modules[name] = nn.Identity()
+            last_conv = None
+        elif isinstance(child, nn.Conv2d):
+            last_conv = child
+            last_conv_name = name
+        else:
+            fuse_module(child)
+
+    return model
 
 
 def publish_model(in_file,
