@@ -16,11 +16,11 @@ class Registry(object):
         >>> backbones = Registry('backbone')
         >>> @backbones.register
         >>> class ResNet(object):
-        >>>     pass
+        ...     pass
 
         >>> backbones = Registry('backbone')
         >>> class ResNet(object):
-        >>>     pass
+        ...     pass
         >>> backbones.register(ResNet)
 
     Args:
@@ -36,6 +36,9 @@ class Registry(object):
 
     def __getattr__(self, key):
         return self._items[key]
+
+    def __contains__(self, key):
+        return self.get(key) is not None
 
     def __repr__(self):
         return '{}(name={}, items={})'.format(self.__class__.__name__,

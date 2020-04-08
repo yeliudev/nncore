@@ -61,7 +61,8 @@ class OptimizerHook(Hook):
     def _clip_grads(self, params, cfg):
         params_with_grad = filter(
             lambda p: p.requires_grad and p.grad is not None, params)
-        clip_grad.clip_grad_norm_(params_with_grad, **cfg)
+        if len(params_with_grad) > 0:
+            clip_grad.clip_grad_norm_(params_with_grad, **cfg)
 
     def before_train_epoch(self, engine):
         self._last_update_iter = 0

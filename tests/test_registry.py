@@ -25,6 +25,8 @@ def test_registry():
     CATS.register(Munchkin)
     assert len(CATS) == 2
     assert CATS.get('Munchkin') is Munchkin
+    assert 'Munchkin' in CATS
+    assert 'PersianCat' not in CATS
 
     with pytest.raises(KeyError):
         CATS.register(Munchkin)

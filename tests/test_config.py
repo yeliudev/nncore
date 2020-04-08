@@ -22,7 +22,6 @@ def test_build_config():
         cfg = nncore.Config.from_file(cfg_file)
         assert isinstance(cfg, nncore.Config)
         assert cfg.filename == cfg_file
-        assert cfg.text == open(cfg_file, 'r').read()
 
     with pytest.raises(FileNotFoundError):
         nncore.Config.from_file('no_such_file.py')
