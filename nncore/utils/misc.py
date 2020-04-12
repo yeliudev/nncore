@@ -193,18 +193,18 @@ def bind_getter(*vars):
         >>> import nncore
         >>> @nncore.bind_getter('name', 'depth')
         >>> class Backbone:
-        >>>     _name = 'ResNet'
-        >>>     _depth = 50
+        ...     _name = 'ResNet'
+        ...     _depth = 50
     equals to:
         >>> class Backbone:
-        >>>     _name = 'ResNet'
-        >>>     _depth = 50
-        >>>     @property
-        >>>     def name(self):
-        >>>         return self._name
-        >>>     @property
-        >>>     def depth(self):
-        >>>         return self._depth
+        ...     _name = 'ResNet'
+        ...     _depth = 50
+        ...     @property
+        ...     def name(self):
+        ...         return self._name
+        ...     @property
+        ...     def depth(self):
+        ...         return self._depth
     """
 
     def _wrapper(cls):

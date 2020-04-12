@@ -10,7 +10,6 @@ stages = [
 hooks = [
     dict(type='IterTimerHook'),
     dict(type='LrUpdaterHook'),
-    dict(type='WarmupHook'),
     dict(type='OptimizerHook'),
     dict(type='CheckpointHook'),
     dict(

@@ -8,10 +8,9 @@ from .lr_updater import LrUpdaterHook
 from .memory import EmptyCacheHook
 from .optimizer import DistOptimizerHook, OptimizerHook
 from .sampler_seed import DistSamplerSeedHook
-from .warmup import WarmupHook
 
 __all__ = [
     'HOOKS', 'Hook', 'CheckpointHook', 'CommandLineWriter', 'EventWriterHook',
     'JSONWriter', 'IterTimerHook', 'LrUpdaterHook', 'EmptyCacheHook',
-    'DistOptimizerHook', 'OptimizerHook', 'DistSamplerSeedHook', 'WarmupHook'
+    'DistOptimizerHook', 'OptimizerHook', 'DistSamplerSeedHook'
 ]

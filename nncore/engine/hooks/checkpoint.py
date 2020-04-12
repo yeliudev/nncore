@@ -35,7 +35,10 @@ class CheckpointHook(Hook):
         filepath = osp.join(out_dir, filename)
         optimizer = engine.optimizer if self._save_optimizer else None
 
-        stages = [stage.to_dict() for stage in engine.stages]
+        stages = [
+            stage.to_dict() if isinstance(stage, nncore.CfgNode) else stage
+            for stage in engine.stages
+        ]
         meta = dict(epoch=engine.epoch + 1, iter=engine.iter, stages=stages)
 
         engine.logger.info('Saving checkpoint to {}...'.format(filepath))

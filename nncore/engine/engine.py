@@ -49,16 +49,17 @@ class Engine(object):
     def epoch_in_stage(self):
         cumsum = 0
         for stage in self.stages:
-            if self._epoch + 1 <= cumsum + stage.epochs:
+            if self._epoch + 1 <= cumsum + stage['epochs']:
                 return self._epoch - cumsum
             cumsum += stage.epochs
-        return self.stages[-1].epochs
+        return self.stages[-1]['epochs']
 
     @property
     def iter_in_stage(self):
         cumsum = 0
         for i in range(self._stage):
-            cumsum += len(self.data_loaders['train']) * self.stages[i].epochs
+            cumsum += len(
+                self.data_loaders['train']) * self.stages[i]['epochs']
         return self._iter - cumsum
 
     @property
@@ -68,7 +69,7 @@ class Engine(object):
     def reset_states(self):
         self.buffer.clear()
         self._max_stages = len(self.stages)
-        self._max_epochs = sum(stage.epochs for stage in self.stages)
+        self._max_epochs = sum(stage['epochs'] for stage in self.stages)
         self._max_iters = len(self.data_loaders['train']) * self._max_epochs
         self._start_iter = 0
         self._stage = 0
@@ -162,7 +163,7 @@ class Engine(object):
 
         if with_optimizer:
             if 'optimizer' in checkpoint:
-                self.build_optimizer(self.cur_stage.optimizer)
+                self.build_optimizer(self.cur_stage['optimizer'])
                 self.optimizer.load_state_dict(checkpoint['optimizer'])
                 self._res_optim = True
             else:
@@ -232,25 +233,26 @@ class Engine(object):
         self._call_hook('after_val_epoch')
 
     def run_stage(self, **kwargs):
-        if isinstance(self.cur_stage.optimizer, dict):
-            optim = self.cur_stage.optimizer.copy()
+        if isinstance(self.cur_stage['optimizer'], dict):
+            optim = self.cur_stage['optimizer'].copy()
             optim_type = optim.pop('type')
             optim_args = ['{}: {}'.format(k, v) for k, v in optim.items()]
             optim = '{}({})'.format(optim_type, ', '.join(optim_args))
         else:
-            optim = '{}()'.format(self.cur_stage.optimizer.__class__.__name__)
+            optim = '{}()'.format(
+                self.cur_stage['optimizer'].__class__.__name__)
 
         self.logger.info('Stage: {}, epochs: {}, optimizer: {}'.format(
-            self._stage + 1, self.cur_stage.epochs, optim))
+            self._stage + 1, self.cur_stage['epochs'], optim))
 
         if self.epoch_in_stage == 0 and not getattr(self, '_res_optim', False):
-            self.build_optimizer(self.cur_stage.optimizer)
+            self.build_optimizer(self.cur_stage['optimizer'])
         self._res_optim = False
 
         self._call_hook('before_stage')
 
         interval = self.cur_stage.get('val_interval', 0)
-        while self.epoch_in_stage < self.cur_stage.epochs:
+        while self.epoch_in_stage < self.cur_stage['epochs']:
             self.train_epoch(**kwargs)
             if interval > 0 and self.epoch_in_stage % interval == 0:
                 self.val_epoch(**kwargs)
