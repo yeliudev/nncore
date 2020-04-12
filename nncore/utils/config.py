@@ -191,63 +191,69 @@ class Config(object):
         super(Config, self).__setattr__('_cfg', _cfg)
         super(Config, self).__setattr__('_filename', filename)
 
+        if filename is not None:
+            with open(filename, 'r') as f:
+                super(Config, self).__setattr__('_text', f.read())
+        else:
+            super(Config, self).__setattr__('_text', None)
+
     @property
     def text(self):
-        indent = 4
+        text = '' if self._filename is None else '* {} *\n\n'.format(
+            self._filename)
 
-        def _indent(s_, num_spaces):
-            s = s_.split('\n')
-            if len(s) == 1:
-                return s_
-            first = s.pop(0)
-            s = [(num_spaces * ' ') + line for line in s]
-            s = '\n'.join(s)
-            s = first + '\n' + s
-            return s
+        if self._text is not None:
+            return text + self._text
 
-        def _format_basic_types(k, v):
-            if isinstance(v, str):
-                v_str = "'{}'".format(v)
+        def _indent(attr_str):
+            tokens = attr_str.split('\n')
+            if len(tokens) == 1:
+                return attr_str
+            first = tokens.pop(0)
+            tokens = [' ' * 4 + line for line in tokens]
+            return '{}\n{}'.format(first, '\n'.join(tokens))
+
+        def _basic(key, value):
+            if isinstance(value, dict):
+                v_str = _dict(value)
+            elif isinstance(value, str):
+                v_str = "'{}'".format(value)
             else:
-                v_str = str(v)
-            attr_str = '{} = {}'.format(str(k), v_str)
-            attr_str = _indent(attr_str, indent)
-            return attr_str
+                v_str = str(value)
+            attr_str = v_str if key is None else '{} = {}'.format(key, v_str)
+            return _indent(attr_str)
 
-        def _format_list(k, v):
-            # check if all items in the list are dict
-            if all(isinstance(_, dict) for _ in v):
-                v_str = '[\n'
-                v_str += '\n'.join(
-                    'dict({}),'.format(_indent(_format_dict(v_), indent))
-                    for v_ in v).rstrip(',')
-                attr_str = '{} = {}'.format(str(k), v_str)
-                attr_str = _indent(attr_str, indent) + ']'
-            else:
-                attr_str = _format_basic_types(k, v)
-            return attr_str
-
-        def _format_dict(d, outest_level=False):
-            r = ''
-            s = []
-            for idx, (k, v) in enumerate(d.items()):
-                is_last = idx >= len(d) - 1
-                end = '' if outest_level or is_last else ','
+        def _iterable(key, value):
+            tokens = []
+            for v in value:
                 if isinstance(v, dict):
-                    v_str = '\n' + _format_dict(v)
-                    attr_str = '{} = dict({}'.format(str(k), v_str)
-                    attr_str = _indent(attr_str, indent) + ')' + end
-                elif isinstance(v, list):
-                    attr_str = _format_list(k, v) + end
+                    tokens.append('dict({})'.format(_indent('\n' + _dict(v))))
+                elif isinstance(v, (list, tuple)):
+                    tokens.append(_iterable(None, v))
                 else:
-                    attr_str = _format_basic_types(k, v) + end
+                    tokens.append(_basic(None, v))
+            left, right = ('[', ']') if isinstance(value, list) else ('(', ')')
+            v_str = '{}{}{}'.format(left, ', '.join(tokens), right)
+            return v_str if key is None else '{} = {}'.format(key, v_str)
 
-                s.append(attr_str)
-            r += '\n'.join(s)
-            return r
+        def _dict(value, parent=False):
+            tokens = []
+            for idx, (k, v) in enumerate(value.items()):
+                is_last = idx >= len(value) - 1
+                end = '' if parent or is_last else ','
+                if isinstance(v, dict):
+                    v_str = '\n' + _dict(v)
+                    attr_str = '{} = dict({}'.format(str(k), v_str)
+                    attr_str = _indent(attr_str) + ')' + end
+                elif isinstance(v, (list, tuple)):
+                    attr_str = _iterable(k, v) + end
+                else:
+                    attr_str = _basic(k, v) + end
+                tokens.append(attr_str)
+            return '\n'.join(tokens)
 
         cfg_dict = self._cfg.to_dict()
-        text = _format_dict(cfg_dict, outest_level=True)
+        text += _dict(cfg_dict, parent=True)
 
         return text
 

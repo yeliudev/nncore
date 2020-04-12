@@ -38,7 +38,7 @@ class Registry(object):
         return self._items[key]
 
     def __contains__(self, key):
-        return self.get(key) is not None
+        return key in self._items
 
     def __repr__(self):
         return '{}(name={}, items={})'.format(self.__class__.__name__,
