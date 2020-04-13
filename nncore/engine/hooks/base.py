@@ -19,11 +19,11 @@ class Hook(object):
     def __init__(self, name=None):
         self._name = name or self.__class__.__name__
 
-    def __repr__(self):
-        return '{}()'.format(self._name)
-
     def __eq__(self, hook):
         return self._name == getattr(hook, 'name', hook)
+
+    def __repr__(self):
+        return '{}()'.format(self._name)
 
     def before_launch(self, engine):
         pass

@@ -62,9 +62,6 @@ class CfgNode(OrderedDict):
     def __setstate__(self, state):
         self._set_freeze_state(self, state['_frozen'])
 
-    def __repr__(self):
-        return super(OrderedDict, self).__repr__()
-
     def __deepcopy__(self, memo):
         other = self.__class__()
         memo[id(self)] = other
@@ -83,6 +80,9 @@ class CfgNode(OrderedDict):
             if self[key] != other[key]:
                 return False
         return True
+
+    def __repr__(self):
+        return super(OrderedDict, self).__repr__()
 
     def _parse_value(self, value):
         if isinstance(value, dict):
@@ -257,10 +257,6 @@ class Config(object):
 
         return text
 
-    def __repr__(self):
-        return 'Config(filename: {}): {}'.format(self._filename,
-                                                 self._cfg.__repr__())
-
     def __len__(self):
         return len(self._cfg)
 
@@ -281,6 +277,10 @@ class Config(object):
 
     def __eq__(self, other):
         return self._cfg.__eq__(other)
+
+    def __repr__(self):
+        return 'Config(filename: {}): {}'.format(self._filename,
+                                                 repr(self._cfg))
 
     def freeze(self):
         self._cfg.freeze()
