@@ -1,9 +1,9 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+from .collate import collate
 from .container import DataContainer
-from .data_parallel import NNDataParallel, NNDistributedDataParallel
-from .utils import collate
+from .data_parallel import DataParallel, DistributedDataParallel
 
 __all__ = [
-    'DataContainer', 'NNDataParallel', 'NNDistributedDataParallel', 'collate'
+    'collate', 'DataContainer', 'DataParallel', 'DistributedDataParallel'
 ]

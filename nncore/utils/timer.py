@@ -25,7 +25,7 @@ class Timer(object):
         Pause the timer.
         """
         if self._paused is not None:
-            raise ValueError('Trying to pause a Timer that is already paused!')
+            raise ValueError('trying to pause a Timer that is already paused!')
 
         self._paused = perf_counter()
 
@@ -41,7 +41,7 @@ class Timer(object):
         Resume the timer.
         """
         if self._paused is None:
-            raise ValueError('Trying to resume a Timer that is not paused!')
+            raise ValueError('trying to resume a Timer that is not paused!')
 
         self._total_paused += perf_counter() - self._paused
         self._paused = None

@@ -9,6 +9,7 @@ from .base import HOOKS, Hook
 class EmptyCacheHook(Hook):
 
     def __init__(self, periods=[]):
+        super(EmptyCacheHook, self).__init__()
         self._periods = periods
 
     def before_launch(self, engine):

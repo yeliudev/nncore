@@ -34,11 +34,15 @@ class Registry(object):
     def __len__(self):
         return len(self._items)
 
-    def __getattr__(self, key):
-        return self._items[key]
-
     def __contains__(self, key):
         return key in self._items
+
+    def __getattr__(self, key):
+        if key in self._items:
+            return self._items[key]
+        else:
+            raise AttributeError(
+                "Registry object has no attribute '{}'".format(key))
 
     def __repr__(self):
         return '{}(name={}, items={})'.format(self.__class__.__name__,
@@ -57,7 +61,7 @@ class Registry(object):
         return self._items.get(key, default)
 
 
-def build_object(cfg, parent, default_args=None):
+def build_object(cfg, parent, default=None, **kwargs):
     """
     Initialize an object from a dict.
 
@@ -65,25 +69,34 @@ def build_object(cfg, parent, default_args=None):
     Remaining fields are treated as the arguments for constructing the object.
 
     Args:
-        cfg (dict): object types and arguments
-        parent (:obj:`module`): the module which may containing
+        cfg (dict or None): object types and arguments
+        parent (any): a module or a sequence of modules which may contain the
             expected object class
-        default_args (dict, optional): default arguments for initializing the
-            object
+        default (any, optional): default return value when the object class not
+            found
 
     Returns:
         obj (any): object built from the dict
     """
+    if 'default' in kwargs:
+        raise KeyError("argument 'default' is reserved by this method")
+
+    if cfg is None:
+        return default
+
     args = cfg.copy()
+    args.update(kwargs)
     obj_type = args.pop('type')
 
-    obj_cls = getattr(parent, obj_type, None)
-    if obj_cls is None:
-        raise KeyError("parent '{}' has not attribute '{}'".format(
-            parent.__class__.__name__, obj_type))
+    if isinstance(parent, (list, tuple)):
+        for p in parent:
+            obj = build_object(cfg, p, **kwargs)
+            if obj is not None:
+                return obj
+        return default
+    elif hasattr(parent, 'get'):
+        obj_cls = parent.get(obj_type, None)
+    else:
+        obj_cls = getattr(parent, obj_type, None)
 
-    if default_args is not None:
-        for name, value in default_args.items():
-            args.setdefault(name, value)
-
-    return obj_cls(**args)
+    return obj_cls(**args) if obj_cls is not None else default

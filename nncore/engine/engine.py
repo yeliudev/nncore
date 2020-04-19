@@ -19,7 +19,7 @@ class Engine(object):
                  data_loaders,
                  stages,
                  batch_processor=None,
-                 buffer_size=990125,
+                 buffer_size=100000,
                  hooks=None,
                  logger=None,
                  work_dir=None):
@@ -37,8 +37,8 @@ class Engine(object):
             for hook in hooks:
                 self.register_hook(hook)
 
-        self.buffer = Buffer(max_size=buffer_size)
         self.logger = logger or nncore.get_logger()
+        self.buffer = Buffer(max_size=buffer_size, logger=self.logger)
         self.reset_states()
 
     @property
@@ -120,7 +120,7 @@ class Engine(object):
         """
         if isinstance(optimizer, dict):
             self.optimizer = nncore.build_object(
-                optimizer, torch.optim, dict(params=self.model.parameters()))
+                optimizer, torch.optim, params=self.model.parameters())
         elif hasattr(optimizer, 'zero_grad') and hasattr(optimizer, 'step'):
             self.optimizer = optimizer
         else:
@@ -179,10 +179,12 @@ class Engine(object):
             output = self.batch_processor(
                 self.model, data, mode=self._mode, **kwargs)
         else:
-            output = self.model(data, return_loss=True, **kwargs)
+            output = self.model(data, mode=self._mode, **kwargs)
 
         self.losses = {k: v for k, v in output.items() if 'loss' in k}
-        self.losses['loss'] = sum(v for v in self.losses.values())
+        if 'loss' not in output:
+            self.losses['loss'] = output['loss'] = sum(
+                v for v in self.losses.values())
 
         for key in output:
             self.buffer.update(key, output[key])
@@ -198,7 +200,7 @@ class Engine(object):
                 self.model, data, mode=self._mode, **kwargs)
         else:
             with torch.no_grad():
-                output = self.model(data, return_loss=True, **kwargs)
+                output = self.model(data, mode=self._mode, **kwargs)
 
         for key in output:
             self.buffer.update(key, output[key])

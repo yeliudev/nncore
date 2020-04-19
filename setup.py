@@ -1,8 +1,19 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import os.path as osp
+import re
+import warnings
+from platform import python_version_tuple, system
 
+from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
+
+INSTALL_REQUIRES = [
+    'joblib>=0.14', 'numpy>=1.15', 'pynvml>=8', 'pyyaml>=5',
+    'sentry-sdk>=0.14', 'six>=1.14', 'tabulate>=0.8', 'termcolor>=1.1'
+]
+
+OPENCV_INSTALL_REQUIRES = 'opencv-python-headless>=3', 'opencv-python>=3'
 
 
 def get_version():
@@ -18,6 +29,33 @@ def get_readme():
     with open('README.md', encoding='utf-8') as f:
         content = f.read()
     return content
+
+
+def install_requires():
+
+    def _choose_requirement(primary, secondary):
+        try:
+            name = re.split(r'[!<>=]', primary)[0]
+            get_distribution(name)
+        except DistributionNotFound:
+            return secondary
+        return primary
+
+    install_requires = INSTALL_REQUIRES
+
+    if system() != 'Windows' and int(python_version_tuple()[1]) <= 4:
+        primary, secondary = OPENCV_INSTALL_REQUIRES
+        try:
+            get_distribution(re.split(r'[!<>=]', primary)[0])
+            install_requires.append(primary)
+        except DistributionNotFound:
+            install_requires.append(secondary)
+    else:
+        warnings.warn(
+            'Can not install opencv-python automatically on this plaform, '
+            'please install it manually to enable nncore.image.')
+
+    return install_requires
 
 
 setup(
@@ -44,8 +82,5 @@ setup(
     python_requires='>=3.6',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
-    install_requires=[
-        'addict', 'joblib', 'pynvml', 'pyyaml', 'sentry-sdk', 'six',
-        'tabulate', 'termcolor'
-    ],
-    packages=find_packages(exclude=('examples', 'tests')))
+    install_requires=install_requires(),
+    packages=find_packages(exclude=('.github', 'examples', 'tests')))

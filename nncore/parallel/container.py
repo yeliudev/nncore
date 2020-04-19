@@ -21,21 +21,6 @@ def assert_tensor_type(func):
 
 @nncore.bind_getter('data', 'stack', 'pad_value', 'pad_dims', 'to_gpu')
 class DataContainer(object):
-    """A container for any type of objects.
-
-    Typically tensors will be stacked in the collate function and sliced along
-    some dimension in the scatter function. This behavior has some limitations.
-    1. All tensors have to be the same size.
-    2. Types are limited (numpy array or Tensor).
-
-    We design `DataContainer` and `MMDataParallel` to overcome these
-    limitations. The behavior can be either of the following.
-
-    - copy to GPU, pad all tensors to the same size and stack them
-    - copy to GPU without stacking
-    - leave the objects as is and pass it to the model
-    - pad_dims specifies the number of last few dimensions to do padding
-    """
 
     def __init__(self,
                  data,
@@ -43,13 +28,8 @@ class DataContainer(object):
                  pad_value=0,
                  pad_dims=2,
                  to_gpu=True):
-        if stack:
-            if not isinstance(data, torch.Tensor):
-                raise TypeError('only tensor type can be stacked')
-            elif pad_dims is not None and data.dim() <= pad_dims:
-                raise ValueError('too many dimensions to be padded')
-            elif not to_gpu:
-                raise AttributeError('cpu data can not be stacked')
+        if pad_dims is not None and data.dim() <= pad_dims:
+            raise ValueError('too many dimensions to be padded')
 
         self._data = data
         self._stack = stack

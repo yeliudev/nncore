@@ -1,11 +1,12 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-import itertools
+from itertools import islice
 
 import torch
+import torch.nn as nn
 
-BN_MODULE_TYPES = (torch.nn.BatchNorm1d, torch.nn.BatchNorm2d,
-                   torch.nn.BatchNorm3d, torch.nn.SyncBatchNorm)
+BN_MODULE_TYPES = (nn.BatchNorm1d, nn.BatchNorm2d, nn.BatchNorm3d,
+                   nn.SyncBatchNorm)
 
 
 def get_bn_layers(model):
@@ -69,7 +70,7 @@ def update_bn_stats(model, data_loader, num_iters=200):
     running_var = [torch.zeros_like(bn.running_var) for bn in bn_layers]
 
     ind = -1
-    for ind, inputs in enumerate(itertools.islice(data_loader, num_iters)):
+    for ind, inputs in enumerate(islice(data_loader, num_iters)):
         with torch.no_grad():
             model(inputs)
 

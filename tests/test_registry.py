@@ -67,15 +67,15 @@ def test_build_object():
     assert model.depth == 50 and model.stages == 4
 
     cfg = dict(type='ResNet', depth=50)
-    model = nncore.build_object(cfg, BACKBONES, default_args={'stages': 3})
+    model = nncore.build_object(cfg, BACKBONES)
     assert isinstance(model, ResNet)
-    assert model.depth == 50 and model.stages == 3
+    assert model.depth == 50
 
     cfg = dict(type='ResNeXt', depth=50, stages=3)
     model = nncore.build_object(cfg, BACKBONES)
     assert isinstance(model, ResNeXt)
     assert model.depth == 50 and model.stages == 3
 
-    with pytest.raises(KeyError):
-        cfg = dict(type='VGG')
-        model = nncore.build_object(cfg, BACKBONES)
+    cfg = dict(type='VGG')
+    model = nncore.build_object(cfg, BACKBONES)
+    assert model is None

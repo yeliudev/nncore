@@ -106,3 +106,32 @@ def dumps(obj, file_format='pickle', **kwargs):
     _check_format(file_format, file_handlers)
     handler = file_handlers[file_format]
     return handler.dump_to_str(obj, **kwargs)
+
+
+def list_from_file(filename, offset=0, separator=' ', max_num=-1):
+    """
+    Load a text file and parse the content as a list of tuples or strings.
+
+    Args:
+        filename (str): name of the file to be loaded
+        offset (int, optional): the offset of lines
+        separator (str or None, optional): the separator to be used to parse
+            tuples. If None, each line would be treated as a string.
+        max_num (int, optional): the maximum number of lines to be read
+
+    Returns:
+        out_list (list[str]): A list of strings.
+    """
+    out_list, count = [], 0
+    with open(filename, 'r') as f:
+        for _ in range(offset):
+            f.readline()
+        for line in f:
+            if max_num >= 0 and count >= max_num:
+                break
+            line = line.rstrip('\n')
+            if separator is not None:
+                line = tuple(line.split(separator))
+            out_list.append(line)
+            count += 1
+    return out_list

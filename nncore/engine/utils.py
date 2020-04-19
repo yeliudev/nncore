@@ -1,13 +1,17 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import hashlib
+import os
 import os.path as osp
+import random
 import subprocess
 from collections import OrderedDict
+from datetime import datetime
 from importlib import import_module
 from pkgutil import walk_packages
 from time import asctime
 
+import numpy as np
 import torch
 import torch.nn as nn
 import torchvision
@@ -16,19 +20,49 @@ import nncore
 from .comm import is_main_process, synchronize
 
 
-def get_torchvision_models():
-    model_urls = dict()
-    for _, name, ispkg in walk_packages(torchvision.models.__path__):
-        if ispkg:
-            continue
-        _zoo = import_module('torchvision.models.{}'.format(name))
-        if hasattr(_zoo, 'model_urls'):
-            _urls = getattr(_zoo, 'model_urls')
-            model_urls.update(_urls)
-    return model_urls
+def generate_random_seed(digits=8):
+    """
+    Generate a random seed with 8 digits.
+
+    Args:
+        digits (int, optional): the expected number of digits of the random
+            seed. The number must be at least 8.
+
+    Returns:
+        seed (int): the generated random seed
+    """
+    assert digits >= 8, 'the number of digits must be at least 8'
+    seed = os.getpid() + int(datetime.now().strftime('%S%f')) + int.from_bytes(
+        os.urandom(digits - 6), 'big')
+    return seed
 
 
-def load_url_dist(url):
+def set_random_seed(seed=None):
+    """
+    Set random seed for `random`, `numpy` and `torch`. If `seed` is None, this
+    method will generate and return a new random seed.
+
+    Args:
+        seed (int or None, optional): the potential random seed to use
+
+    Returns:
+        seed (int): the actually used random seed
+    """
+    if seed is None:
+        seed = generate_random_seed()
+
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+    return seed
+
+
+def _load_url_dist(url):
     if is_main_process():
         checkpoint = torch.utils.model_zoo.load_url(url)
     synchronize()
@@ -51,10 +85,17 @@ def get_checkpoint(filename, map_location=None):
             other information, which depends on the checkpoint.
     """
     if filename.startswith('torchvision://'):
-        model_urls = get_torchvision_models()
-        checkpoint = load_url_dist(model_urls[filename[14:]])
+        model_urls = dict()
+        for _, name, ispkg in walk_packages(torchvision.models.__path__):
+            if ispkg:
+                continue
+            _zoo = import_module('torchvision.models.{}'.format(name))
+            if hasattr(_zoo, 'model_urls'):
+                _urls = getattr(_zoo, 'model_urls')
+                model_urls.update(_urls)
+        checkpoint = _load_url_dist(model_urls[filename[14:]])
     elif filename.startswith(('https://', 'http://')):
-        checkpoint = load_url_dist(filename)
+        checkpoint = _load_url_dist(filename)
     else:
         checkpoint = torch.load(filename, map_location=map_location)
     return checkpoint
@@ -74,8 +115,8 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
         strict (bool, optional): whether to strictly enforce that the keys
             in :attr:`state_dict` match the keys returned by this module's
             :meth:`torch.nn.Module.state_dict` function.
-        logger (:obj:`logging.Logger`, optional): the logger to log the error
-            message. If not specified, `print` function will be used.
+        logger (:obj:`logging.Logger` or str or None, optional): the logger or
+            name of the logger for error messages
     """
     unexpected_keys = []
     missing_keys = []
@@ -112,7 +153,7 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
         err = '\n'.join(err)
         if strict:
             raise RuntimeError(err)
-        nncore.log_or_print(err, logger)
+        nncore.log_or_print(err, logger, log_level='WARNING')
 
 
 def load_checkpoint(model,
@@ -131,8 +172,8 @@ def load_checkpoint(model,
         strict (bool, optional): whether to allow different params for the
             model and checkpoint. If True, raise an error when the params do
             not match exactly.
-        logger (:mod:`logging.Logger` or None, optional): the logger for error
-            message
+        logger (:obj:`logging.Logger` or str or None, optional): the logger or
+            name of the logger for error messages
     """
     if isinstance(checkpoint, str):
         checkpoint = get_checkpoint(checkpoint, map_location=map_location)

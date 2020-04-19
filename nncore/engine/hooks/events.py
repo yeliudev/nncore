@@ -238,8 +238,9 @@ class EventWriterHook(Hook):
 
     @master_only
     def after_train_iter(self, engine):
-        if not self.last_iter_in_epoch(engine) and not self.every_n_iters(
-                engine, self._interval):
+        if not self.every_n_iters_in_epoch(
+                engine,
+                self._interval) and not self.last_iter_in_epoch(engine):
             return
 
         self._write(engine)

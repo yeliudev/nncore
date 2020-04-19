@@ -14,14 +14,17 @@ class Buffer(object):
     scalar values over a window.
     """
 
-    def __init__(self, max_size=100000):
+    def __init__(self, max_size=100000, logger=None):
         """
         Args:
             max_length (int, optional): maximal number of values that can be
                 stored in the buffer. When the capacity of the buffer is
                 exhausted, old values will be removed.
+            logger (:obj:`logging.Logger` or str or None, optional): the
+                potential logger or name of the logger to use
         """
         self._max_size = max_size
+        self._logger = logger
         self._data = OrderedDict()
 
     def keys(self):
@@ -30,7 +33,19 @@ class Buffer(object):
         """
         return self._data.keys()
 
-    def values(self, key):
+    def values(self):
+        """
+        Return the values in the buffer.
+        """
+        return self._data.values()
+
+    def items(self):
+        """
+        Return the keys and values in the buffer.
+        """
+        return self._data.items()
+
+    def get(self, key, default=None):
         """
         Return the values in the buffer according to the key.
 
@@ -42,18 +57,27 @@ class Buffer(object):
         """
         return self._data[key]
 
-    def update(self, key, value):
+    def update(self, key, value, warning=True):
         """
-        Add a new value. If the length of the buffer exceeds self._max_size,
+        Add a new value. If the length of the buffer exceeds `self._max_size`,
         the oldest element will be removed from the buffer.
 
         Args:
             key (str): the key of the values
             value (number): the value of the values
+            warning (bool, optional): whether to show warning when deleting
+                values
         """
         if key not in self._data:
             self._data[key] = []
         elif len(self._data[key]) == self._max_size:
+            if warning:
+                nncore.log_or_print(
+                    "Number of '{}' values in the buffer exceeds max size "
+                    "({}), removing the oldest element".format(
+                        key, self._max_size),
+                    self._logger,
+                    log_level='WARNING')
             self._data[key].pop(0)
 
         self._data[key].append(value)

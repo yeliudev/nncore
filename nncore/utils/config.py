@@ -273,14 +273,14 @@ class Config(object):
         self._cfg.__setitem__(key, value)
 
     def __iter__(self):
-        return iter(self._cfg)
+        return self._cfg.__iter__()
 
     def __eq__(self, other):
         return self._cfg.__eq__(other)
 
     def __repr__(self):
         return 'Config(filename: {}): {}'.format(self._filename,
-                                                 repr(self._cfg))
+                                                 self._cfg.__repr__())
 
     def freeze(self):
         self._cfg.freeze()

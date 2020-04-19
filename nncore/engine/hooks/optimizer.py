@@ -49,6 +49,7 @@ def _allreduce_grads(params, coalesce, bucket_size_mb):
 class OptimizerHook(Hook):
 
     def __init__(self, interval=1):
+        super(OptimizerHook, self).__init__()
         self._interval = interval
 
     def _avg_grads(self, engine):
@@ -89,6 +90,7 @@ class OptimizerHook(Hook):
 class DistOptimizerHook(OptimizerHook):
 
     def __init__(self, interval=1, coalesce=True, bucket_size_mb=-1):
+        super(DistOptimizerHook, self).__init__()
         self._interval = interval
         self._coalesce = coalesce
         self._bucket_size_mb = bucket_size_mb

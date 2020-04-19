@@ -2,6 +2,7 @@
 
 from .base import HOOKS, Hook
 from .checkpoint import CheckpointHook
+from .eval import DistEvalHook, EvalHook
 from .events import CommandLineWriter, EventWriterHook, JSONWriter
 from .iter_timer import IterTimerHook
 from .lr_updater import LrUpdaterHook
@@ -10,7 +11,8 @@ from .optimizer import DistOptimizerHook, OptimizerHook
 from .sampler_seed import DistSamplerSeedHook
 
 __all__ = [
-    'HOOKS', 'Hook', 'CheckpointHook', 'CommandLineWriter', 'EventWriterHook',
-    'JSONWriter', 'IterTimerHook', 'LrUpdaterHook', 'EmptyCacheHook',
-    'DistOptimizerHook', 'OptimizerHook', 'DistSamplerSeedHook'
+    'HOOKS', 'Hook', 'CheckpointHook', 'DistEvalHook', 'EvalHook',
+    'CommandLineWriter', 'EventWriterHook', 'JSONWriter', 'IterTimerHook',
+    'LrUpdaterHook', 'EmptyCacheHook', 'DistOptimizerHook', 'OptimizerHook',
+    'DistSamplerSeedHook'
 ]
