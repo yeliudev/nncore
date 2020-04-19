@@ -177,9 +177,9 @@ class Engine(object):
 
         if callable(self.batch_processor):
             output = self.batch_processor(
-                self.model, data, mode=self._mode, **kwargs)
+                self.model, data, train_mode=True, **kwargs)
         else:
-            output = self.model(data, mode=self._mode, **kwargs)
+            output = self.model(data, train_mode=True, **kwargs)
 
         self.losses = {k: v for k, v in output.items() if 'loss' in k}
         if 'loss' not in output:
@@ -197,10 +197,10 @@ class Engine(object):
 
         if callable(self.batch_processor):
             output = self.batch_processor(
-                self.model, data, mode=self._mode, **kwargs)
+                self.model, data, train_mode=False, **kwargs)
         else:
             with torch.no_grad():
-                output = self.model(data, mode=self._mode, **kwargs)
+                output = self.model(data, train_mode=False, **kwargs)
 
         for key in output:
             self.buffer.update(key, output[key])

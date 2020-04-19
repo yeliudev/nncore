@@ -5,6 +5,7 @@ import os
 import os.path as osp
 import subprocess
 import sys
+import time
 from collections import defaultdict
 from getpass import getuser
 from platform import system
@@ -16,6 +17,10 @@ from tabulate import tabulate
 
 def get_host_info():
     return '{}@{}'.format(getuser(), gethostname())
+
+
+def get_time_str():
+    return time.strftime('%Y%m%d%H%M%S', time.localtime())
 
 
 def _detect_compute_compatibility(CUDA_HOME, so_file):

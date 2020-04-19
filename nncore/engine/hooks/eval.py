@@ -15,6 +15,9 @@ class EvalHook(Hook):
         self._kwargs = kwargs
 
     def after_val_epoch(self, engine):
+        if not self.every_n_epochs(engine, self._interval):
+            return
+
         results = {
             k: v
             for k, v in engine.buffer.items() if k in self._buffer_keys
@@ -34,6 +37,9 @@ class EvalHook(Hook):
 class DistEvalHook(EvalHook):
 
     def after_val_epoch(self, engine):
+        if not self.every_n_epochs(engine, self._interval):
+            return
+
         results = {
             k: v
             for k, v in engine.buffer.items() if k in self._buffer_keys

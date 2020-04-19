@@ -7,9 +7,11 @@ import nncore
 from .container import DataContainer
 
 
-def collate(batch, samples_per_gpu=1):
+def collate(batch, samples_per_gpu=-1):
     if isinstance(batch[0], DataContainer):
         stacked = []
+        if samples_per_gpu < 0:
+            samples_per_gpu = len(batch)
         if batch[0].stack:
             for i in range(0, len(batch), samples_per_gpu):
                 if batch[i].pad_dims is not None:
