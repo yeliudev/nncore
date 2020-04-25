@@ -17,7 +17,7 @@ class Engine(object):
     def __init__(self,
                  model,
                  data_loaders,
-                 stages=None,
+                 stages,
                  batch_processor=None,
                  buffer_size=990125,
                  hooks=None,

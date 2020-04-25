@@ -120,40 +120,41 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
     """
     unexpected_keys = []
     missing_keys = []
-    err = []
+    err_msg = []
 
     metadata = getattr(state_dict, '_metadata', None)
     state_dict = state_dict.copy()
     if metadata is not None:
         state_dict._metadata = metadata
 
-    def load(module, prefix=''):
+    def _load(module, prefix=''):
         local_metadata = dict() if metadata is None else metadata.get(
             prefix[:-1], {})
         module._load_from_state_dict(state_dict, prefix, local_metadata, True,
-                                     missing_keys, unexpected_keys, err)
+                                     missing_keys, unexpected_keys, err_msg)
         for name, child in module._modules.items():
             if child is not None:
-                load(child, prefix + name + '.')
+                _load(child, prefix + name + '.')
 
-    load(module)
-    load = None
+    _load(module)
+    _load = None
 
-    missing_keys = [k for k in missing_keys if 'num_batches_tracked' not in k]
-
-    if unexpected_keys:
-        err.append('unexpected keys in source state_dict: {}\n'.format(
+    if len(unexpected_keys) > 0:
+        err_msg.append('unexpected keys in source state_dict: {}\n'.format(
             ', '.join(unexpected_keys)))
-    if missing_keys:
-        err.append('missing keys in source state_dict: {}\n'.format(
+    if len(missing_keys) > 0:
+        err_msg.append('missing keys in source state_dict: {}\n'.format(
             ', '.join(missing_keys)))
 
-    if is_main_process() and len(err) > 0:
-        err.insert(0, 'The model and loaded state_dict do not match exactly\n')
-        err = '\n'.join(err)
+    if is_main_process() and len(err_msg) > 0:
+        err_msg.insert(
+            0, 'The model and loaded state_dict do not match exactly\n')
+        err_msg = '\n'.join(err_msg)
         if strict:
-            raise RuntimeError(err)
-        nncore.log_or_print(err, logger, log_level='WARNING')
+            raise RuntimeError(
+                'Error(s) in loading state_dict for {}:\n\t{}'.format(
+                    module.__class__.__name__, "\n\t".join(err_msg)))
+        nncore.log_or_print(err_msg, logger, log_level='WARNING')
 
 
 def load_checkpoint(model,
