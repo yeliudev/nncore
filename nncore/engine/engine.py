@@ -17,9 +17,9 @@ class Engine(object):
     def __init__(self,
                  model,
                  data_loaders,
-                 stages,
+                 stages=None,
                  batch_processor=None,
-                 buffer_size=100000,
+                 buffer_size=990125,
                  hooks=None,
                  logger=None,
                  work_dir=None):
@@ -29,13 +29,13 @@ class Engine(object):
         self.batch_processor = batch_processor
         self.work_dir = work_dir
 
-        if work_dir is not None:
-            nncore.mkdir(work_dir)
-
         self._hooks = OrderedDict()
         if hooks is not None:
             for hook in hooks:
                 self.register_hook(hook)
+
+        if work_dir is not None:
+            nncore.mkdir(work_dir)
 
         self.logger = logger or nncore.get_logger()
         self.buffer = Buffer(max_size=buffer_size, logger=self.logger)
@@ -66,6 +66,10 @@ class Engine(object):
     def iter_in_epoch(self):
         return self._iter - len(self.data_loaders['train']) * self._epoch
 
+    def _call_hook(self, name):
+        for hook in self._hooks.values():
+            getattr(hook, name)(self)
+
     def reset_states(self):
         self.buffer.clear()
         self._max_stages = len(self.stages)
@@ -75,10 +79,6 @@ class Engine(object):
         self._stage = 0
         self._epoch = 0
         self._iter = 0
-
-    def _call_hook(self, name):
-        for hook in self._hooks.values():
-            getattr(hook, name)(self)
 
     def register_hook(self, hook, before=None):
         """
@@ -121,7 +121,7 @@ class Engine(object):
         if isinstance(optimizer, dict):
             self.optimizer = nncore.build_object(
                 optimizer, torch.optim, params=self.model.parameters())
-        elif hasattr(optimizer, 'zero_grad') and hasattr(optimizer, 'step'):
+        elif isinstance(optimizer, torch.optim.Optimizer):
             self.optimizer = optimizer
         else:
             raise TypeError("invalid optimizer: {}".format(optimizer))
@@ -177,14 +177,14 @@ class Engine(object):
 
         if callable(self.batch_processor):
             output = self.batch_processor(
-                self.model, data, train_mode=True, **kwargs)
+                self.model, data, mode=self._mode, **kwargs)
         else:
-            output = self.model(data, train_mode=True, **kwargs)
+            output = self.model(data, mode=self._mode, **kwargs)
 
         self.losses = {k: v for k, v in output.items() if 'loss' in k}
         if 'loss' not in output:
             self.losses['loss'] = output['loss'] = sum(
-                v for v in self.losses.values())
+                value for value in self.losses.values())
 
         for key in output:
             self.buffer.update(key, output[key])
@@ -197,10 +197,13 @@ class Engine(object):
 
         if callable(self.batch_processor):
             output = self.batch_processor(
-                self.model, data, train_mode=False, **kwargs)
+                self.model, data, mode=self._mode, **kwargs)
         else:
             with torch.no_grad():
-                output = self.model(data, train_mode=False, **kwargs)
+                output = self.model(data, mode=self._mode, **kwargs)
+
+        if any('loss' in key for key in output) and 'loss' not in output:
+            output['loss'] = sum(v for k, v in output.items() if 'loss' in k)
 
         for key in output:
             self.buffer.update(key, output[key])
@@ -253,10 +256,12 @@ class Engine(object):
 
         self._call_hook('before_stage')
 
-        interval = self.cur_stage.get('val_interval', 0)
+        val_cfg = self.cur_stage.get('validation', dict(interval=0))
         while self.epoch_in_stage < self.cur_stage['epochs']:
             self.train_epoch(**kwargs)
-            if interval > 0 and self.epoch_in_stage % interval == 0:
+            if val_cfg['interval'] > 0 and self.epoch_in_stage > val_cfg.get(
+                    'offset',
+                    0) and self.epoch_in_stage % val_cfg['interval'] == 0:
                 self.val_epoch(**kwargs)
 
         self._call_hook('after_stage')

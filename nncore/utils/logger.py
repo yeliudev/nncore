@@ -104,7 +104,7 @@ def log_or_print(msg, logger, log_level=logging.INFO):
         logger = logging.getLogger(logger)
         logger.log(level, msg)
     elif level > 20:
-        level_name = logging._levelToName()
+        level_name = logging._levelToName[level]
         msg = '{} {}'.format(
             colored(level_name + ':', color=_COLOR_MAP[level]), msg)
     print(msg)

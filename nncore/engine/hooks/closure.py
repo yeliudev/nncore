@@ -1,0 +1,12 @@
+# Copyright (c) Ye Liu. All rights reserved.
+
+from .base import HOOKS, Hook
+
+
+@HOOKS.register
+class ClosureHook(Hook):
+
+    def __init__(self, fn_name, fn):
+        assert hasattr(self, fn_name)
+        assert callable(fn)
+        setattr(self, fn_name, fn)

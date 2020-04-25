@@ -217,9 +217,9 @@ class EventWriterHook(Hook):
         self._interval = interval
         self._writers = [nncore.build_object(w, WRITERS) for w in writers]
 
-    def _write(self, engine):
+    def _write(self, engine, window_size):
         for w in self._writers:
-            w.write(engine, self._interval)
+            w.write(engine, window_size)
 
     def _empty_buffer(self, engine):
         for key in list(engine.buffer.keys()):
@@ -243,10 +243,14 @@ class EventWriterHook(Hook):
                 self._interval) and not self.last_iter_in_epoch(engine):
             return
 
-        self._write(engine)
+        self._write(
+            engine,
+            len(engine.data_loaders['train']) % self._interval
+            or self._interval
+            if self.last_iter_in_epoch(engine) else self._interval)
         self._empty_buffer(engine)
 
     @master_only
     def after_val_epoch(self, engine):
-        self._write(engine)
+        self._write(engine, len(engine.data_loaders['val']))
         self._empty_buffer(engine)

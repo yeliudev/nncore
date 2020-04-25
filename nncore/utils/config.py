@@ -1,5 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+import os
 import os.path as osp
 import sys
 from collections import OrderedDict
@@ -164,9 +165,10 @@ class Config(object):
         file_format = filename.split('.')[-1]
         if file_format == 'py':
             with TemporaryDirectory() as tmp_dir:
-                copyfile(filename, osp.join(tmp_dir, '_tmp_config.py'))
+                mod_name = str(int.from_bytes(os.urandom(2), 'big'))
+                copyfile(filename, osp.join(tmp_dir, '{}.py'.format(mod_name)))
                 sys.path.insert(0, tmp_dir)
-                mod = import_module('_tmp_config')
+                mod = import_module(mod_name)
                 sys.path.pop(0)
                 cfg = {
                     k: v
@@ -186,7 +188,7 @@ class Config(object):
         elif cfg is None:
             _cfg = CfgNode()
         else:
-            raise TypeError("unsupported type '{}'".format(type(cfg)))
+            raise TypeError("unsupported type: '{}'".format(type(cfg)))
 
         super(Config, self).__setattr__('_cfg', _cfg)
         super(Config, self).__setattr__('_filename', filename)

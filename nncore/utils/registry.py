@@ -95,7 +95,7 @@ def build_object(cfg, parent, default=None, **kwargs):
                 return obj
         return default
     elif hasattr(parent, 'get'):
-        obj_cls = parent.get(obj_type, None)
+        obj_cls = parent.get(obj_type)
     else:
         obj_cls = getattr(parent, obj_type, None)
 
