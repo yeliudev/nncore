@@ -145,8 +145,8 @@ class TensorboardWriter(Writer):
             input_to_model (Any, optional): the input data or data_loader or
                 name of the data_loader for constructing the model graph. If
                 None, the graph will not be added.
-                See `:meth:torch.utils.tensorboard.SummaryWriter.add_graph` for
-                details about adding a graph to tensorboard.
+                Check :meth:`torch.utils.tensorboard.SummaryWriter.add_graph`
+                for details about adding a graph to tensorboard.
         """
         self._log_dir = log_dir
         self._input_to_model = input_to_model
@@ -157,7 +157,7 @@ class TensorboardWriter(Writer):
             from torch.utils.tensorboard import SummaryWriter
         except ImportError:
             raise ImportError(
-                'please install tensorboard to use the TensorboardWriter')
+                'please install tensorboard to use TensorboardWriter')
 
         if self._log_dir is None:
             self._log_dir = osp.join(engine.work_dir, 'tf_logs')

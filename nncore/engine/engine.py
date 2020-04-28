@@ -186,8 +186,10 @@ class Engine(object):
             self.losses['loss'] = output['loss'] = sum(
                 value for value in self.losses.values())
 
-        for key in output:
-            self.buffer.update(key, output[key])
+        for key, value in output.items():
+            self.buffer.update(
+                key,
+                value.detach().cpu() if torch.is_tensor(value) else value)
 
         self._call_hook('after_train_iter')
         self._iter += 1
@@ -205,8 +207,10 @@ class Engine(object):
         if any('loss' in key for key in output) and 'loss' not in output:
             output['loss'] = sum(v for k, v in output.items() if 'loss' in k)
 
-        for key in output:
-            self.buffer.update(key, output[key])
+        for key, value in output.items():
+            self.buffer.update(
+                key,
+                value.detach().cpu() if torch.is_tensor(value) else value)
 
         self._call_hook('after_val_iter')
 

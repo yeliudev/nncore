@@ -107,7 +107,7 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
 
     This method is modified from :meth:`torch.nn.Module.load_state_dict`.
     Default value for `strict` is set to `False` and the message for param
-    mismatch will be shown even if strict is False.
+    mismatch will be shown even if strict is `False`.
 
     Args:
         module (:obj:`nn.Module`): the module receives the state_dict

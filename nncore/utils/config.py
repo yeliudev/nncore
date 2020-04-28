@@ -201,8 +201,7 @@ class Config(object):
 
     @property
     def text(self):
-        text = '' if self._filename is None else '* {} *\n\n'.format(
-            self._filename)
+        text = '' if self._filename is None else '{}\n'.format(self._filename)
 
         if self._text is not None:
             return text + self._text
@@ -281,8 +280,9 @@ class Config(object):
         return self._cfg.__eq__(other)
 
     def __repr__(self):
-        return 'Config(filename: {}): {}'.format(self._filename,
-                                                 self._cfg.__repr__())
+        file_str = '' if self._filename is None else '(filename: {})'.format(
+            self._filename)
+        return 'Config{}: {}'.format(file_str, self._cfg.__repr__())
 
     def freeze(self):
         self._cfg.freeze()
