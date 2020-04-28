@@ -10,6 +10,6 @@ try:
 except ImportError:
     pass
 
-__version__ = '0.0.2a2'
+__version__ = '0.0.2'
 
 sentry_sdk.init('https://59e084fdf48d40a995fd8d85621b9f58@sentry.io/4107977')
