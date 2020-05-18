@@ -20,7 +20,9 @@ def get_version():
     version_file = osp.join('nncore', '__init__.py')
     with open(version_file, encoding='utf-8') as f:
         lines = f.readlines()
-    version_line = [l.strip() for l in lines if l.startswith('__version__')][0]
+    for line in lines:
+        if line.startswith('__version__'):
+            version_line = line.strip()
     version = version_line.split('=')[-1].strip().strip('"\'')
     return version
 

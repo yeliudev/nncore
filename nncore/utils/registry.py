@@ -50,11 +50,17 @@ class Registry(object):
                                               list(self._items.keys()))
 
     def register(self, obj):
+        if isinstance(obj, (list, tuple)):
+            for o in obj:
+                self.register(o)
+            return
+
         name = obj.__name__
         if name in self._items:
             raise KeyError('{} is already registered in {}'.format(
                 name, self.name))
         self._items[name] = obj
+
         return obj
 
     def get(self, key, default=None):
