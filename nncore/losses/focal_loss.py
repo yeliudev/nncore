@@ -92,7 +92,6 @@ class FocalLoss(nn.Module):
 
     def __init__(self, alpha=-1, gamma=2, reduction='mean'):
         super(FocalLoss, self).__init__()
-
         self.alpha = alpha
         self.gamma = gamma
         self.reduction = reduction
@@ -118,7 +117,6 @@ class FocalLossStar(nn.Module):
 
     def __init__(self, alpha=-1, gamma=1, reduction='mean'):
         super(FocalLossStar, self).__init__()
-
         self.alpha = alpha
         self.gamma = gamma
         self.reduction = reduction

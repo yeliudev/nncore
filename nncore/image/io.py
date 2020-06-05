@@ -11,7 +11,7 @@ _colorspaces = {
 }
 
 
-def imread(filename, flag='color', channel_order='bgr'):
+def imread(filename, flag='color', to_rgb=False):
     """
     Read an image from a file.
 
@@ -20,8 +20,8 @@ def imread(filename, flag='color', channel_order='bgr'):
         flag (str or int, optional): flags specifying the color type of the
             loaded image. Currently supported flags include `color`,
             `grayscale` and `unchanged`.
-        channel_order (str, optional): order of the channels. Currently
-            supported orders include `bgr` and `rgb`.
+        to_rgb (bool, optional): whether to convert channel order from `bgr` to
+            `rgb`.
 
     Returns:
         img (ndarray): the loaded image array
@@ -35,7 +35,7 @@ def imread(filename, flag='color', channel_order='bgr'):
     flag = _colorspaces[flag] if isinstance(flag, str) else flag
     img = cv2.imread(filename, flag)
 
-    if flag == cv2.IMREAD_COLOR and channel_order == 'rgb':
+    if flag == cv2.IMREAD_COLOR and to_rgb:
         cv2.cvtColor(img, cv2.COLOR_BGR2RGB, img)
 
     return img

@@ -74,7 +74,8 @@ class Engine(object):
         self.buffer.clear()
         self._max_stages = len(self.stages)
         self._max_epochs = sum(stage['epochs'] for stage in self.stages)
-        self._max_iters = len(self.data_loaders['train']) * self._max_epochs
+        self._max_iters = (len(self.data_loaders['train']) if 'train'
+                           in self.data_loaders else 0) * self._max_epochs
         self._start_iter = 0
         self._stage = 0
         self._epoch = 0
@@ -124,7 +125,7 @@ class Engine(object):
         elif isinstance(optimizer, torch.optim.Optimizer):
             self.optimizer = optimizer
         else:
-            raise TypeError("invalid optimizer: {}".format(optimizer))
+            raise TypeError("invalid optimizer: '{}'".format(optimizer))
 
     def load_checkpoint(self, checkpoint, strict=False):
         load_checkpoint(

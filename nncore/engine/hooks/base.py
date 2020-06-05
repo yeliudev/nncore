@@ -20,7 +20,7 @@ class Hook(object):
         self._name = name or self.__class__.__name__
 
     def __eq__(self, hook):
-        return self._name == getattr(hook, 'name', hook)
+        return self._name == hook.name
 
     def __repr__(self):
         return '{}()'.format(self._name)
