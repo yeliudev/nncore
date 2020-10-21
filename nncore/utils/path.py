@@ -54,7 +54,7 @@ def mkdir(dir_name, exist_ok=True, keep_empty=False):
             os.remove(osp.join(dir_name, f))
 
 
-def symlink(src, dst, overwrite=True, safe_mode=True):
+def symlink(src, dst, overwrite=True, raise_error=False):
     """
     Create a symlink from source to destination.
 
@@ -63,14 +63,15 @@ def symlink(src, dst, overwrite=True, safe_mode=True):
         dst (str): destination of the symlink
         overwrite (bool, optional): if true, overwrite it when an old symlink
             exists
-        safe_mode (bool, optional): if true, do not raise error when the
-            platform does not support symlink
+        raise_error (bool, optional): if true, raise error when the platform
+            does not support symlink
     """
-    if system() == 'Windows' and safe_mode:
+    if system() == 'Windows' and not raise_error:
         return
 
     if osp.lexists(dst):
         if not overwrite:
             raise FileExistsError("file '{}' exists".format(dst))
         os.remove(dst)
+
     os.symlink(src, dst)

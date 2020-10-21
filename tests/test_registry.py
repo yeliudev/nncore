@@ -12,12 +12,20 @@ def test_registry():
     assert CATS.items == dict()
     assert len(CATS) == 0
 
-    @CATS.register
+    @CATS.register()
     class BritishShorthair:
         pass
 
-    assert len(CATS) == 1
+    @CATS.register(name='AmericanShortHair')
+    class AmericanShorthair:
+        pass
+
+    assert len(CATS) == 2
     assert CATS.get('BritishShorthair') is BritishShorthair
+    assert CATS.get('AmericanShortHair') is AmericanShorthair
+
+    CATS.pop('AmericanShortHair')
+    assert len(CATS) == 1
 
     class Munchkin:
         pass
@@ -33,28 +41,28 @@ def test_registry():
 
     with pytest.raises(KeyError):
 
-        @CATS.register
+        @CATS.register()
         class BritishShorthair:
             pass
 
     assert CATS.get('PersianCat') is None
     assert repr(CATS) in [
-        "Registry(name=cat, items=['BritishShorthair', 'Munchkin'])",
-        "Registry(name=cat, items=['Munchkin', 'BritishShorthair'])"
+        "Registry(name='cat', items=['BritishShorthair', 'Munchkin'])",
+        "Registry(name='cat', items=['Munchkin', 'BritishShorthair'])"
     ]
 
 
 def test_build_object():
     BACKBONES = nncore.Registry('backbone')
 
-    @BACKBONES.register
+    @BACKBONES.register()
     class ResNet:
 
         def __init__(self, depth, stages=4):
             self.depth = depth
             self.stages = stages
 
-    @BACKBONES.register
+    @BACKBONES.register()
     class ResNeXt:
 
         def __init__(self, depth, stages=4):

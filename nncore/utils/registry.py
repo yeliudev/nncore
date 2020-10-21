@@ -14,7 +14,7 @@ class Registry(object):
 
     Example:
         >>> backbones = Registry('backbone')
-        >>> @backbones.register
+        >>> @backbones.register()
         >>> class ResNet(object):
         ...     pass
 
@@ -45,26 +45,39 @@ class Registry(object):
                 "Registry object has no attribute '{}'".format(key))
 
     def __repr__(self):
-        return '{}(name={}, items={})'.format(self.__class__.__name__,
-                                              self._name,
-                                              list(self._items.keys()))
+        return "{}(name='{}', items={})".format(self.__class__.__name__,
+                                                self._name,
+                                                list(self._items.keys()))
 
-    def register(self, obj):
-        if isinstance(obj, (list, tuple)):
-            for o in obj:
-                self.register(o)
-            return
-
-        name = obj.__name__
+    def _register(self, obj, name=None):
+        if name is None:
+            name = obj.__name__
         if name in self._items:
             raise KeyError('{} is already registered in {}'.format(
                 name, self.name))
         self._items[name] = obj
-
         return obj
+
+    def register(self, obj=None, name=None):
+        if isinstance(obj, (list, tuple)):
+            for o in obj:
+                self._register(o, name=name)
+            return
+        elif obj is not None:
+            self._register(obj, name=name)
+            return
+
+        def _wrapper(obj):
+            self._register(obj, name=name)
+            return obj
+
+        return _wrapper
 
     def get(self, key, default=None):
         return self._items.get(key, default)
+
+    def pop(self, key):
+        return self._items.pop(key)
 
 
 def build_object(cfg, parent, default=None, **kwargs):

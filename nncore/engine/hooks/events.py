@@ -54,7 +54,7 @@ class Writer(object):
         raise NotImplementedError
 
 
-@WRITERS.register
+@WRITERS.register()
 class CommandLineWriter(Writer):
 
     def write(self, engine, window_size):
@@ -104,7 +104,7 @@ class CommandLineWriter(Writer):
         engine.logger.info(log)
 
 
-@WRITERS.register
+@WRITERS.register()
 class JSONWriter(Writer):
 
     def __init__(self, filename='metrics.json'):
@@ -134,7 +134,7 @@ class JSONWriter(Writer):
             f.write('\n')
 
 
-@WRITERS.register
+@WRITERS.register()
 @nncore.bind_getter('writer')
 class TensorboardWriter(Writer):
 
@@ -209,7 +209,7 @@ class TensorboardWriter(Writer):
                         tag, record, global_step=engine.iter)
 
 
-@HOOKS.register
+@HOOKS.register()
 class EventWriterHook(Hook):
 
     def __init__(self, interval=50, writers=[]):

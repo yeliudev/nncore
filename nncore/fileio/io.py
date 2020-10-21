@@ -1,5 +1,8 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+import os.path as osp
+
+import nncore
 from .handlers import JsonHandler, PickleHandler, YamlHandler
 
 file_handlers = {
@@ -65,6 +68,7 @@ def dump(obj, name_or_file, file_format=None, **kwargs):
     handler = file_handlers[file_format]
 
     if isinstance(name_or_file, str):
+        nncore.mkdir(osp.dirname(name_or_file))
         handler.dump_to_path(obj, name_or_file, **kwargs)
     elif hasattr(name_or_file, 'write'):
         handler.dump_to_fileobj(obj, name_or_file, **kwargs)
@@ -108,7 +112,7 @@ def dumps(obj, file_format='pickle', **kwargs):
     return handler.dump_to_str(obj, **kwargs)
 
 
-def list_from_file(filename, offset=0, separator=' ', max_num=-1):
+def list_from_file(filename, offset=0, separator=',', max_num=-1):
     """
     Load a text file and parse the content as a list of tuples or strings.
 

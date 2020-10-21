@@ -8,7 +8,7 @@ from .base import HOOKS, Hook
 SCHEDULES = nncore.Registry('schedules')
 
 
-@SCHEDULES.register
+@SCHEDULES.register(name='step')
 def _step(base_lr, progress, step, gamma=0.1, **kwargs):
     if isinstance(step, int):
         return base_lr * (gamma**(progress // step))
@@ -20,29 +20,29 @@ def _step(base_lr, progress, step, gamma=0.1, **kwargs):
     return base_lr * gamma**exp
 
 
-@SCHEDULES.register
+@SCHEDULES.register(name='exp')
 def _exp(base_lr, progress, gamma, **kwargs):
     return base_lr * gamma**progress
 
 
-@SCHEDULES.register
+@SCHEDULES.register(name='poly')
 def _poly(base_lr, progress, max_progress, power=1.0, min_lr=0.0, **kwargs):
     coeff = (1 - progress / max_progress)**power
     return (base_lr - min_lr) * coeff + min_lr
 
 
-@SCHEDULES.register
+@SCHEDULES.register(name='inv')
 def _inv(base_lr, progress, gamma, power=1.0, **kwargs):
     return base_lr * (gamma * progress + 1)**(-power)
 
 
-@SCHEDULES.register
+@SCHEDULES.register(name='cosine')
 def _cosine(base_lr, progress, max_progress, target_lr=0, **kwargs):
     scale = cos(pi * (progress / max_progress)) + 1
     return (base_lr - target_lr) * scale * 0.5 + target_lr
 
 
-@HOOKS.register
+@HOOKS.register()
 class LrUpdaterHook(Hook):
 
     def _base_lr(self, engine):
@@ -53,7 +53,7 @@ class LrUpdaterHook(Hook):
             group['lr'] = lr
 
     def _update_lr(self, engine, cfg):
-        schedule = SCHEDULES.get('_{}'.format(self._schd_cfg['policy']))
+        schedule = SCHEDULES.get(self._schd_cfg['policy'])
         lr_groups = [schedule(lr, **cfg) for lr in self._base_lr(engine)]
         self._set_lr(engine, lr_groups)
         return lr_groups

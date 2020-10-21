@@ -1,16 +1,16 @@
 <div align="center">
 
-![Logo](https://github.com/c1aris/nncore/blob/master/.github/nncore-logo.svg)
+![Logo](https://github.com/yeliudev/nncore/blob/master/.github/nncore-logo.svg)
 
 # NNCore
 
 **A lightweight PyTorch code wrapper for ML researchers.**
 
 [![PyPI version](https://badge.fury.io/py/nncore.svg)](https://pypi.org/project/nncore/)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/c1aris/nncore/blob/master/LICENSE)
-[![Coverage Status](https://coveralls.io/repos/github/c1aris/nncore/badge.svg?branch=master)](https://coveralls.io/github/c1aris/nncore?branch=master)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/yeliudev/nncore/blob/master/LICENSE)
+[![Coverage Status](https://coveralls.io/repos/github/yeliudev/nncore/badge.svg?branch=master)](https://coveralls.io/github/yeliudev/nncore?branch=master)
 [![Slack](https://img.shields.io/badge/slack-chat-blue.svg?logo=slack)](https://join.slack.com/t/nncore/shared_invite/zt-cex52vw2-PBxlf~BToxS3k8etdxYxHQ)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0692961de1d94464a770b22efc2a5b0d)](https://www.codacy.com/manual/c1aris/nncore?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=c1aris/nncore&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/0692961de1d94464a770b22efc2a5b0d)](https://www.codacy.com/manual/yeliudev/nncore?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yeliudev/nncore&amp;utm_campaign=Badge_Grade)
 
 </div>
 
@@ -20,19 +20,19 @@ NNCore is a core library that provides common functionalities for Machine Learni
 * Efficient implementations of layers and losses that are not included in PyTorch
 * Extended methods for distributed trainings
 * More powerful data loading techniques
-* An engine that can take over the whole training and testing process, with all the baby-sitting works (stage control, optimizer configuration, lr scheduling, checkpoint management, metrics & tensorboard writing, etc.) done automatically. See an [example](https://github.com/c1aris/nncore/blob/master/examples/mnist.py) for details.
+* An engine that can take over the whole training and testing process, with all the baby-sitting works (stage control, optimizer configuration, lr scheduling, checkpoint management, metrics & tensorboard writing, etc.) done automatically. See an [example](https://github.com/yeliudev/nncore/blob/master/examples/mnist.py) for details.
 
 Note that some methods in the library work with PyTorch 1.3+, but the installation of PyTorch is not necessary.
 
 ## Continuous Integration
 
-| Platform / Python Version | 3.6 | 3.7 | 3.8 | nightly | pypy3 |
-| :-: | :-: | :-: | :-: | :-: | :-: |
-| Ubuntu 16.04 | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/1/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/2/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/3/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/4/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/5/com)](https://travis-ci.com/c1aris/nncore) |
-| Ubuntu 18.04 | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/6/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/7/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/8/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/9/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/10/com)](https://travis-ci.com/c1aris/nncore) |
-| macOS 10.13 | — | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/11/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/12/com)](https://travis-ci.com/c1aris/nncore) | — | — |
-| macOS 10.14 | — | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/13/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/14/com)](https://travis-ci.com/c1aris/nncore) | — | — |
-| Windows | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/15/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/16/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/17/com)](https://travis-ci.com/c1aris/nncore) | [![Build Status](https://catcatserver.xyz/api/badge/c1aris/nncore/master/18/com)](https://travis-ci.com/c1aris/nncore) | — |
+| Platform / Python Version | 3.6 | 3.7 | 3.8 | 3.9 |
+| :-: | :-: | :-: | :-: | :-: |
+| Ubuntu 16.04 | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/1)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/2)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/3)](https://travis-ci.com/yeliudev/nncore) | - |
+| Ubuntu 18.04 | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/4)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/5)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/6)](https://travis-ci.com/yeliudev/nncore) | - |
+| macOS 10.13 | — | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/7)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/8)](https://travis-ci.com/yeliudev/nncore) | - |
+| macOS 10.14 | — | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/9)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/10)](https://travis-ci.com/yeliudev/nncore) | - |
+| Windows | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/11)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/12)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/13)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/14)](https://travis-ci.com/yeliudev/nncore) |
 
 ## Installation
 
@@ -45,11 +45,11 @@ pip install nncore
 or directly from source
 
 ```
-git clone https://github.com/c1aris/nncore.git
+git clone https://github.com/yeliudev/nncore.git
 cd nncore
 pip install -e .
 ```
 
 ## Acknowledgements
 
-This library is licensed under the [MIT License](https://github.com/c1aris/nncore/blob/master/LICENSE). Part of the code in this project is modified from [mmcv](https://github.com/open-mmlab/mmcv) and [fvcore](https://github.com/facebookresearch/fvcore) with many thanks to the original authors.
+This library is licensed under the [MIT License](https://github.com/yeliudev/nncore/blob/master/LICENSE). Part of the code in this project is modified from [mmcv](https://github.com/open-mmlab/mmcv) and [fvcore](https://github.com/facebookresearch/fvcore) with many thanks to the original authors.

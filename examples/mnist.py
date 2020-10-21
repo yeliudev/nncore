@@ -53,7 +53,7 @@ def main():
     cfg = nncore.Config.from_file('examples/config.py')
     cfg.freeze()
 
-    # Prepare the dataset and model
+    # Prepare dataset and model
     transform = torchvision.transforms.Compose([
         torchvision.transforms.ToTensor(),
         torchvision.transforms.Normalize([0.5], [0.5])
@@ -62,10 +62,10 @@ def main():
     train = MNIST('data', train=True, transform=transform, download=True)
     trainloader = DataLoader(train, batch_size=16, shuffle=True, num_workers=2)
 
-    test = MNIST('data', train=False, transform=transform, download=True)
-    testloader = DataLoader(test, batch_size=64, shuffle=False, num_workers=2)
+    val = MNIST('data', train=False, transform=transform, download=True)
+    valloader = DataLoader(val, batch_size=64, shuffle=False, num_workers=2)
 
-    data_loaders = dict(train=trainloader, val=testloader)
+    data_loaders = dict(train=trainloader, val=valloader)
     model = LeNet().to(device)
 
     # Initialize and launch engine

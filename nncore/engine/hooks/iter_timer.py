@@ -7,7 +7,7 @@ from ..comm import master_only
 from .base import HOOKS, Hook
 
 
-@HOOKS.register
+@HOOKS.register()
 class IterTimerHook(Hook):
 
     def __init__(self):

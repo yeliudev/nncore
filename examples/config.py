@@ -1,3 +1,4 @@
+# Training schedule settings
 stages = [
     dict(
         epochs=5,
@@ -7,6 +8,7 @@ stages = [
         validation=dict(interval=1))
 ]
 
+# Engine hook settings
 hooks = [
     dict(type='IterTimerHook'),
     dict(type='LrUpdaterHook'),
@@ -22,4 +24,5 @@ hooks = [
         ])
 ]
 
+# Work directory
 work_dir = 'work_dirs/mnist'

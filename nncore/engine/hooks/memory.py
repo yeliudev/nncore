@@ -5,7 +5,7 @@ import torch
 from .base import HOOKS, Hook
 
 
-@HOOKS.register
+@HOOKS.register()
 class EmptyCacheHook(Hook):
 
     def __init__(self, periods=[]):

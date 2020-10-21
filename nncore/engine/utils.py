@@ -246,7 +246,7 @@ def _fuse_conv_bn(conv, bn):
     return conv
 
 
-def fuse_module(model):
+def fuse_conv_bn(model):
     """
     During inference, the functionary of batch norm layers is turned off
     but only the mean and var alone channels are used, which exposes the
@@ -268,7 +268,7 @@ def fuse_module(model):
             last_conv = child
             last_conv_name = name
         else:
-            fuse_module(child)
+            fuse_conv_bn(child)
 
     return model
 

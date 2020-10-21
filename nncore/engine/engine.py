@@ -9,6 +9,21 @@ from .buffer import Buffer
 from .hooks import HOOKS, Hook
 from .utils import get_checkpoint, load_checkpoint
 
+DEFAULT_HOOKS = [
+    dict(type='IterTimerHook'),
+    dict(type='LrUpdaterHook'),
+    dict(type='OptimizerHook'),
+    dict(type='CheckpointHook'),
+    dict(
+        type='EventWriterHook',
+        interval=50,
+        writers=[
+            dict(type='CommandLineWriter'),
+            dict(type='JSONWriter'),
+            dict(type='TensorboardWriter')
+        ])
+]
+
 
 @nncore.bind_getter('mode', 'hooks', 'max_stages', 'max_epochs', 'max_iters',
                     'start_iter', 'stage', 'epoch', 'iter')
@@ -19,13 +34,13 @@ class Engine(object):
                  data_loaders,
                  stages,
                  batch_processor=None,
-                 buffer_size=990125,
-                 hooks=None,
+                 buffer_size=980703,
+                 hooks=DEFAULT_HOOKS,
                  logger=None,
                  work_dir=None):
         self.model = model
         self.data_loaders = data_loaders
-        self.stages = stages
+        self.stages = stages if isinstance(stages, list) else [stages]
         self.batch_processor = batch_processor
         self.work_dir = work_dir
 
@@ -51,7 +66,7 @@ class Engine(object):
         for stage in self.stages:
             if self._epoch + 1 <= cumsum + stage['epochs']:
                 return self._epoch - cumsum
-            cumsum += stage.epochs
+            cumsum += stage['epochs']
         return self.stages[-1]['epochs']
 
     @property
@@ -81,7 +96,7 @@ class Engine(object):
         self._epoch = 0
         self._iter = 0
 
-    def register_hook(self, hook, before=None):
+    def register_hook(self, hook, before=None, overwrite=True):
         """
         Register a hook into the engine.
 
@@ -90,15 +105,23 @@ class Engine(object):
             before (str, optional): name of the hook to be inserted before. The
                 new hook will be inserted into the end of the hook list by
                 default.
+            overwrite (bool, optional): whether to overwrite the old hook with
+                the same name if exists
         """
         if isinstance(hook, dict):
             hook = nncore.build_object(hook, HOOKS)
+        elif isinstance(hook, (list, tuple)):
+            for h in hook:
+                self.register_hook(h, before=before)
         elif not isinstance(hook, Hook):
             raise TypeError("hook must be a Hook or dict, but got '{}'".format(
                 type(hook)))
 
         if hook.name in self._hooks:
-            raise ValueError("hook '{}' exists".format(hook.name))
+            if overwrite:
+                self._hooks.pop(hook.name)
+            else:
+                raise KeyError("hook '{}' exists".format(hook.name))
 
         self._hooks[hook.name] = hook
 

@@ -2,15 +2,15 @@
 
 import os.path as osp
 import re
-import warnings
-from platform import python_version_tuple, system
+from platform import system
 
-from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
+from pkg_resources import DistributionNotFound, get_distribution
+
 INSTALL_REQUIRES = [
-    'joblib>=0.14', 'numpy>=1.15', 'pynvml>=8', 'pyyaml>=5',
-    'sentry-sdk>=0.14', 'six>=1.14', 'tabulate>=0.8', 'termcolor>=1.1'
+    'joblib>=0.17', 'numpy>=1.19', 'pynvml>=8', 'pyyaml>=5.3', 'six>=1.15',
+    'tabulate>=0.8', 'termcolor>=1.1'
 ]
 
 OPENCV_INSTALL_REQUIRES = 'opencv-python-headless>=3', 'opencv-python>=3'
@@ -45,17 +45,13 @@ def install_requires():
 
     install_requires = INSTALL_REQUIRES
 
-    if system() != 'Windows' and int(python_version_tuple()[1]) <= 4:
+    if system() != 'Windows':
         primary, secondary = OPENCV_INSTALL_REQUIRES
         try:
             get_distribution(re.split(r'[!<>=]', primary)[0])
             install_requires.append(primary)
         except DistributionNotFound:
             install_requires.append(secondary)
-    else:
-        warnings.warn(
-            'Can not install opencv-python automatically on this plaform, '
-            'please install it manually to enable nncore.image.')
 
     return install_requires
 
@@ -64,9 +60,9 @@ setup(
     name='nncore',
     version=get_version(),
     author='Ye Liu',
-    author_email='yeliudev@gmail.com',
+    author_email='yeliudev@outlook.com',
     license='MIT',
-    url='https://github.com/c1aris/nncore',
+    url='https://github.com/yeliudev/nncore',
     description='A lightweight PyTorch code wrapper for ML researchers',
     long_description=get_readme(),
     long_description_content_type='text/markdown',

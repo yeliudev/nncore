@@ -80,13 +80,13 @@ def _convert_color_factory(src, dst):
         return cv2.cvtColor(img, code)
 
     _convert_color.__doc__ = """
-    Convert {0} image to {1} image.
+    Convert {} image to {} image.
 
     Args:
         img (ndarray): the input image
 
     Returns:
-        img (ndarray): the converted {2} image
+        img (ndarray): the converted {} image
     """.format(src_with_quantifier, dst_with_quantifier, dst)
 
     return _convert_color

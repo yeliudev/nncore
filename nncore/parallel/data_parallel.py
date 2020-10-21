@@ -1,9 +1,7 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import torch
-from torch.nn.parallel import DataParallel as _DataParallel
-from torch.nn.parallel import \
-    DistributedDataParallel as _DistributedDataParallel
+from torch.nn.parallel import DataParallel, DistributedDataParallel
 from torch.nn.parallel._functions import Scatter, _get_stream
 
 from .container import DataContainer
@@ -106,13 +104,13 @@ def _scatter_kwargs(inputs, kwargs, target_gpus, dim=0):
     return tuple(inputs), tuple(kwargs)
 
 
-class DataParallel(_DataParallel):
+class NNDataParallel(DataParallel):
 
     def scatter(self, inputs, kwargs, device_ids):
         return _scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
 
-class DistributedDataParallel(_DistributedDataParallel):
+class NNDistributedDataParallel(DistributedDataParallel):
 
     def scatter(self, inputs, kwargs, device_ids):
         return _scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)

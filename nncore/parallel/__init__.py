@@ -2,8 +2,8 @@
 
 from .collate import collate
 from .container import DataContainer
-from .data_parallel import DataParallel, DistributedDataParallel
+from .data_parallel import NNDataParallel, NNDistributedDataParallel
 
 __all__ = [
-    'collate', 'DataContainer', 'DataParallel', 'DistributedDataParallel'
+    'collate', 'DataContainer', 'NNDataParallel', 'NNDistributedDataParallel'
 ]

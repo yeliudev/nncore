@@ -45,7 +45,7 @@ def _allreduce_grads(params, coalesce, bucket_size_mb):
             dist.all_reduce(tensor.div_(world_size))
 
 
-@HOOKS.register
+@HOOKS.register()
 class OptimizerHook(Hook):
 
     def __init__(self, interval=1):
@@ -86,7 +86,7 @@ class OptimizerHook(Hook):
         engine.optimizer.zero_grad()
 
 
-@HOOKS.register
+@HOOKS.register()
 class DistOptimizerHook(OptimizerHook):
 
     def __init__(self, interval=1, coalesce=True, bucket_size_mb=-1):

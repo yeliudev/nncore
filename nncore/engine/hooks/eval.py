@@ -5,7 +5,7 @@ from nncore.engine import comm
 from .base import HOOKS, Hook
 
 
-@HOOKS.register
+@HOOKS.register()
 class EvalHook(Hook):
 
     def __init__(self, interval=1, buffer_keys=[], **kwargs):
@@ -33,7 +33,7 @@ class EvalHook(Hook):
             engine.buffer.remove(key)
 
 
-@HOOKS.register
+@HOOKS.register()
 class DistEvalHook(EvalHook):
 
     def after_val_epoch(self, engine):

@@ -3,7 +3,7 @@
 from .base import HOOKS, Hook
 
 
-@HOOKS.register
+@HOOKS.register()
 class ClosureHook(Hook):
 
     def __init__(self, fn_name, fn):
