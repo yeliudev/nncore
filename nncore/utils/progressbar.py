@@ -22,8 +22,8 @@ class ProgressBar(object):
         self._timer = Timer()
 
         if distributed:
-            from nncore.ops.comm import is_main_process
-            self.enabled = is_main_process()
+            from nncore.engine import comm
+            self.enabled = comm.is_main_process()
         else:
             self.enabled = True
 

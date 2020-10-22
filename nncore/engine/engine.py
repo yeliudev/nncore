@@ -9,7 +9,7 @@ from .buffer import Buffer
 from .hooks import HOOKS, Hook
 from .utils import get_checkpoint, load_checkpoint
 
-DEFAULT_HOOKS = [
+_DEFAULT_HOOKS = [
     dict(type='IterTimerHook'),
     dict(type='LrUpdaterHook'),
     dict(type='OptimizerHook'),
@@ -35,7 +35,7 @@ class Engine(object):
                  stages,
                  batch_processor=None,
                  buffer_size=980703,
-                 hooks=DEFAULT_HOOKS,
+                 hooks=_DEFAULT_HOOKS,
                  logger=None,
                  work_dir=None):
         self.model = model

@@ -280,7 +280,7 @@ class Config(object):
         return self._cfg.__eq__(other)
 
     def __repr__(self):
-        file_str = '' if self._filename is None else '(filename: {})'.format(
+        file_str = '' if self._filename is None else "(filename: '{}')".format(
             self._filename)
         return 'Config{}: {}'.format(file_str, self._cfg.__repr__())
 

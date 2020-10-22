@@ -54,7 +54,7 @@ class Registry(object):
             name = obj.__name__
         if name in self._items:
             raise KeyError('{} is already registered in {}'.format(
-                name, self.name))
+                name, self._name))
         self._items[name] = obj
         return obj
 
@@ -63,7 +63,8 @@ class Registry(object):
             for o in obj:
                 self._register(o, name=name)
             return
-        elif obj is not None:
+
+        if obj is not None:
             self._register(obj, name=name)
             return
 

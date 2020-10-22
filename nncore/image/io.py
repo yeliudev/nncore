@@ -6,7 +6,7 @@ import cv2
 
 import nncore
 
-_colorspaces = {
+_COLORSPACES = {
     'color': cv2.IMREAD_COLOR,
     'grayscale': cv2.IMREAD_GRAYSCALE,
     'unchanged': cv2.IMREAD_UNCHANGED
@@ -34,7 +34,7 @@ def imread(filename, flag='color', to_rgb=False):
 
     nncore.file_exist(filename, raise_error=True)
 
-    flag = _colorspaces[flag] if isinstance(flag, str) else flag
+    flag = _COLORSPACES[flag] if isinstance(flag, str) else flag
     img = cv2.imread(filename, flag)
 
     if flag == cv2.IMREAD_COLOR and to_rgb:
