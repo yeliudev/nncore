@@ -49,7 +49,7 @@ class LeNet(nn.Module):
 
 
 def main():
-    # Load config from files
+    # Load config from file
     cfg = nncore.Config.from_file('examples/config.py')
     cfg.freeze()
 
