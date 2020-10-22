@@ -20,68 +20,55 @@ jobs:
     - name: Python 3.8 on Bionic Linux
       dist: bionic
       python: 3.8
+    - name: Python 3.6 on Focal Linux
+      dist: focal
+      python: 3.6
+    - name: Python 3.7 on Focal Linux
+      dist: focal
+      python: 3.7
+    - name: Python 3.8 on Focal Linux
+      dist: focal
+      python: 3.8
       env: DEPLOY_AT_THIS_ENV=true
 
-    - name: Python 3.7 on macOS 10.13
-      os: osx
-      osx_image: xcode10.1
-      language: shell
-      before_install:
-        - brew uninstall --ignore-dependencies python@2
-        - brew upgrade python
-      env: HOMEBREW_NO_AUTO_UPDATE=true
-    - name: Python 3.8 on macOS 10.13
-      os: osx
-      osx_image: xcode10.1
-      language: shell
-      before_install:
-        - brew uninstall --ignore-dependencies python@2 python
-        - brew install python@3.8
-      env:
-        - HOMEBREW_NO_AUTO_UPDATE=true
-        - PATH=/usr/local/opt/python@3.8/bin:$PATH
     - name: Python 3.7 on macOS 10.14
       os: osx
       osx_image: xcode11.3
       language: shell
-      before_install:
-        - brew uninstall --ignore-dependencies python@3.8
-        - brew upgrade python
-      env: HOMEBREW_NO_AUTO_UPDATE=true
     - name: Python 3.8 on macOS 10.14
       os: osx
       osx_image: xcode11.3
       language: shell
-      before_install:
-        - brew uninstall --ignore-dependencies python
-        - brew upgrade python@3.8
-      env:
-        - HOMEBREW_NO_AUTO_UPDATE=true
-        - PATH=/usr/local/opt/python@3.8/bin:$PATH
+      env: PATH=/usr/local/opt/python@3.8/bin:$PATH
+    - name: Python 3.7 on macOS 10.15
+      os: osx
+      osx_image: xcode12.2
+      language: shell
+    - name: Python 3.8 on macOS 10.15
+      os: osx
+      osx_image: xcode12.2
+      language: shell
+      env: PATH=/usr/local/opt/python@3.8/bin:$PATH
 
     - name: Python 3.6 on Windows
       os: windows
       language: shell
-      before_install:
-        - choco install python --version 3.6.8
+      before_install: choco install python --version 3.6.8
       env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
     - name: Python 3.7 on Windows
       os: windows
       language: shell
-      before_install:
-        - choco install python --version 3.7.9
+      before_install: choco install python --version 3.7.9
       env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
     - name: Python 3.8 on Windows
       os: windows
       language: shell
-      before_install:
-        - choco install python --version 3.8.6
+      before_install: choco install python --version 3.8.6
       env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
     - name: Python 3.9 on Windows
       os: windows
       language: shell
-      before_install:
-        - choco install python --version 3.9.0
+      before_install: choco install python --version 3.9.0
       env: PATH=/c/Python39:/c/Python39/Scripts:$PATH
 
 install:
