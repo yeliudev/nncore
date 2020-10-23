@@ -9,6 +9,13 @@ from .buffer import Buffer
 from .hooks import HOOKS, Hook
 from .utils import get_checkpoint, load_checkpoint
 
+_DEFAULT_STAGES = dict(
+    epochs=5,
+    optimizer=dict(type='SGD', lr=1e-2, momentum=0.9, weight_decay=1e-4),
+    lr_schedule=dict(type='iter', policy='cosine'),
+    warmup=dict(type='iter', policy='linear', steps=500, ratio=1e-3),
+    validation=dict(interval=1))
+
 _DEFAULT_HOOKS = [
     dict(type='IterTimerHook'),
     dict(type='LrUpdaterHook'),
@@ -32,22 +39,25 @@ class Engine(object):
     def __init__(self,
                  model,
                  data_loaders,
-                 stages,
+                 stages=_DEFAULT_STAGES,
+                 hooks=_DEFAULT_HOOKS,
                  batch_processor=None,
                  buffer_size=980703,
-                 hooks=_DEFAULT_HOOKS,
                  logger=None,
-                 work_dir=None):
+                 work_dir=None,
+                 **kwargs):
         self.model = model
         self.data_loaders = data_loaders
-        self.stages = stages if isinstance(stages, list) else [stages]
         self.batch_processor = batch_processor
         self.work_dir = work_dir
 
+        if isinstance(stages, dict):
+            stages.update(kwargs)
+        self.stages = stages if isinstance(stages, (list, tuple)) else [stages]
+
         self._hooks = OrderedDict()
         if hooks is not None:
-            for hook in hooks:
-                self.register_hook(hook)
+            self.register_hook(hooks)
 
         if work_dir is not None:
             nncore.mkdir(work_dir)
@@ -101,18 +111,20 @@ class Engine(object):
         Register a hook into the engine.
 
         Args:
-            hook (:obj:`Hook` or dict): the hook to be registered
+            hook (:obj:`Hook` or list or tuple or dict): the hook or list of
+                hooks to be registered
             before (str, optional): name of the hook to be inserted before. The
                 new hook will be inserted into the end of the hook list by
                 default.
             overwrite (bool, optional): whether to overwrite the old hook with
                 the same name if exists
         """
-        if isinstance(hook, dict):
-            hook = nncore.build_object(hook, HOOKS)
-        elif isinstance(hook, (list, tuple)):
+        if isinstance(hook, (list, tuple)):
             for h in hook:
                 self.register_hook(h, before=before)
+            return
+        elif isinstance(hook, dict):
+            hook = nncore.build_object(hook, HOOKS)
         elif not isinstance(hook, Hook):
             raise TypeError("hook must be a Hook or dict, but got '{}'".format(
                 type(hook)))
@@ -284,13 +296,15 @@ class Engine(object):
 
         self._call_hook('before_stage')
 
-        val_cfg = self.cur_stage.get('validation', dict(interval=0))
+        val_cfg = self.cur_stage.get('validation', None)
         while self.epoch_in_stage < self.cur_stage['epochs']:
             self.train_epoch(**kwargs)
-            if val_cfg['interval'] > 0 and self.epoch_in_stage > val_cfg.get(
-                    'offset',
-                    0) and self.epoch_in_stage % val_cfg['interval'] == 0:
-                self.val_epoch(**kwargs)
+            if 'val' in self.data_loaders and val_cfg is not None:
+                interval = val_cfg.get('interval', 0)
+                offset = val_cfg.get('offset', 0)
+                epoch = self.epoch_in_stage
+                if interval > 0 and epoch > offset and epoch % interval == 0:
+                    self.val_epoch(**kwargs)
 
         self._call_hook('after_stage')
         self._stage += 1

@@ -7,8 +7,7 @@ from .base import HOOKS, Hook
 class ClosureHook(Hook):
 
     def __init__(self, fn_name, fn):
-        if isinstance(fn_name,
-                      (list, tuple)) and isinstance(fn, (list, tuple)):
+        if isinstance(fn, (list, tuple)):
             for name, f in zip([fn_name, fn]):
                 self._add_hook(name, f)
         else:
