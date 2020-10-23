@@ -9,19 +9,19 @@ import pytest
 import nncore
 
 
-def _test_handler(file_format, test_obj, str_checker, mode='r+'):
-    dump_str = nncore.dumps(test_obj, file_format=file_format)
+def _test_handler(format, test_obj, str_checker, mode='r+'):
+    dump_str = nncore.dumps(test_obj, format=format)
     str_checker(dump_str)
 
     tmp_filename = osp.join(tempfile.gettempdir(), 'nncore_test_dump')
-    nncore.dump(test_obj, tmp_filename, file_format=file_format)
+    nncore.dump(test_obj, tmp_filename, format=format)
     assert osp.isfile(tmp_filename)
-    load_obj = nncore.load(tmp_filename, file_format=file_format)
+    load_obj = nncore.load(tmp_filename, format=format)
     assert load_obj == test_obj
     os.remove(tmp_filename)
 
     tmp_filename = osp.join(tempfile.gettempdir(),
-                            'nncore_test_dump.' + file_format)
+                            'nncore_test_dump.' + format)
     nncore.dump(test_obj, tmp_filename)
     assert osp.isfile(tmp_filename)
     load_obj = nncore.load(tmp_filename)

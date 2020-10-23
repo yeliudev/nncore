@@ -4,13 +4,12 @@ import os.path as osp
 import re
 from platform import system
 
+from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
-from pkg_resources import DistributionNotFound, get_distribution
-
 INSTALL_REQUIRES = [
-    'joblib>=0.17', 'numpy>=1.19', 'pynvml>=8', 'pyyaml>=5.3', 'six>=1.15',
-    'tabulate>=0.8', 'termcolor>=1.1'
+    'joblib>=0.17', 'numpy>=1.19', 'pynvml>=8', 'pyyaml>=5.3', 'tabulate>=0.8',
+    'termcolor>=1.1'
 ]
 
 OPENCV_INSTALL_REQUIRES = 'opencv-python-headless>=3', 'opencv-python>=3'

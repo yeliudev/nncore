@@ -4,8 +4,6 @@ from collections.abc import Iterable, Sequence
 from functools import partial
 from itertools import chain
 
-from six import moves
-
 
 def iter_cast(inputs, dst_type, return_type=None):
     """
@@ -26,7 +24,7 @@ def iter_cast(inputs, dst_type, return_type=None):
     if not isinstance(dst_type, type):
         raise TypeError("'dst_type' must be a valid type")
 
-    out_iter = moves.map(dst_type, inputs)
+    out_iter = map(dst_type, inputs)
 
     if return_type is not None:
         out_iter = return_type(out_iter)

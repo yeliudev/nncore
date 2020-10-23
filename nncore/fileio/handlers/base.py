@@ -1,9 +1,9 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 
 
-class FileHandler(object):
+class FileHandler(metaclass=ABCMeta):
 
     @abstractmethod
     def load_from_fileobj(self, file, **kwargs):

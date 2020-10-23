@@ -134,7 +134,7 @@ class CfgNode(OrderedDict):
         return base
 
     def to_json(self):
-        return nncore.dumps(self.to_dict(), file_format='json', indent=2)
+        return nncore.dumps(self.to_dict(), format='json', indent=2)
 
 
 @bind_getter('filename')
@@ -162,8 +162,8 @@ class Config(object):
         filename = osp.abspath(osp.expanduser(filename))
         nncore.file_exist(filename, raise_error=True)
 
-        file_format = filename.split('.')[-1]
-        if file_format == 'py':
+        format = filename.split('.')[-1]
+        if format == 'py':
             with TemporaryDirectory() as tmp_dir:
                 mod_name = str(int.from_bytes(os.urandom(2), 'big'))
                 copyfile(filename, osp.join(tmp_dir, '{}.py'.format(mod_name)))
@@ -175,10 +175,10 @@ class Config(object):
                     for k, v in mod.__dict__.items()
                     if not k.startswith('__') or not k.endswith('__')
                 }
-        elif file_format in ['json', 'yml', 'yaml']:
+        elif format in ['json', 'yml', 'yaml']:
             cfg = nncore.load(filename)
         else:
-            raise TypeError("unsupported format: '{}'".format(file_format))
+            raise TypeError("unsupported format: '{}'".format(format))
 
         return Config(cfg=cfg, filename=filename)
 

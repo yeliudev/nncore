@@ -1,6 +1,7 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import os.path as osp
+from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from datetime import timedelta
 
@@ -15,7 +16,17 @@ from .base import HOOKS, Hook
 WRITERS = nncore.Registry('writer')
 
 
-class Writer(object):
+class Writer(metaclass=ABCMeta):
+
+    @abstractmethod
+    def write(self, engine, window_size):
+        pass
+
+    def open(self, engine):
+        pass
+
+    def close(self, engine):
+        pass
 
     def collect_metrics(self, engine, window_size):
         metrics = OrderedDict()
@@ -43,15 +54,6 @@ class Writer(object):
                     '_data_time', window_size=window_size)
 
         return metrics
-
-    def open(self, engine):
-        pass
-
-    def close(self, engine):
-        pass
-
-    def write(self, engine, window_size):
-        raise NotImplementedError
 
 
 @WRITERS.register()
@@ -130,12 +132,11 @@ class JSONWriter(Writer):
 
         filename = osp.join(engine.work_dir, self._filename)
         with open(filename, 'a+') as f:
-            nncore.dump(metrics, f, file_format='json')
+            nncore.dump(metrics, f, format='json')
             f.write('\n')
 
 
 @WRITERS.register()
-@nncore.bind_getter('writer')
 class TensorboardWriter(Writer):
 
     def __init__(self, log_dir=None, input_to_model=None, **kwargs):

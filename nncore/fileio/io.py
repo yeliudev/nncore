@@ -5,7 +5,7 @@ import os.path as osp
 import nncore
 from .handlers import JsonHandler, PickleHandler, YamlHandler
 
-file_handlers = {
+_FILE_HANDLERS = {
     'json': JsonHandler(),
     'yaml': YamlHandler(),
     'yml': YamlHandler(),
@@ -14,19 +14,20 @@ file_handlers = {
 }
 
 
-def _check_format(file_format, supported_formats):
-    if file_format not in supported_formats:
-        raise TypeError("unsupported format: '{}'".format(file_format))
+def _get_handler(format):
+    if format not in _FILE_HANDLERS:
+        raise TypeError("unsupported format: '{}'".format(format))
+    return _FILE_HANDLERS[format]
 
 
-def load(name_or_file, file_format=None, **kwargs):
+def load(name_or_file, format=None, **kwargs):
     """
     Load data from json/yaml/pickle files.
 
     Args:
         name_or_file (str or file-like object): name of the file or a file-like
             object
-        file_format (str, optional): if not specified, the file format will be
+        format (str, optional): if not specified, the file format will be
             inferred from the file extension, otherwise use the specified one.
             Currently supported formats include `json`, `yaml/yml` and
             `pickle/pkl`.
@@ -34,10 +35,8 @@ def load(name_or_file, file_format=None, **kwargs):
     Returns:
         obj (any): the name_or_file from the file
     """
-    file_format = file_format or name_or_file.split('.')[-1]
-    _check_format(file_format, file_handlers)
-
-    handler = file_handlers[file_format]
+    format = format or name_or_file.split('.')[-1]
+    handler = _get_handler(format)
 
     if isinstance(name_or_file, str):
         return handler.load_from_path(name_or_file, **kwargs)
@@ -49,7 +48,7 @@ def load(name_or_file, file_format=None, **kwargs):
             format(type(name_or_file)))
 
 
-def dump(obj, name_or_file, file_format=None, **kwargs):
+def dump(obj, name_or_file, format=None, **kwargs):
     """
     Dump data to json/yaml/pickle files.
 
@@ -57,15 +56,13 @@ def dump(obj, name_or_file, file_format=None, **kwargs):
         obj (any): the python object to be dumped
         name_or_file (str or file-like object): name of the dumped file or a
             file-like object
-        file_format (str, optional): if not specified, the file format will be
+        format (str, optional): if not specified, the file format will be
             inferred from the file extension, otherwise use the specified one.
             Currently supported formats include `json`, `yaml/yml` and
             `pickle/pkl`.
     """
-    file_format = file_format or name_or_file.split('.')[-1]
-    _check_format(file_format, file_handlers)
-
-    handler = file_handlers[file_format]
+    format = format or name_or_file.split('.')[-1]
+    handler = _get_handler(format)
 
     if isinstance(name_or_file, str):
         nncore.mkdir(osp.dirname(name_or_file))
@@ -78,37 +75,35 @@ def dump(obj, name_or_file, file_format=None, **kwargs):
             format(type(name_or_file)))
 
 
-def loads(string, file_format='pickle', **kwargs):
+def loads(string, format='pickle', **kwargs):
     """
     Load data from a json/yaml/pickle style string.
 
     Args:
         string (str or btyearray): string of the file
-        file_format (str, optional): format of the string. Only supports
-            `pickle/pkl` currently.
+        format (str, optional): format of the string. Currently supported
+            formats include `json`, `yaml/yml` and `pickle/pkl`.
 
     Returns:
         obj (any): the name_or_file from the file
     """
-    _check_format(file_format, ['pickle', 'pkl'])
-    handler = file_handlers[file_format]
+    handler = _get_handler(format)
     return handler.load_from_str(string, **kwargs)
 
 
-def dumps(obj, file_format='pickle', **kwargs):
+def dumps(obj, format='pickle', **kwargs):
     """
     Dump data to a json/yaml/pickle style string.
 
     Args:
         obj (any): the python object to be dumped
-        file_format (str, optional): format of the string. Currently supported
+        format (str, optional): format of the string. Currently supported
             formats include `json`, `yaml/yml` and `pickle/pkl`.
 
     Returns:
         string (str): the string of the dumped file
     """
-    _check_format(file_format, file_handlers)
-    handler = file_handlers[file_format]
+    handler = _get_handler(format)
     return handler.dump_to_str(obj, **kwargs)
 
 
