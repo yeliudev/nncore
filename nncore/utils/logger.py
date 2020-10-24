@@ -13,7 +13,7 @@ _COLOR_MAP = {
     20: 'green',
     30: 'yellow',
     40: 'red',
-    50: 'red'
+    50: 'magenta'
 }
 
 
@@ -86,7 +86,7 @@ def get_logger(name='nncore',
     return logger
 
 
-def log_or_print(msg, logger, log_level=logging.INFO):
+def log_or_print(msg, logger, log_level=logging.INFO, **kwargs):
     """
     Log a message with a potential logger. If `logger` is a valid
     `logging.Logger` or a name of the logger, then it would be used. Otherwise
@@ -101,7 +101,7 @@ def log_or_print(msg, logger, log_level=logging.INFO):
     if isinstance(logger, logging.Logger):
         logger.log(level, msg)
     elif isinstance(logger, str):
-        logger = logging.getLogger(logger)
+        logger = get_logger(logger, **kwargs)
         logger.log(level, msg)
     else:
         if level > 20:
