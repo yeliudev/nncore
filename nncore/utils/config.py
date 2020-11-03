@@ -154,7 +154,7 @@ class Config(object):
 
         Args:
             filename (str): key of the config file. Currently supported
-                formats include `py`, `json` and `yaml/yml`.
+                formats include `py`, `json`, and `yaml/yml`.
 
         Returns:
             cfg (Config): the created `Config` object

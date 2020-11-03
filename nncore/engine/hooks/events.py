@@ -116,6 +116,9 @@ class JSONWriter(Writer):
         """
         self._filename = filename
 
+    def open(self, engine):
+        nncore.mkdir(engine.work_dir)
+
     def write(self, engine, window_size):
         metrics = self.collect_metrics(engine, window_size)
 
@@ -154,15 +157,11 @@ class TensorboardWriter(Writer):
         self._kwargs = kwargs
 
     def open(self, engine):
-        try:
-            from torch.utils.tensorboard import SummaryWriter
-        except ImportError:
-            raise ImportError(
-                'please install tensorboard to use TensorboardWriter')
-
         if self._log_dir is None:
             self._log_dir = osp.join(engine.work_dir, 'tf_logs')
+        nncore.mkdir(self._log_dir)
 
+        from torch.utils.tensorboard import SummaryWriter
         self._writer = SummaryWriter(self._log_dir, **self._kwargs)
 
         if self._input_to_model is not None:
@@ -213,10 +212,13 @@ class TensorboardWriter(Writer):
 @HOOKS.register()
 class EventWriterHook(Hook):
 
-    def __init__(self, interval=50, writers=[]):
+    def __init__(self, interval=50, writers=['CommandLineWriter']):
         super(EventWriterHook, self).__init__()
         self._interval = interval
-        self._writers = [nncore.build_object(w, WRITERS) for w in writers]
+        self._writers = [
+            nncore.build_object(w, WRITERS)
+            if isinstance(w, dict) else WRITERS.get(w)() for w in writers
+        ]
 
     def _write(self, engine, window_size):
         for w in self._writers:

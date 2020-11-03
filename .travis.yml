@@ -1,6 +1,5 @@
 os: linux
 dist: xenial
-
 language: python
 
 jobs:
@@ -29,7 +28,7 @@ jobs:
     - name: Python 3.8 on Focal Linux
       dist: focal
       python: 3.8
-      env: DEPLOY_AT_THIS_ENV=true
+      env: DEPLOY_IN_THIS_ENV=true
 
     - name: Python 3.7 on macOS 10.14
       os: osx
@@ -72,7 +71,7 @@ jobs:
       env: PATH=/c/Python39:/c/Python39/Scripts:$PATH
 
 install:
-  - pip3 install --upgrade setuptools coveralls flake8 yapf isort
+  - pip3 install --upgrade setuptools coveralls isort yapf flake8
   - pip3 install -e .
 
 before_script:
@@ -91,13 +90,13 @@ deploy:
   username: __token__
   password:
     secure: FpqtAv6eSP/XQdaRDZvjEraAzBXvUoWGzNDzanAJ/z9EFXVi1S0faRsAFVTVaOr2jowGIFySzJRtvSf72+KtlKe70LdNI4YWM8YVu0j66O+xXFUAauQz1kcMR5tGw2d4gJDf5Xuzd5qToJWYj0F02KOMsmbOlsYHEaScRKC8LVMQ04NLcJUPHTkL/7oCq66fFCIUVXu9HgbeQfnovMPEu9iL3LWVEKHDoEwIREPvApychFWFGqZetql9g5qdPy0eElRqz9EyFtTnWvgo/mzY9F7IdnzZ0h/ThxrQsCj6pbz+AuKiiAB/n8m6LBQfWxpqQ4vEZOyhqa54+2DujSirmgsmuO+rIBtzuxi0b/sdry5bDH+B0uk5NqSxH8LnnYCg0gc9fmPFA0CXEEAZtQOQye4L8dv5Hfsl2X3T7IPN+AG1i8j0g4OcfLrv3en8NhvP5asNbOvhn8iG15MbYqk8/TPry0Omj8dfEps03IT3zwa0WZ8iwz8ZlD0ngrAj8EJQROCa8v5iZYjG/17+wYeqvYw6NkBM6xn227hhG+ZMIwXjSsx4y4xUEa9Qdr7Z4t5WN8YZIGRiazRMXXvHGj2xUcTqy2lxaQHfXZxdenNGnnSJ+R9C1Fe+zBnmnnE7GiwPw+KiPVg1UxaggLhi/txcxt6DqCLB85MNagF1lzD7c1Q=
-  skip_existing: true
   distributions: sdist bdist_wheel
+  skip_existing: true
   on:
     branch: release
     tags: true
     python: 3.8
-    condition: $DEPLOY_AT_THIS_ENV
+    condition: $DEPLOY_IN_THIS_ENV
 
 notifications:
   slack:

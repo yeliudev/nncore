@@ -21,9 +21,8 @@ def get_version():
         lines = f.readlines()
     for line in lines:
         if line.startswith('__version__'):
-            version_line = line.strip()
-    version = version_line.split('=')[-1].strip().strip('"\'')
-    return version
+            exec(line.strip())
+    return locals()['__version__']
 
 
 def get_readme():
@@ -32,16 +31,7 @@ def get_readme():
     return content
 
 
-def install_requires():
-
-    def _choose_requirement(primary, secondary):
-        try:
-            name = re.split(r'[!<>=]', primary)[0]
-            get_distribution(name)
-        except DistributionNotFound:
-            return secondary
-        return primary
-
+def get_install_requires():
     install_requires = INSTALL_REQUIRES
 
     if system() != 'Windows':
@@ -79,5 +69,5 @@ setup(
     python_requires='>=3.6',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
-    install_requires=install_requires(),
+    install_requires=get_install_requires(),
     packages=find_packages(exclude=('.github', 'examples', 'tests')))

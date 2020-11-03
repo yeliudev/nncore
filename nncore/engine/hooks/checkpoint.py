@@ -26,8 +26,7 @@ class CheckpointHook(Hook):
     def before_launch(self, engine):
         if self._out_dir is None:
             self._out_dir = engine.work_dir
-        if not nncore.dir_exist(self._out_dir):
-            raise ValueError("invalid out_dir: {}".format(self._out_dir))
+        nncore.mkdir(self._out_dir)
 
     @master_only
     def after_train_epoch(self, engine):

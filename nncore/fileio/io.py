@@ -82,7 +82,7 @@ def loads(string, format='pickle', **kwargs):
     Args:
         string (str or btyearray): string of the file
         format (str, optional): format of the string. Currently supported
-            formats include `json`, `yaml/yml` and `pickle/pkl`.
+            formats include `json`, `yaml/yml`, and `pickle/pkl`.
 
     Returns:
         obj (any): the name_or_file from the file
@@ -98,7 +98,7 @@ def dumps(obj, format='pickle', **kwargs):
     Args:
         obj (any): the python object to be dumped
         format (str, optional): format of the string. Currently supported
-            formats include `json`, `yaml/yml` and `pickle/pkl`.
+            formats include `json`, `yaml/yml`, and `pickle/pkl`.
 
     Returns:
         string (str): the string of the dumped file

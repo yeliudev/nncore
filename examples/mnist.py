@@ -60,12 +60,12 @@ def main():
     ])
 
     train = MNIST('data', train=True, transform=transform, download=True)
-    trainloader = DataLoader(train, batch_size=16, shuffle=True, num_workers=2)
+    train_loader = DataLoader(train, batch_size=16, shuffle=True)
 
     val = MNIST('data', train=False, transform=transform, download=True)
-    valloader = DataLoader(val, batch_size=64, shuffle=False, num_workers=2)
+    val_loader = DataLoader(val, batch_size=64, shuffle=False)
 
-    data_loaders = dict(train=trainloader, val=valloader)
+    data_loaders = dict(train=train_loader, val=val_loader)
     model = LeNet().to(device)
 
     # Initialize and launch engine

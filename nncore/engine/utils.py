@@ -20,30 +20,30 @@ import nncore
 from .comm import is_main_process, synchronize
 
 
-def generate_random_seed(digits=8):
+def generate_random_seed(length=8):
     """
-    Generate a random seed with 8 digits.
+    Generate a random seed with at least 8 digits.
 
     Args:
-        digits (int, optional): the expected number of digits of the random
-            seed. The number must be at least 8.
+        length (int, optional): the expected number of digits of the random
+            seed. The number must equal or be larger than 8.
 
     Returns:
         seed (int): the generated random seed
     """
-    assert digits >= 8, 'the number of digits must be at least 8'
+    assert length >= 8, 'the number of digits must equal or be larger than 8'
     seed = os.getpid() + int(datetime.now().strftime('%S%f')) + int.from_bytes(
-        os.urandom(digits - 6), 'big')
+        os.urandom(length - 6), 'big')
     return seed
 
 
 def set_random_seed(seed=None):
     """
-    Set random seed for `random`, `numpy` and `torch`. If `seed` is None, this
+    Set random seed for `random`, `numpy`, and `torch`. If `seed` is None, this
     method will generate and return a new random seed.
 
     Args:
-        seed (int or None, optional): the potential random seed to use
+        seed (int or None, optional): the potential random seed to be used
 
     Returns:
         seed (int): the actually used random seed
@@ -71,12 +71,12 @@ def _load_url_dist(url):
     return checkpoint
 
 
-def get_checkpoint(filename, map_location=None):
+def get_checkpoint(file_or_url, map_location=None):
     """
-    Get checkpoint from a file or a url.
+    Get checkpoint from a file or an URL.
 
     Args:
-        filename (str): a filepath or URI
+        file_or_url (str): a filename or an URL
         map_location (str or None, optional): same as :func:`torch.load`
 
     Returns:
@@ -84,7 +84,7 @@ def get_checkpoint(filename, map_location=None):
             either an OrderedDict storing model weights or a dict containing
             other information, which depends on the checkpoint.
     """
-    if filename.startswith('torchvision://'):
+    if file_or_url.startswith('torchvision://'):
         model_urls = dict()
         for _, name, ispkg in walk_packages(torchvision.models.__path__):
             if ispkg:
@@ -93,11 +93,11 @@ def get_checkpoint(filename, map_location=None):
             if hasattr(_zoo, 'model_urls'):
                 _urls = getattr(_zoo, 'model_urls')
                 model_urls.update(_urls)
-        checkpoint = _load_url_dist(model_urls[filename[14:]])
-    elif filename.startswith(('https://', 'http://')):
-        checkpoint = _load_url_dist(filename)
+        checkpoint = _load_url_dist(model_urls[file_or_url[14:]])
+    elif file_or_url.startswith(('https://', 'http://')):
+        checkpoint = _load_url_dist(file_or_url)
     else:
-        checkpoint = torch.load(filename, map_location=map_location)
+        checkpoint = torch.load(file_or_url, map_location=map_location)
     return checkpoint
 
 
@@ -116,7 +116,7 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
             in :attr:`state_dict` match the keys returned by this module's
             :meth:`torch.nn.Module.state_dict` function.
         logger (:obj:`logging.Logger` or str or None, optional): the logger or
-            name of the logger for error messages
+            name of the logger for displaying error messages
     """
     unexpected_keys = []
     missing_keys = []
@@ -163,18 +163,18 @@ def load_checkpoint(model,
                     strict=False,
                     logger=None):
     """
-    Load checkpoint from a file or URI.
+    Load checkpoint from a file or an URL.
 
     Args:
-        model (Module): module to load checkpoint
-        checkpoint (dict or OrderedDict or str): either a checkpoint file or
-            filepath or URL or torchvision://<model_name>
+        model (Module): the module to load checkpoint
+        checkpoint (dict or OrderedDict or str): either a checkpoint object or
+            filename or URL or torchvision://<model_name>
         map_location (str, optional): same as :func:`torch.load`
         strict (bool, optional): whether to allow different params for the
             model and checkpoint. If True, raise an error when the params do
             not match exactly.
         logger (:obj:`logging.Logger` or str or None, optional): the logger or
-            name of the logger for error messages
+            name of the logger for displaying error messages
     """
     if isinstance(checkpoint, str):
         checkpoint = get_checkpoint(checkpoint, map_location=map_location)
@@ -204,14 +204,15 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     """
     Save checkpoint to a file.
 
-    The checkpoint object will have 3 fields: meta, state_dict and `optimizer`,
-    where `meta` contains nncore version and time info by default.
+    The checkpoint object will have 3 fields: `meta`, `state_dict`, and
+    `optimizer`, where `meta` contains the version of nncore and the time info
+    by default.
 
     Args:
-        model (:obj:`nn.Module`): module whose params are to be saved
+        model (:obj:`nn.Module`): the module whose params are to be saved
         filename (str): name of the checkpoint file
         optimizer (:obj:`Optimizer`, optional): the optimizer to be saved
-        meta (dict, optional): metadata to be saved
+        meta (dict, optional): the metadata to be saved
     """
     if meta is None:
         meta = dict()
@@ -252,6 +253,14 @@ def fuse_conv_bn(model):
     but only the mean and var alone channels are used, which exposes the
     chance to fuse it with the preceding conv layers to save computations and
     simplify network structures.
+
+    Args:
+        model (:obj:`nn.Module`): the module whose conv-bn structure to be
+            fused
+
+    Returns:
+        fused_model (:obj:`nn.Module`): the module whose conv-bn structure has
+            been fused
     """
     last_conv = None
     last_conv_name = None
@@ -284,12 +293,12 @@ def publish_model(in_file,
     Args:
         in_file (str): name of the input checkpoint file
         out_file (str): name of the output checkpoint file
-        keys_to_remove (list[str], optional): the keys to be removed from the
-            checkpoint
+        keys_to_remove (list[str], optional): the list of keys to be removed
+            from the checkpoint
         hash_type (str, optional): type of the hash algorithm. Currently
             supported algorithms include `md5`, `sha1`, `sha224`, `sha256`,
             `sha384`, `sha512`, `blake2b`, `blake2s`, `sha3_224`, `sha3_256`,
-            `sha3_384`, `sha3_512`, `shake_128` and `shake_256`.
+            `sha3_384`, `sha3_512`, `shake_128`, and `shake_256`.
     """
     checkpoint = torch.load(in_file, map_location='cpu')
     for key in keys_to_remove:

@@ -21,7 +21,7 @@ class Buffer(object):
                 stored in the buffer. When the capacity of the buffer is
                 exhausted, old values will be removed.
             logger (:obj:`logging.Logger` or str or None, optional): the
-                potential logger or name of the logger to use
+                potential logger or name of the logger to be used
         """
         self._max_size = max_size
         self._logger = logger

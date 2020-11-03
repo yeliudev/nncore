@@ -1,5 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+import os.path as osp
 from collections import OrderedDict
 
 import torch
@@ -17,24 +18,38 @@ _DEFAULT_STAGES = dict(
     validation=dict(interval=1))
 
 _DEFAULT_HOOKS = [
-    dict(type='IterTimerHook'),
-    dict(type='LrUpdaterHook'),
-    dict(type='OptimizerHook'),
-    dict(type='CheckpointHook'),
-    dict(
-        type='EventWriterHook',
-        interval=50,
-        writers=[
-            dict(type='CommandLineWriter'),
-            dict(type='JSONWriter'),
-            dict(type='TensorboardWriter')
-        ])
+    'IterTimerHook', 'LrUpdaterHook', 'OptimizerHook', 'CheckpointHook',
+    'EventWriterHook'
 ]
 
 
 @nncore.bind_getter('mode', 'hooks', 'max_stages', 'max_epochs', 'max_iters',
                     'start_iter', 'stage', 'epoch', 'iter')
 class Engine(object):
+    """
+    An engine that can take over the whole training and testing process, with
+    all the baby-sitting works (stage control, optimizer configuration, lr
+    scheduling, checkpoint management, metrics & tensorboard writing, etc.)
+    done automatically.
+
+    Args:
+        model (:obj:`nn.Module`): the model to be trained or tested
+        data_loaders (dict): a dict object containing the training and
+            validating data loaders. Should be in the format of
+            `dict(train=train_loader, val=val_loader)`.
+        stages (dict, list[dict], optional): the stage config or list of stage
+            configs to be scheduled
+        hooks (list[:obj:`Hook`] or list[dict] or list[str], optional): the
+            list of hooks to be registered
+        batch_processor (callable, optional): A customized callable method
+            that processes a data batch. Should be in the format of
+            `batch_processor(model, data, mode, **kwargs) -> dict` where mode
+            is either 'train' or 'val'.
+        buffer_size (int, optional): the maximum size of the buffer
+        logger (:obj:`logging.Logger` or str or None, optional): the logger or
+            name of the logger to be used
+        work_dir (str, optional): the working directory to be used
+    """
 
     def __init__(self,
                  model,
@@ -49,7 +64,6 @@ class Engine(object):
         self.model = model
         self.data_loaders = data_loaders
         self.batch_processor = batch_processor
-        self.work_dir = work_dir
 
         if isinstance(stages, dict):
             stages.update(kwargs)
@@ -59,11 +73,13 @@ class Engine(object):
         if hooks is not None:
             self.register_hook(hooks)
 
-        if work_dir is not None:
-            nncore.mkdir(work_dir)
+        time_str = nncore.get_time_str()
+        self.work_dir = work_dir or osp.join('work_dirs', time_str)
 
-        self.logger = logger or nncore.get_logger()
-        self.buffer = Buffer(max_size=buffer_size, logger=self.logger)
+        log_file = osp.join(self.work_dir, time_str + '.log')
+        self.logger = nncore.get_logger(logger, log_file=log_file)
+
+        self.buffer = Buffer(max_size=buffer_size, logger=logger)
         self.reset_states()
 
     @property
@@ -111,8 +127,8 @@ class Engine(object):
         Register a hook into the engine.
 
         Args:
-            hook (:obj:`Hook` or list or tuple or dict): the hook or list of
-                hooks to be registered
+            hook (:obj:`Hook` or dict or str or list[:obj:`Hook`] or list[dict]
+                or list[str]): the hook or list of hooks to be registered
             before (str, optional): name of the hook to be inserted before. The
                 new hook will be inserted into the end of the hook list by
                 default.
@@ -125,6 +141,8 @@ class Engine(object):
             return
         elif isinstance(hook, dict):
             hook = nncore.build_object(hook, HOOKS)
+        elif isinstance(hook, str):
+            hook = HOOKS.get(hook)()
         elif not isinstance(hook, Hook):
             raise TypeError("hook must be a Hook or dict, but got '{}'".format(
                 type(hook)))
@@ -192,7 +210,7 @@ class Engine(object):
 
         cumsum, count = 0, 0
         for stage in self.stages:
-            if self._epoch + 1 <= cumsum + stage.epochs:
+            if self._epoch + 1 <= cumsum + stage['epochs']:
                 break
             count += 1
         self._stage = count

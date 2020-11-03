@@ -7,7 +7,7 @@ import torch
 import nncore
 
 
-def assert_tensor_type(func):
+def _assert_tensor_type(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -38,7 +38,7 @@ class DataContainer(object):
         self._to_gpu = to_gpu
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, repr(self._data))
+        return '{}({})'.format(self.__class__.__name__, self._data)
 
     @property
     def datatype(self):
@@ -47,10 +47,10 @@ class DataContainer(object):
         else:
             return type(self.data)
 
-    @assert_tensor_type
+    @_assert_tensor_type
     def size(self, *args, **kwargs):
         return self._data.size(*args, **kwargs)
 
-    @assert_tensor_type
+    @_assert_tensor_type
     def dim(self):
         return self._data.dim()

@@ -1,11 +1,12 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import logging
+import os.path as osp
 import sys
 
 from termcolor import colored
 
-_CACHED_LOGGER = []
+import nncore
 
 _COLOR_MAP = {
     0: 'white',
@@ -15,6 +16,8 @@ _COLOR_MAP = {
     40: 'red',
     50: 'magenta'
 }
+
+_CACHED_LOGGER = []
 
 
 class _Formatter(logging.Formatter):
@@ -26,13 +29,13 @@ class _Formatter(logging.Formatter):
         return prefix + log[anchor:]
 
 
-def get_logger(name='nncore',
+def get_logger(logger_or_name=None,
                fmt='[%(asctime)s %(levelname)s]: %(message)s',
                datefmt='%Y-%m-%d %H:%M:%S',
                log_level=logging.INFO,
                log_file=None):
     """
-    Initializes and get a logger by name.
+    Initialize and get a logger by name.
 
     If the logger has not been initialized, this method will initialize the
     logger by adding one or two handlers, otherwise the initialized logger will
@@ -41,7 +44,8 @@ def get_logger(name='nncore',
     will also be added.
 
     Args:
-        name (str, optional): logger name
+        logger_or_name (:obj:`logging.Logger` or str, optional): the logger or
+            name of the logger
         fmt (str, optional): log format. The format must end with `%(message)s`
             to make sure that the colors could be rendered properly.
         datefmt (str, optional): date format
@@ -49,20 +53,26 @@ def get_logger(name='nncore',
             only the main process (rank 0) is affected, and other processes
             will set the level to `ERROR` thus be silent at most of the time.
         log_file (str, optional): filename of the log file. If not None, a
-            FileHandler will be added to the logger.
+            `FileHandler` will be added to the logger.
 
     Returns:
-        logger (logging.Logger): the expected logger
+        logger (:obj:`logging.Logger`): the expected logger
     """
-    logger = logging.getLogger(name)
+    if isinstance(logger_or_name, logging.Logger):
+        return logger_or_name
 
-    if name in _CACHED_LOGGER:
+    logger = logging.getLogger(logger_or_name)
+
+    if logger_or_name in _CACHED_LOGGER:
         return logger
 
-    _CACHED_LOGGER.append(name)
+    _CACHED_LOGGER.append(logger_or_name)
 
     logger.setLevel(log_level)
     logger.propagate = False
+
+    if not fmt.endswith('%(message)s'):
+        raise ValueError("fmt must end with '%(message)s'")
 
     sh = logging.StreamHandler(stream=sys.stdout)
     formatter = _Formatter(fmt=fmt, datefmt=datefmt)
@@ -78,6 +88,7 @@ def get_logger(name='nncore',
         pass
 
     if log_file is not None:
+        nncore.mkdir(osp.dirname(log_file))
         fh = logging.FileHandler(log_file, mode='w')
         formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
         fh.setFormatter(formatter)
@@ -94,7 +105,7 @@ def log_or_print(msg, logger, log_level=logging.INFO, **kwargs):
 
     Args:
         msg (str): the message to be logged
-        logger (any): the potential logger or name of the logger to use
+        logger (any): the potential logger or name of the logger to be used
         log_level (int, optional): log level of the logger
     """
     level = logging._checkLevel(log_level)
