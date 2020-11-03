@@ -187,7 +187,7 @@ def bind_getter(*vars):
             getters. The name of member variables are expected to start with an
             underline (e.g. `_name` or `_epoch`).
 
-    Example:
+    Examples:
         >>> import nncore
         >>> @nncore.bind_getter('name', 'depth')
         >>> class Backbone:

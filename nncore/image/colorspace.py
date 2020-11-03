@@ -8,12 +8,12 @@ def bgr2gray(img, keep_dim=False):
     Convert a BGR image to a grayscale image.
 
     Args:
-        img (ndarray): the input image
+        img (:obj:`np.ndarray`): the input image
         keep_dim (bool, optional): whether to keep the number of dimensions of
             the input image
 
     Returns:
-        img (ndarray): the converted grayscale image
+        img (:obj:`np.ndarray`): the converted grayscale image
     """
     out_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     if keep_dim:
@@ -26,12 +26,12 @@ def rgb2gray(img, keep_dim=False):
     Convert an RGB image to a grayscale image.
 
     Args:
-        img (ndarray): the input image
+        img (:obj:`np.ndarray`): the input image
         keep_dim (bool, optional): whether to keep the number of dimensions of
             the input image
 
     Returns:
-        img (ndarray): the converted grayscale image
+        img (:obj:`np.ndarray`): the converted grayscale image
     """
     out_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     if keep_dim:
@@ -44,10 +44,10 @@ def gray2bgr(img):
     Convert a grayscale image to a BGR image.
 
     Args:
-        img (ndarray): the input image
+        img (:obj:`np.ndarray`): the input image
 
     Returns:
-        img (ndarray): the converted BGR image
+        img (:obj:`np.ndarray`): the converted BGR image
     """
     img = img[..., None] if img.ndim == 2 else img
     out_img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
@@ -59,10 +59,10 @@ def gray2rgb(img):
     Convert a grayscale image to an RGB image.
 
     Args:
-        img (ndarray): the input image
+        img (:obj:`np.ndarray`): the input image
 
     Returns:
-        img (ndarray): the converted RGB image
+        img (:obj:`np.ndarray`): the converted RGB image
     """
     img = img[..., None] if img.ndim == 2 else img
     out_img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
@@ -83,23 +83,18 @@ def _convert_color_factory(src, dst):
     Convert {} image to {} image.
 
     Args:
-        img (ndarray): the input image
+        img (:obj:`np.ndarray`): the input image
 
     Returns:
-        img (ndarray): the converted {} image
+        img (:obj:`np.ndarray`): the converted {} image
     """.format(src_with_quantifier, dst_with_quantifier, dst)
 
     return _convert_color
 
 
 bgr2rgb = _convert_color_factory('BGR', 'RGB')
-
 rgb2bgr = _convert_color_factory('RGB', 'BGR')
-
 bgr2hsv = _convert_color_factory('BGR', 'HSV')
-
 hsv2bgr = _convert_color_factory('HSV', 'BGR')
-
 bgr2hls = _convert_color_factory('BGR', 'HLS')
-
 hls2bgr = _convert_color_factory('HLS', 'BGR')

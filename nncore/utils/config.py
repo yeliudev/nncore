@@ -144,7 +144,7 @@ class Config(object):
 
     This class is a wrapper for :obj:`CfgNode` which can be initialized from
     a config file. Users can use the static method :meth:`Config.from_file` to
-    create a `Config` object.
+    create a :obj:`Config` object.
     """
 
     @staticmethod
@@ -157,7 +157,7 @@ class Config(object):
                 formats include `py`, `json`, and `yaml/yml`.
 
         Returns:
-            cfg (Config): the created `Config` object
+            cfg (:obj:`Config`): the constructed config object
         """
         filename = osp.abspath(osp.expanduser(filename))
         nncore.file_exist(filename, raise_error=True)

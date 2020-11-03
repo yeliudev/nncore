@@ -105,16 +105,16 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
     """
     Load state_dict to a module.
 
-    This method is modified from :meth:`torch.nn.Module.load_state_dict`.
-    Default value for `strict` is set to `False` and the message for param
-    mismatch will be shown even if strict is `False`.
+    This method is modified from :meth:`nn.Module.load_state_dict`. Default
+    value for `strict` is set to `False` and the message for param mismatch
+    will be shown even if strict is `False`.
 
     Args:
         module (:obj:`nn.Module`): the module receives the state_dict
         state_dict (OrderedDict): weights
         strict (bool, optional): whether to strictly enforce that the keys
             in :attr:`state_dict` match the keys returned by this module's
-            :meth:`torch.nn.Module.state_dict` function.
+            :meth:`nn.Module.state_dict` function.
         logger (:obj:`logging.Logger` or str or None, optional): the logger or
             name of the logger for displaying error messages
     """
@@ -171,7 +171,7 @@ def load_checkpoint(model,
             filename or URL or torchvision://<model_name>
         map_location (str, optional): same as :func:`torch.load`
         strict (bool, optional): whether to allow different params for the
-            model and checkpoint. If True, raise an error when the params do
+            model and checkpoint. If `True`, raise an error when the params do
             not match exactly.
         logger (:obj:`logging.Logger` or str or None, optional): the logger or
             name of the logger for displaying error messages

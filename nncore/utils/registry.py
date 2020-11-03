@@ -12,7 +12,7 @@ class Registry(object):
     record, the key is the object name and the value is the object itself. The
     method `self.register` can be used as a decorator or a normal function.
 
-    Example:
+    Examples:
         >>> backbones = Registry('backbone')
         >>> @backbones.register()
         >>> class ResNet(object):
@@ -89,14 +89,14 @@ def build_object(cfg, parent, default=None, **kwargs):
     Remaining fields are treated as the arguments for constructing the object.
 
     Args:
-        cfg (dict or None): object types and arguments
-        parent (any): a module or a sequence of modules which may contain the
-            expected object class
-        default (any, optional): default return value when the object class not
+        cfg (dict or None): object type and arguments
+        parent (any): a module or a list of modules which may contain the
+            expected object
+        default (any, optional): default return value when the object is not
             found
 
     Returns:
-        obj (any): object built from the dict
+        obj (any): the object built from the dict
     """
     if 'default' in kwargs:
         raise KeyError("argument 'default' is reserved by this method")

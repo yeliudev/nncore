@@ -9,12 +9,12 @@ def imnormalize(img, mean, std):
     Normalize an image with mean and std.
 
     Args:
-        img (ndarray): image to be normalized
-        mean (ndarray): the mean to be used for normalize
-        std (ndarray): the std to be used for normalize
+        img (:obj:`np.ndarray`): image to be normalized
+        mean (:obj:`np.ndarray`): the mean to be used for normalize
+        std (:obj:`np.ndarray`): the std to be used for normalize
 
     Returns:
-        img (ndarray): the normalized image
+        img (:obj:`np.ndarray`): the normalized image
     """
     if img.dtype == np.uint8:
         img = np.float32(img)
@@ -30,12 +30,12 @@ def imdenormalize(img, mean, std):
     Denormalize an image with mean and std.
 
     Args:
-        img (ndarray): image to be denormalized
-        mean (ndarray): the mean to be used for denormalize
-        std (ndarray): the std to be used for denormalize
+        img (:obj:`np.ndarray`): image to be denormalized
+        mean (:obj:`np.ndarray`): the mean to be used for denormalize
+        std (:obj:`np.ndarray`): the std to be used for denormalize
 
     Returns:
-        img (ndarray): the denormalized image
+        img (:obj:`np.ndarray`): the denormalized image
     """
     if img.dtype == np.uint8:
         img = np.float32(img)

@@ -6,7 +6,7 @@ import cv2
 
 import nncore
 
-_COLORSPACES = {
+_COLOR_SPACES = {
     'color': cv2.IMREAD_COLOR,
     'grayscale': cv2.IMREAD_GRAYSCALE,
     'unchanged': cv2.IMREAD_UNCHANGED
@@ -26,7 +26,7 @@ def imread(filename, flag='color', to_rgb=False):
             `rgb`.
 
     Returns:
-        img (ndarray): the loaded image array
+        img (:obj:`np.ndarray`): the loaded image array
     """
     if not isinstance(filename, str):
         raise TypeError(
@@ -34,7 +34,7 @@ def imread(filename, flag='color', to_rgb=False):
 
     nncore.file_exist(filename, raise_error=True)
 
-    flag = _COLORSPACES[flag] if isinstance(flag, str) else flag
+    flag = _COLOR_SPACES[flag] if isinstance(flag, str) else flag
     img = cv2.imread(filename, flag)
 
     if flag == cv2.IMREAD_COLOR and to_rgb:
@@ -48,7 +48,7 @@ def imwrite(img, filename, params=None):
     Write an image to a file.
 
     Args:
-        img (ndarray): the image array to be written
+        img (:obj:`np.ndarray`): the image array to be written
         filename (str): name of the image file
         params (None or list, optional): same as opencv's :func:`imwrite`
             interface

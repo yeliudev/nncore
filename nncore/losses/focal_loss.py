@@ -11,10 +11,10 @@ def sigmoid_focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
         https://arxiv.org/abs/1708.02002.
 
     Args:
-        inputs (Tensor): the predictions for each example
-        targets (Tensor): the binary classification label for each element
-            (0 for the negative class and 1 for the positive class)
-        alpha (int or float, optional): weighting factor in range (0,1) to
+        inputs (:obj:`torch.Tensor`): the predictions for each example
+        targets (:obj:`torch.Tensor`): the binary classification label for
+            each element (0 for negative classes and 1 for positive classes)
+        alpha (int or float, optional): weighting factor in range (0, 1) to
             balance positive vs negative examples. -1 means no weighting.
         gamma (int or float, optional): exponent of the modulating factor
             (1 - p_t) to balance easy vs hard examples
@@ -22,7 +22,8 @@ def sigmoid_focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
             methods include `none`, `mean`, and `sum`.
 
     Returns:
-        loss (Tensor): loss tensor with the reduction option applied
+        loss (:obj:`torch.Tensor`): the loss tensor with reduction option
+            applied
     """
     p = torch.sigmoid(pred)
     ce_loss = F.binary_cross_entropy_with_logits(
@@ -48,10 +49,10 @@ def sigmoid_focal_loss_star(pred, target, alpha=-1, gamma=1, reduction='mean'):
         https://arxiv.org/abs/1708.02002.
 
     Args:
-        inputs (Tensor): the predictions for each example
-        targets (Tensor): the binary classification label for each element
-            (0 for the negative class and 1 for the positive class)
-        alpha (int or float, optional): weighting factor in range (0,1) to
+        inputs (:obj:`torch.Tensor`): the predictions for each example
+        targets (:obj:`torch.Tensor`): the binary classification label for
+            each element (0 for negative classes and 1 for positive classes)
+        alpha (int or float, optional): weighting factor in range (0, 1) to
             balance positive vs negative examples. -1 means no weighting.
         gamma (int or float, optional): gamma parameter described in FL*.
             -1 means no weighting.
@@ -59,7 +60,8 @@ def sigmoid_focal_loss_star(pred, target, alpha=-1, gamma=1, reduction='mean'):
             methods include `none`, `mean`, and `sum`.
 
     Returns:
-        loss (Tensor): loss tensor with the reduction option applied
+        loss (:obj:`torch.Tensor`): the loss tensor with reduction option
+            applied
     """
     shifted_inputs = gamma * (pred * (2 * target - 1))
     loss = -F.logsigmoid(shifted_inputs) / gamma
@@ -82,7 +84,7 @@ class FocalLoss(nn.Module):
         https://arxiv.org/abs/1708.02002.
 
     Args:
-        alpha (int or float, optional): weighting factor in range (0,1) to
+        alpha (int or float, optional): weighting factor in range (0, 1) to
             balance positive vs negative examples. -1 means no weighting.
         gamma (int or float, optional): exponent of the modulating factor
             (1 - p_t) to balance easy vs hard examples
@@ -107,7 +109,7 @@ class FocalLossStar(nn.Module):
         https://arxiv.org/abs/1708.02002.
 
     Args:
-        alpha (int or float, optional): weighting factor in range (0,1) to
+        alpha (int or float, optional): weighting factor in range (0, 1) to
             balance positive vs negative examples. -1 means no weighting.
         gamma (int or float, optional): gamma parameter described in FL*.
             -1 means no weighting.
