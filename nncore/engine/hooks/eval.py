@@ -52,6 +52,9 @@ class DistEvalHook(EvalHook):
             results = {k: nncore.concat_list(v) for k, v in results.items()}
             output = engine.data_loader.dataset.evaluate(
                 results, logger=engine.logger, **self._kwargs)
+        else:
+            output = dict()
+
         comm.synchronize()
 
         for key in output:

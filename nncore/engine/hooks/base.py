@@ -101,11 +101,11 @@ class Hook(object):
         return engine.iter_in_epoch == 0
 
     def last_epoch_in_stage(self, engine):
-        return engine.epoch_in_stage + 1 == engine.cur_stage.epochs
+        return engine.epoch_in_stage + 1 == engine.cur_stage['epochs']
 
     def last_iter_in_stage(self, engine):
         return engine.iter_in_stage + 1 == len(
-            engine.data_loaders['train']) * engine.cur_stage.epochs
+            engine.data_loaders['train']) * engine.cur_stage['epochs']
 
     def last_iter_in_epoch(self, engine):
         return engine.iter_in_epoch + 1 == len(engine.data_loaders['train'])
