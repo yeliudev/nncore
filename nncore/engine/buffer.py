@@ -102,8 +102,8 @@ class Buffer(object):
         Remove values from the buffer according to the key.
 
         Args:
-            key (str or None, optional): the key of the values. If None, clear
-                all the values in the buffer.
+            key (str or None, optional): the key of the values. If `None`,
+                clear all the values in the buffer.
         """
         del self._data[key]
 

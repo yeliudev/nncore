@@ -9,31 +9,32 @@ from .timer import Timer
 
 class ProgressBar(object):
     """
-    A progress bar which can show the state of a progress.
+    A progress bar which can show the state of a progress. This only takes
+    effect in the main process.
     """
 
-    _w_bar = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s{}'
-    _wo_bar = '\rcompleted: {}, elapsed: {}s, {:.1f} tasks/s'
+    _wb = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {:5}s{}'
+    _ob = '\rcompleted: {}, elapsed: {}s, {:.1f} tasks/s'
 
-    def __init__(self, task_num=None, distributed=False):
-        self.write = partial(print, end='')
+    def __init__(self, task_num=None):
+        self._write = partial(print, end='')
         self._task_num = task_num
         self._completed = 0
         self._timer = Timer()
 
-        if distributed:
-            from nncore.engine import comm
-            self.enabled = comm.is_main_process()
-        else:
-            self.enabled = True
+        try:
+            from nncore.engine import is_main_process
+            self._enabled = is_main_process()
+        except ImportError:
+            self._enabled = True
 
-        if self.enabled:
+        if self._enabled:
             if self._task_num is not None:
-                msg = self._w_bar.format(0, self._task_num, 0, 0, 0, '')
+                msg = self._wb.format(0, self._task_num, 0, 0, 0, '')
                 bar_width = self._get_bar_width(msg)
-                self.write(msg.format(' ' * bar_width))
+                self._write(msg.format(' ' * bar_width))
             else:
-                self.write(self._wo_bar.format(0, 0, 0))
+                self._write(self._ob.format(0, 0, 0))
 
     def _get_bar_width(self, msg):
         width, _ = get_terminal_size()
@@ -41,7 +42,7 @@ class ProgressBar(object):
         return max(2, bar_width)
 
     def update(self):
-        if not self.enabled:
+        if not self._enabled:
             return
 
         self._completed += 1
@@ -51,14 +52,13 @@ class ProgressBar(object):
         if self._task_num is not None:
             percentage = self._completed / float(self._task_num)
             eta = int(elapsed * (1 - percentage) / percentage + 0.5)
-            msg = self._w_bar.format(
+            msg = self._wb.format(
                 self._completed, self._task_num, fps, ceil(elapsed), eta,
                 '\n' if self._task_num == self._completed else '')
 
             bar_width = self._get_bar_width(msg)
             mark_width = int(bar_width * percentage)
             bar_chars = '>' * mark_width + ' ' * (bar_width - mark_width)
-            self.write(msg.format(bar_chars))
+            self._write(msg.format(bar_chars))
         else:
-            self.write(
-                self._wo_bar.format(self._completed, ceil(elapsed), fps))
+            self._write(self._ob.format(self._completed, ceil(elapsed), fps))

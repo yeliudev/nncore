@@ -36,7 +36,7 @@ def list_cast(inputs, dst_type):
     """
     Cast elements of an iterable object into a list of some type.
 
-    A partial method of :func:`iter_cast`.
+    A partial method of :meth:`iter_cast`.
     """
     return iter_cast(inputs, dst_type, return_type=list)
 
@@ -45,7 +45,7 @@ def tuple_cast(inputs, dst_type):
     """
     Cast elements of an iterable object into a tuple of some type.
 
-    A partial method of :func:`iter_cast`.
+    A partial method of :meth:`iter_cast`.
     """
     return iter_cast(inputs, dst_type, return_type=tuple)
 
@@ -79,7 +79,7 @@ def is_list_of(seq, expected_type):
     """
     Check whether it is a list of some type.
 
-    A partial method of :func:`is_seq_of`.
+    A partial method of :meth:`is_seq_of`.
     """
     return is_seq_of(seq, expected_type, seq_type=list)
 
@@ -88,7 +88,7 @@ def is_tuple_of(seq, expected_type):
     """
     Check whether it is a tuple of some type.
 
-    A partial method of :func:`is_seq_of`.
+    A partial method of :meth:`is_seq_of`.
     """
     return is_seq_of(seq, expected_type, seq_type=tuple)
 

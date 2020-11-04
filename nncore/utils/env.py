@@ -134,11 +134,9 @@ def collect_env_info(modules=['nncore', 'numpy', 'PIL', 'cv2']):
     """
     _c = []
 
-    # system info
     _c.append(('System', system()))
     _c.append(('Python', sys.version.replace('\n', '')))
 
-    # cuda info
     cuda_home, cuda_arch_list, nvcc, devices = _collect_cuda_env()
     if cuda_home is not None:
         _c.append(('CUDA_HOME', cuda_home))
@@ -152,19 +150,16 @@ def collect_env_info(modules=['nncore', 'numpy', 'PIL', 'cv2']):
     else:
         _c.append(('CUDA', '<not-found>'))
 
-    # pytorch info
     torch_env, torch_debug_build = _collect_torch_env()
     _c.append(('PyTorch', torch_env or '<not-found>'))
     if torch_debug_build is not None:
         _c.append(('PyTorch debug build', torch_debug_build))
 
-    # torchvison info
     torchvision_env, torchvision_arch_flags = _collect_torchvision_env()
     _c.append(('torchvision', torchvision_env or '<not-found>'))
     if torchvision_arch_flags is not None:
         _c.append(('torchvision arch flags', torchvision_arch_flags))
 
-    # other libraries
     for module in modules:
         _c.append((module, _get_module_version(module) or '<not-found>'))
 

@@ -75,7 +75,7 @@ def get_checkpoint(file_or_url, map_location=None):
 
     Args:
         file_or_url (str): a filename or an URL
-        map_location (str or None, optional): same as :func:`torch.load`
+        map_location (str or None, optional): same as :meth:`torch.load`
 
     Returns:
         checkpoint (dict or OrderedDict): the loaded checkpoint. It can be
@@ -167,7 +167,7 @@ def load_checkpoint(model,
         model (Module): the module to load checkpoint
         checkpoint (dict or OrderedDict or str): either a checkpoint object or
             filename or URL or torchvision://<model_name>
-        map_location (str, optional): same as :func:`torch.load`
+        map_location (str, optional): same as :meth:`torch.load`
         strict (bool, optional): whether to allow different params for the
             model and checkpoint. If `True`, raise an error when the params do
             not match exactly.

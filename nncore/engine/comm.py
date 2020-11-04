@@ -149,8 +149,8 @@ def all_gather(data, group=None):
 
     Args:
         data (any): any serializable object
-        group (ProcessGroup or None, optional): a torch process group. If None,
-            use the default process group.
+        group (ProcessGroup or None, optional): a torch process group. If
+            `None`, use the default process group.
 
     Returns:
         gathered (list[data]): a list of data gathered from each rank
@@ -181,8 +181,8 @@ def gather(data, dst=0, group=None):
     Args:
         data (any): any serializable object
         dst (int, optional): destination rank
-        group (ProcessGroup or None, optional): a torch process group. If None,
-            use the default process group.
+        group (ProcessGroup or None, optional): a torch process group. If
+            `None`, use the default process group.
 
     Returns:
         gathered (list[data]) or None: on dst, a list of data gathered from

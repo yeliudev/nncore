@@ -193,7 +193,7 @@ class Engine(object):
         else:
             self.logger.info('Loaded checkpoint')
 
-    def resume(self, checkpoint, with_optimizer=True, strict=False):
+    def resume(self, checkpoint, strict=False):
         if isinstance(checkpoint, str):
             checkpoint = get_checkpoint(
                 checkpoint, map_location=next(self.model.parameters()).device)
@@ -215,13 +215,11 @@ class Engine(object):
             count += 1
         self._stage = count
 
-        if with_optimizer:
-            if 'optimizer' in checkpoint:
-                self.build_optimizer(self.cur_stage['optimizer'])
-                self.optimizer.load_state_dict(checkpoint['optimizer'])
-                self._res_optim = True
-            else:
-                self.logger.warn('Optimizer not found in the checkpoint')
+        if 'optimizer' in checkpoint:
+            self.build_optimizer(self.cur_stage['optimizer'])
+            self.optimizer.load_state_dict(checkpoint['optimizer'])
+        else:
+            raise KeyError('optimizer not found in the checkpoint')
 
         self.logger.info('Resumed stage {}, epoch {}, iter {}'.format(
             self._stage + 1, self._epoch, self._iter))
@@ -308,9 +306,8 @@ class Engine(object):
         self.logger.info('Stage: {}, epochs: {}, optimizer: {}'.format(
             self._stage + 1, self.cur_stage['epochs'], optim))
 
-        if self.epoch_in_stage == 0 and not getattr(self, '_res_optim', False):
+        if self.epoch_in_stage == 0:
             self.build_optimizer(self.cur_stage['optimizer'])
-        self._res_optim = False
 
         self._call_hook('before_stage')
 
