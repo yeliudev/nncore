@@ -17,7 +17,7 @@ _COLOR_MAP = {
     50: 'magenta'
 }
 
-_CACHED_LOGGER = []
+_CACHED_LOGGERS = []
 
 
 class _Formatter(logging.Formatter):
@@ -63,10 +63,10 @@ def get_logger(logger_or_name=None,
 
     logger = logging.getLogger(logger_or_name)
 
-    if logger_or_name in _CACHED_LOGGER:
+    if logger_or_name in _CACHED_LOGGERS:
         return logger
 
-    _CACHED_LOGGER.append(logger_or_name)
+    _CACHED_LOGGERS.append(logger_or_name)
 
     logger.setLevel(log_level)
     logger.propagate = False

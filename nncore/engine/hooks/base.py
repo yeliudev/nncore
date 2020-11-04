@@ -35,14 +35,14 @@ class Hook(object):
 
             token = hook_name.split('_')
 
+            # yapf:disable
             if len(token) == 3:
-
                 def _default_hook(self, engine):
                     getattr(self, '{}_{}'.format(token[0], token[2]))(engine)
             else:
-
                 def _default_hook(self, engine):
                     pass
+            # yapf:enable
 
             setattr(self, hook_name, MethodType(_default_hook, self))
 

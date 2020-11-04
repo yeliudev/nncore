@@ -188,8 +188,7 @@ def bind_getter(*vars):
             underline (e.g. `_name` or `_epoch`).
 
     Examples:
-        >>> import nncore
-        >>> @nncore.bind_getter('name', 'depth')
+        >>> @bind_getter('name', 'depth')
         >>> class Backbone:
         ...     _name = 'ResNet'
         ...     _depth = 50

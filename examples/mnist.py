@@ -2,14 +2,11 @@
 
 import torch
 import torch.nn as nn
-import torchvision
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
+from torchvision.transforms import Compose, Normalize, ToTensor
 
-import nncore
 from nncore.engine import Engine
-
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class LeNet(nn.Module):
@@ -36,28 +33,21 @@ class LeNet(nn.Module):
         self.criterion = nn.CrossEntropyLoss()
 
     def forward(self, data, **kwargs):
-        x, labels = data[0].to(device), data[1].to(device)
+        x, y = data[0], data[1]
         x = self.convs(x)
-        x = x.view(labels.numel(), -1)
+        x = x.view(y.numel(), -1)
         x = self.fcs(x)
 
         _, pred = torch.max(x, dim=1)
-        acc = torch.eq(pred, labels).sum().float() / labels.numel()
-        loss = self.criterion(x, labels)
+        acc = torch.eq(pred, y).sum().float() / y.numel()
+        loss = self.criterion(x, y)
 
-        return dict(_num_samples=labels.numel(), acc=acc, loss=loss)
+        return dict(_num_samples=y.numel(), acc=acc, loss=loss)
 
 
 def main():
-    # Load config from file
-    cfg = nncore.Config.from_file('examples/config.py')
-    cfg.freeze()
-
     # Prepare dataset and model
-    transform = torchvision.transforms.Compose([
-        torchvision.transforms.ToTensor(),
-        torchvision.transforms.Normalize([0.5], [0.5])
-    ])
+    transform = Compose([ToTensor(), Normalize([0.5], [0.5])])
 
     train = MNIST('data', train=True, transform=transform, download=True)
     train_loader = DataLoader(train, batch_size=16, shuffle=True)
@@ -66,10 +56,10 @@ def main():
     val_loader = DataLoader(val, batch_size=64, shuffle=False)
 
     data_loaders = dict(train=train_loader, val=val_loader)
-    model = LeNet().to(device)
+    model = LeNet()
 
     # Initialize and launch engine
-    engine = Engine(model, data_loaders, **cfg)
+    engine = Engine(model, data_loaders)
     engine.launch()
 
 

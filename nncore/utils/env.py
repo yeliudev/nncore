@@ -118,13 +118,16 @@ def _get_module_version(module_name):
         return None
 
 
-def collect_env_info():
+def collect_env_info(modules=['nncore', 'numpy', 'PIL', 'cv2']):
     """
     Collect information about the environment.
 
     This method will try and collect all the information about the entire
     environment, including platform, python version, cuda version, pytorch
     version, etc., and return a string describing the environment.
+
+    Args:
+        modules (list[str], optional): the list of module names to be checked
 
     Returns:
         info (str): the information about the environment
@@ -162,7 +165,7 @@ def collect_env_info():
         _c.append(('torchvision arch flags', torchvision_arch_flags))
 
     # other libraries
-    for module in ['nncore', 'numpy', 'PIL', 'cv2']:
+    for module in modules:
         _c.append((module, _get_module_version(module) or '<not-found>'))
 
     env_info = tabulate(_c)

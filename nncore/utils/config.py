@@ -96,7 +96,7 @@ class CfgNode(OrderedDict):
 
     def _check_freeze_state(self):
         if self._frozen:
-            raise RuntimeError('can not modify a frozen CfgNode')
+            raise RuntimeError('can not modify a frozen CfgNode object')
 
     def freeze(self):
         self._set_freeze_state(self, True)

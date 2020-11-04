@@ -8,7 +8,7 @@ class Registry(object):
     """
     A registry to map strings to objects.
 
-    Records in the `self._items` maintain the registry of objects. For each
+    Records in the `self.items` maintain the registry of objects. For each
     record, the key is the object name and the value is the object itself. The
     method `self.register` can be used as a decorator or a normal function.
 
@@ -42,7 +42,7 @@ class Registry(object):
             return self._items[key]
         else:
             raise AttributeError(
-                "Registry object has no attribute '{}'".format(key))
+                "registry object has no attribute '{}'".format(key))
 
     def __repr__(self):
         return "{}(name='{}', items={})".format(self.__class__.__name__,
@@ -89,21 +89,15 @@ def build_object(cfg, parent, default=None, **kwargs):
     Remaining fields are treated as the arguments for constructing the object.
 
     Args:
-        cfg (dict or None): object type and arguments
+        cfg (dict): object type and arguments
         parent (any): a module or a list of modules which may contain the
             expected object
-        default (any, optional): default return value when the object is not
-            found
+        default (any, optional): the default return value when the object is
+            not found
 
     Returns:
         obj (any): the object built from the dict
     """
-    if 'default' in kwargs:
-        raise KeyError("argument 'default' is reserved by this method")
-
-    if cfg is None:
-        return default
-
     args = cfg.copy()
     args.update(kwargs)
     obj_type = args.pop('type')
