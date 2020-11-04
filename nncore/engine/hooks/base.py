@@ -1,8 +1,18 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+from types import MethodType
+
 import nncore
 
 HOOKS = nncore.Registry('hook')
+
+HOOK_NAMES = [
+    'before_launch', 'after_launch', 'before_stage', 'after_stage',
+    'before_epoch', 'after_epoch', 'before_iter', 'after_iter',
+    'before_train_epoch', 'after_train_epoch', 'before_val_epoch',
+    'after_val_epoch', 'before_train_iter', 'after_train_iter',
+    'before_val_iter', 'after_val_iter'
+]
 
 
 @nncore.bind_getter('name')
@@ -19,59 +29,28 @@ class Hook(object):
     def __init__(self, name=None):
         self._name = name or self.__class__.__name__
 
+        for hook_name in HOOK_NAMES:
+            if hasattr(self, hook_name):
+                continue
+
+            token = hook_name.split('_')
+
+            if len(token) == 3:
+
+                def _default_hook(self, engine):
+                    getattr(self, '{}_{}'.format(token[0], token[2]))(engine)
+            else:
+
+                def _default_hook(self, engine):
+                    pass
+
+            setattr(self, hook_name, MethodType(_default_hook, self))
+
     def __eq__(self, hook):
         return self._name == hook.name
 
     def __repr__(self):
         return '{}()'.format(self._name)
-
-    def before_launch(self, engine):
-        pass
-
-    def after_launch(self, engine):
-        pass
-
-    def before_stage(self, engine):
-        pass
-
-    def after_stage(self, engine):
-        pass
-
-    def before_epoch(self, engine):
-        pass
-
-    def after_epoch(self, engine):
-        pass
-
-    def before_iter(self, engine):
-        pass
-
-    def after_iter(self, engine):
-        pass
-
-    def before_train_epoch(self, engine):
-        self.before_epoch(engine)
-
-    def after_train_epoch(self, engine):
-        self.after_epoch(engine)
-
-    def before_val_epoch(self, engine):
-        self.before_epoch(engine)
-
-    def after_val_epoch(self, engine):
-        self.after_epoch(engine)
-
-    def before_train_iter(self, engine):
-        self.before_iter(engine)
-
-    def after_train_iter(self, engine):
-        self.after_iter(engine)
-
-    def before_val_iter(self, engine):
-        self.before_iter(engine)
-
-    def after_val_iter(self, engine):
-        self.after_iter(engine)
 
     def every_n_stages(self, engine, n):
         return (engine.stage + 1) % n == 0 if n > 0 else False
