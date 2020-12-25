@@ -69,37 +69,7 @@ def _load_url_dist(url):
     return torch.utils.model_zoo.load_url(url)
 
 
-def get_checkpoint(file_or_url, map_location=None):
-    """
-    Get checkpoint from a file or an URL.
-
-    Args:
-        file_or_url (str): a filename or an URL
-        map_location (str or None, optional): same as :meth:`torch.load`
-
-    Returns:
-        checkpoint (dict or OrderedDict): the loaded checkpoint. It can be
-            either an OrderedDict storing model weights or a dict containing
-            other information, which depends on the checkpoint.
-    """
-    if file_or_url.startswith('torchvision://'):
-        model_urls = dict()
-        for _, name, ispkg in walk_packages(torchvision.models.__path__):
-            if ispkg:
-                continue
-            mod = import_module('torchvision.models.{}'.format(name))
-            if hasattr(mod, 'model_urls'):
-                urls = getattr(mod, 'model_urls')
-                model_urls.update(urls)
-        checkpoint = _load_url_dist(model_urls[file_or_url[14:]])
-    elif file_or_url.startswith(('http://', 'https://')):
-        checkpoint = _load_url_dist(file_or_url)
-    else:
-        checkpoint = torch.load(file_or_url, map_location=map_location)
-    return checkpoint
-
-
-def load_state_dict(module, state_dict, strict=False, logger=None):
+def _load_state_dict(module, state_dict, strict=False, logger=None):
     """
     Load state_dict to a module.
 
@@ -155,6 +125,36 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
         nncore.log_or_print(err_msg, logger, log_level='WARNING')
 
 
+def get_checkpoint(file_or_url, map_location=None):
+    """
+    Get checkpoint from a file or an URL.
+
+    Args:
+        file_or_url (str): a filename or an URL
+        map_location (str or None, optional): same as :meth:`torch.load`
+
+    Returns:
+        checkpoint (dict or OrderedDict): the loaded checkpoint. It can be
+            either an OrderedDict storing model weights or a dict containing
+            other information, which depends on the checkpoint.
+    """
+    if file_or_url.startswith('torchvision://'):
+        model_urls = dict()
+        for _, name, ispkg in walk_packages(torchvision.models.__path__):
+            if ispkg:
+                continue
+            mod = import_module('torchvision.models.{}'.format(name))
+            if hasattr(mod, 'model_urls'):
+                urls = getattr(mod, 'model_urls')
+                model_urls.update(urls)
+        checkpoint = _load_url_dist(model_urls[file_or_url[14:]])
+    elif file_or_url.startswith(('http://', 'https://')):
+        checkpoint = _load_url_dist(file_or_url)
+    else:
+        checkpoint = torch.load(file_or_url, map_location=map_location)
+    return checkpoint
+
+
 def load_checkpoint(model,
                     checkpoint,
                     map_location=None,
@@ -167,7 +167,7 @@ def load_checkpoint(model,
         model (Module): the module to load checkpoint
         checkpoint (dict or OrderedDict or str): either a checkpoint object or
             filename or URL or torchvision://<model_name>
-        map_location (str, optional): same as :meth:`torch.load`
+        map_location (str or None, optional): same as :meth:`torch.load`
         strict (bool, optional): whether to allow different params for the
             model and checkpoint. If `True`, raise an error when the params do
             not match exactly.
@@ -191,7 +191,7 @@ def load_checkpoint(model,
     if list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
 
-    load_state_dict(
+    _load_state_dict(
         getattr(model, 'module', model),
         state_dict,
         strict=strict,

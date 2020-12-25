@@ -23,25 +23,6 @@ def get_time_str():
     return time.strftime('%Y%m%d%H%M%S', time.localtime())
 
 
-def _detect_compute_compatibility(CUDA_HOME, so_file):
-    try:
-        cuobjdump = os.path.join(CUDA_HOME, 'bin', 'cuobjdump')
-        if os.path.isfile(cuobjdump):
-            output = subprocess.check_output(
-                "'{}' --list-elf '{}'".format(cuobjdump, so_file), shell=True)
-            output = output.decode('utf-8').strip().split('\n')
-            sm = []
-            for line in output:
-                line = findall(r'\.sm_[0-9]*\.', line)[0]
-                sm.append(line.strip('.'))
-            sm = sorted(set(sm))
-            return ', '.join(sm)
-        else:
-            return so_file + '; cannot find cuobjdump'
-    except Exception:
-        return so_file
-
-
 def _collect_cuda_env():
     try:
         import torch
@@ -80,13 +61,32 @@ def _collect_torch_env():
 def _collect_torch_build_env():
     try:
         try:
-            import torch.__config__
+            import torch
             return torch.__config__.show()
         except ImportError:
             from torch.utils.collect_env import get_pretty_env_info
             return get_pretty_env_info()
     except ImportError:
         return None
+
+
+def _detect_compute_compatibility(cuda_home, so_file):
+    try:
+        cuobjdump = os.path.join(cuda_home, 'bin', 'cuobjdump')
+        if os.path.isfile(cuobjdump):
+            output = subprocess.check_output(
+                "'{}' --list-elf '{}'".format(cuobjdump, so_file), shell=True)
+            output = output.decode('utf-8').strip().split('\n')
+            sm = []
+            for line in output:
+                line = findall(r'\.sm_[0-9]*\.', line)[0]
+                sm.append(line.strip('.'))
+            sm = sorted(set(sm))
+            return ', '.join(sm)
+        else:
+            return so_file + '; cannot find cuobjdump'
+    except Exception:
+        return so_file
 
 
 def _collect_torchvision_env():
@@ -110,10 +110,10 @@ def _collect_torchvision_env():
         return None, None
 
 
-def _get_module_version(module_name):
+def _get_module_version(mod_name):
     try:
-        module = importlib.import_module(module_name)
-        return module.__version__
+        mod = importlib.import_module(mod_name)
+        return mod.__version__
     except ImportError:
         return None
 
@@ -132,38 +132,38 @@ def collect_env_info(modules=['nncore', 'numpy', 'PIL', 'cv2']):
     Returns:
         info (str): the information about the environment
     """
-    _c = []
+    info = []
 
-    _c.append(('System', system()))
-    _c.append(('Python', sys.version.replace('\n', '')))
+    info.append(('System', system()))
+    info.append(('Python', sys.version.replace('\n', '')))
 
     cuda_home, cuda_arch_list, nvcc, devices = _collect_cuda_env()
     if cuda_home is not None:
-        _c.append(('CUDA_HOME', cuda_home))
-        _c.append(('TORCH_CUDA_ARCH_LIST', cuda_arch_list or '<not-found>'))
-        _c.append(('NVCC', nvcc or '<not-found>'))
+        info.append(('CUDA_HOME', cuda_home))
+        info.append(('TORCH_CUDA_ARCH_LIST', cuda_arch_list or '<not-found>'))
+        info.append(('NVCC', nvcc or '<not-found>'))
         if devices is not None:
             for name, ids in devices.items():
-                _c.append(('GPU ' + ','.join(ids), name))
+                info.append(('GPU ' + ','.join(ids), name))
         else:
-            _c.append(('GPU', '<not-found>'))
+            info.append(('GPU', '<not-found>'))
     else:
-        _c.append(('CUDA', '<not-found>'))
+        info.append(('CUDA', '<not-found>'))
 
     torch_env, torch_debug_build = _collect_torch_env()
-    _c.append(('PyTorch', torch_env or '<not-found>'))
+    info.append(('PyTorch', torch_env or '<not-found>'))
     if torch_debug_build is not None:
-        _c.append(('PyTorch debug build', torch_debug_build))
+        info.append(('PyTorch debug build', torch_debug_build))
 
     torchvision_env, torchvision_arch_flags = _collect_torchvision_env()
-    _c.append(('torchvision', torchvision_env or '<not-found>'))
+    info.append(('torchvision', torchvision_env or '<not-found>'))
     if torchvision_arch_flags is not None:
-        _c.append(('torchvision arch flags', torchvision_arch_flags))
+        info.append(('torchvision arch flags', torchvision_arch_flags))
 
     for module in modules:
-        _c.append((module, _get_module_version(module) or '<not-found>'))
+        info.append((module, _get_module_version(module) or '<not-found>'))
 
-    env_info = tabulate(_c)
+    env_info = tabulate(info)
     torch_build_env = _collect_torch_build_env()
     if torch_build_env is not None:
         env_info += '\n{}'.format(torch_build_env)
