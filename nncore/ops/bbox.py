@@ -114,6 +114,6 @@ def remove_small_bboxes(bboxes, min_size):
     ws, hs = bboxes[:, 2] - bboxes[:, 0], bboxes[:, 3] - bboxes[:, 1]
 
     keep = (ws >= min_size) & (hs >= min_size)
-    keep = keep.nonzero().squeeze(1)
+    keep = keep.nonzero(as_tuple=False).squeeze(1)
 
     return keep
