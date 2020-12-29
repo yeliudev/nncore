@@ -55,7 +55,7 @@ class Buffer(object):
         Returns:
             values (list): the values in the buffer according to the key
         """
-        return self._data[key]
+        return self._data.get(key, default=default)
 
     def update(self, key, value, warning=True):
         """

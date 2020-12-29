@@ -70,11 +70,10 @@ def gray2rgb(img):
 
 
 def _convert_color_factory(src, dst):
-
     code = getattr(cv2, 'COLOR_{}2{}'.format(src, dst))
 
-    src_with_quantifier = '{} {}'.format('a' if src == 'BGR' else 'an', src)
-    dst_with_quantifier = '{} {}'.format('a' if dst == 'BGR' else 'an', dst)
+    src_with_article = '{} {}'.format('a' if src == 'BGR' else 'an', src)
+    dst_with_article = '{} {}'.format('a' if dst == 'BGR' else 'an', dst)
 
     def _convert_color(img):
         return cv2.cvtColor(img, code)
@@ -87,7 +86,7 @@ def _convert_color_factory(src, dst):
 
     Returns:
         img (:obj:`np.ndarray`): the converted {} image
-    """.format(src_with_quantifier, dst_with_quantifier, dst)
+    """.format(src_with_article, dst_with_article, dst)
 
     return _convert_color
 
