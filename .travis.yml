@@ -10,6 +10,8 @@ jobs:
       python: 3.7
     - name: Python 3.8 on Xenial Linux
       python: 3.8
+    - name: Python 3.9 on Xenial Linux
+      python: 3.9
     - name: Python 3.6 on Bionic Linux
       dist: bionic
       python: 3.6
@@ -19,6 +21,9 @@ jobs:
     - name: Python 3.8 on Bionic Linux
       dist: bionic
       python: 3.8
+    - name: Python 3.9 on Bionic Linux
+      dist: bionic
+      python: 3.9
     - name: Python 3.6 on Focal Linux
       dist: focal
       python: 3.6
@@ -28,6 +33,9 @@ jobs:
     - name: Python 3.8 on Focal Linux
       dist: focal
       python: 3.8
+    - name: Python 3.9 on Focal Linux
+      dist: focal
+      python: 3.9
       env: DEPLOY_IN_THIS_ENV=true
 
     - name: Python 3.7 on macOS 10.14
@@ -95,7 +103,7 @@ deploy:
   on:
     branch: release
     tags: true
-    python: 3.8
+    python: 3.9
     condition: $DEPLOY_IN_THIS_ENV
 
 notifications:

@@ -33,7 +33,7 @@ def xavier_init(module, gain=1, bias=0, distribution='normal'):
 
 def kaiming_init(module,
                  a=0,
-                 mode='fan_out',
+                 mode='fan_in',
                  nonlinearity='relu',
                  bias=0,
                  distribution='normal'):

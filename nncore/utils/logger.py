@@ -29,7 +29,7 @@ class _Formatter(logging.Formatter):
         return prefix + log[anchor:]
 
 
-def get_logger(logger_or_name=None,
+def get_logger(logger_or_name='nncore',
                fmt='[%(asctime)s %(levelname)s]: %(message)s',
                datefmt='%Y-%m-%d %H:%M:%S',
                log_level=logging.INFO,
@@ -39,13 +39,13 @@ def get_logger(logger_or_name=None,
 
     If the logger has not been initialized, this method will initialize the
     logger by adding one or two handlers, otherwise the initialized logger will
-    be directly returned. During initialization, a StreamHandler will always be
-    added. If `log_file` is specified and the process rank is 0, a FileHandler
-    will also be added.
+    be directly returned. During initialization, a `StreamHandler` will always
+    be added. If `log_file` is specified and the process rank is 0, a
+    `FileHandler` will also be added.
 
     Args:
-        logger_or_name (:obj:`logging.Logger` or str, optional): the logger or
-            name of the logger
+        logger_or_name (:obj:`logging.Logger` or str or None, optional): the
+            logger or name of the logger
         fmt (str, optional): log format. The format must end with `%(message)s`
             to make sure that the colors could be rendered properly.
         datefmt (str, optional): date format
@@ -97,7 +97,7 @@ def get_logger(logger_or_name=None,
     return logger
 
 
-def log_or_print(msg, logger, log_level=logging.INFO, **kwargs):
+def log_or_print(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
     """
     Log a message with a potential logger. If `logger` is a valid
     `logging.Logger` or a name of the logger, then it would be used. Otherwise
@@ -105,14 +105,15 @@ def log_or_print(msg, logger, log_level=logging.INFO, **kwargs):
 
     Args:
         msg (str): the message to be logged
-        logger (any): the potential logger or name of the logger to be used
+        logger_or_name (:obj:`logging.Logger` or str or None, optional): the
+            potential logger or name of the logger to be used
         log_level (int, optional): log level of the logger
     """
     level = logging._checkLevel(log_level)
-    if isinstance(logger, logging.Logger):
-        logger.log(level, msg)
-    elif isinstance(logger, str):
-        logger = get_logger(logger, **kwargs)
+    if isinstance(logger_or_name, logging.Logger):
+        logger_or_name.log(level, msg)
+    elif isinstance(logger_or_name, str):
+        logger = get_logger(logger_or_name, **kwargs)
         logger.log(level, msg)
     else:
         if level > 20:

@@ -60,6 +60,7 @@ class Registry(object):
 
     def register(self, obj=None, name=None):
         if isinstance(obj, (list, tuple)):
+            assert name is None
             for o in obj:
                 self._register(o, name=name)
             return
@@ -98,14 +99,14 @@ def build_object(cfg, parent, default=None, **kwargs):
     Returns:
         obj (any): the object built from the dict
     """
-    args = cfg.copy()
-    args.update(kwargs)
-    obj_type = args.pop('type')
+    _cfg = cfg.copy()
+    _cfg.update(kwargs)
+    obj_type = _cfg.pop('type')
 
     if isinstance(parent, (list, tuple)):
         for p in parent:
             obj = build_object(cfg, p, **kwargs)
-            if obj is not None:
+            if obj != default:
                 return obj
         return default
     elif hasattr(parent, 'get'):
@@ -113,4 +114,4 @@ def build_object(cfg, parent, default=None, **kwargs):
     else:
         obj_cls = getattr(parent, obj_type, None)
 
-    return obj_cls(**args) if obj_cls is not None else default
+    return obj_cls(**_cfg) if obj_cls is not None else default

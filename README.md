@@ -26,14 +26,16 @@ Note that some methods in the library work with PyTorch 1.4+, but the installati
 
 ## Continuous Integration
 
+[ci_root]: https://travis-ci.com/yeliudev/nncore
+
 | Platform / Python Version | 3.6 | 3.7 | 3.8 | 3.9 |
 | :-: | :-: | :-: | :-: | :-: |
-| Ubuntu 16.04 | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/1)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/2)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/3)](https://travis-ci.com/yeliudev/nncore) | — |
-| Ubuntu 18.04 | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/4)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/5)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/6)](https://travis-ci.com/yeliudev/nncore) | — |
-| Ubuntu 20.04 | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/7)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/8)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/9)](https://travis-ci.com/yeliudev/nncore) | — |
-| macOS 10.14 | — | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/10)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/11)](https://travis-ci.com/yeliudev/nncore) | — |
-| macOS 10.15 | — | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/12)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/13)](https://travis-ci.com/yeliudev/nncore) | — |
-| Windows | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/14)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/15)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/16)](https://travis-ci.com/yeliudev/nncore) | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/17)](https://travis-ci.com/yeliudev/nncore) |
+| Ubuntu 16.04 | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/1)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/2)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/3)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/4)][ci_root] |
+| Ubuntu 18.04 | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/5)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/6)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/7)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/8)][ci_root] |
+| Ubuntu 20.04 | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/9)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/10)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/11)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/12)][ci_root] |
+| macOS 10.14 | — | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/13)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/14)][ci_root] | — |
+| macOS 10.15 | — | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/15)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/16)][ci_root] | — |
+| Windows | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/17)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/18)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/19)][ci_root] | [![Build Status](https://api.catcatserver.xyz/badge/yeliudev/nncore/master/20)][ci_root] |
 
 ## Installation
 

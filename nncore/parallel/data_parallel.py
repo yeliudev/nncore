@@ -112,5 +112,8 @@ class NNDataParallel(DataParallel):
 
 class NNDistributedDataParallel(DistributedDataParallel):
 
+    def to_kwargs(self, inputs, kwargs, device_id):
+        return _scatter_kwargs(inputs, kwargs, [device_id], dim=self.dim)
+
     def scatter(self, inputs, kwargs, device_ids):
         return _scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
