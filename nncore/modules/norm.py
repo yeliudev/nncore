@@ -4,7 +4,7 @@ import torch.nn as nn
 
 import nncore
 
-NORM_LAYERS = nncore.Registry('norm layers')
+NORM_LAYERS = nncore.Registry('norm layer')
 
 NORM_LAYERS.register(nn.BatchNorm2d, name='BN')
 NORM_LAYERS.register(nn.BatchNorm1d, name='BN1d')

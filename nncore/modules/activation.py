@@ -5,7 +5,7 @@ import torch.nn as nn
 
 import nncore
 
-ACTIVATION_LAYERS = nncore.Registry('activation layers')
+ACTIVATION_LAYERS = nncore.Registry('activation layer')
 
 
 class _SwishImplementation(torch.autograd.Function):

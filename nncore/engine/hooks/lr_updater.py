@@ -5,7 +5,7 @@ from math import cos, pi
 import nncore
 from .base import HOOKS, Hook
 
-SCHEDULES = nncore.Registry('schedules')
+SCHEDULES = nncore.Registry('schedule')
 
 
 @SCHEDULES.register(name='step')
