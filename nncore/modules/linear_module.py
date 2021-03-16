@@ -3,8 +3,7 @@
 import torch.nn as nn
 from torch.nn.modules.dropout import _DropoutNd
 
-from .activation import build_act_layer
-from .norm import build_norm_layer
+from .bricks import build_act_layer, build_norm_layer
 
 
 class LinearModule(nn.Module):

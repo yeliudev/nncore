@@ -33,7 +33,7 @@ class GHMCLoss(nn.Module):
         weights = torch.zeros_like(pred)
         g = torch.abs(pred.sigmoid().detach() - target)
 
-        tot = target.shape[1]
+        tot = target.size(1)
         n = 0
         for i in range(self.bins):
             inds = (g >= self.edges[i]) & (g < self.edges[i + 1])

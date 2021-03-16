@@ -1,0 +1,83 @@
+# Copyright (c) Ye Liu. All rights reserved.
+
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+import nncore
+
+MASSAGE_PASSING_LAYERS = nncore.Registry('massage passing layer')
+
+
+@MASSAGE_PASSING_LAYERS.register()
+class GATConv(nn.Module):
+
+    def __init__(self,
+                 in_features,
+                 out_features,
+                 heads,
+                 p=0.5,
+                 negative_slope=0.2,
+                 concat=True,
+                 residual=True,
+                 bias=True):
+        super(GATConv, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.heads = heads
+        self.concat = concat
+        self.residual = residual
+
+        self.w = nn.Parameter(torch.Tensor(heads, in_features, out_features))
+        self.h_i = nn.Parameter(torch.Tensor(heads, out_features, 1))
+        self.h_j = nn.Parameter(torch.Tensor(heads, out_features, 1))
+
+        if residual:
+            self.r = nn.Linear(in_features, out_features * heads, bias=False)
+
+        if bias:
+            scale = heads if concat else 1
+            self.bias = nn.Parameter(torch.Tensor(out_features * scale))
+
+        self.dropout = nn.Dropout(p=p)
+        self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
+
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        for w in (self.w, self.h_i, self.h_j):
+            nn.init.xavier_uniform_(w)
+        if self.bias is not None:
+            self.bias.data.fill_(0)
+
+    def forward(self, x, adj):
+        x = self.dropout(x)
+        h = torch.matmul(x.unsqueeze(0), self.w)
+
+        h_i = torch.bmm(h, self.h_i)
+        h_j = torch.bmm(h, self.h_j)
+
+        att = self.leaky_relu(h_i + h_j.transpose(1, 2))
+        att = self.dropout(F.softmax(att + adj, dim=-1))
+
+        y = torch.bmm(att, h).transpose(0, 1).contiguous()
+
+        if self.residual:
+            if y.size(-1) == x.size(-1):
+                y += x.unsqueeze(1)
+            else:
+                y += self.r(x).view(-1, self.heads, self.out_features)
+
+        if self.concat:
+            y = y.view(-1, self.out_features * self.heads)
+        else:
+            y = y.mean(dim=1)
+
+        if self.bias is not None:
+            y += self.bias
+
+        return y
+
+
+def build_msg_layer(cfg, **kwargs):
+    return nncore.build_object(cfg, [MASSAGE_PASSING_LAYERS, nn], **kwargs)
