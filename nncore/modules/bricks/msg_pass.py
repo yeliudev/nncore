@@ -15,18 +15,20 @@ class GATConv(nn.Module):
     def __init__(self,
                  in_features,
                  out_features,
-                 heads,
+                 heads=1,
                  p=0.5,
                  negative_slope=0.2,
                  concat=True,
                  residual=True,
-                 bias=True):
+                 bias=True,
+                 adj=None):
         super(GATConv, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.heads = heads
         self.concat = concat
         self.residual = residual
+        self.adj = adj
 
         self.w = nn.Parameter(torch.Tensor(heads, in_features, out_features))
         self.h_i = nn.Parameter(torch.Tensor(heads, out_features, 1))
@@ -36,8 +38,8 @@ class GATConv(nn.Module):
             self.r = nn.Linear(in_features, out_features * heads, bias=False)
 
         if bias:
-            scale = heads if concat else 1
-            self.bias = nn.Parameter(torch.Tensor(out_features * scale))
+            self.bias = nn.Parameter(
+                torch.Tensor(out_features * (heads if concat else 1)))
 
         self.dropout = nn.Dropout(p=p)
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
@@ -50,7 +52,10 @@ class GATConv(nn.Module):
         if self.bias is not None:
             self.bias.data.fill_(0)
 
-    def forward(self, x, adj):
+    def forward(self, x, adj=None):
+        if adj is None:
+            adj = self.adj
+
         x = self.dropout(x)
         h = torch.matmul(x.unsqueeze(0), self.w)
 
