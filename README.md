@@ -22,7 +22,7 @@ NNCore is a library that provides common functionalities for Machine Learning an
 * More powerful data loading techniques
 * An engine that can take over the whole training and testing process, with all the baby-sitting works (stage control, optimizer configuration, lr scheduling, checkpoint management, metrics & tensorboard writing, etc.) done automatically. See an [example](https://github.com/yeliudev/nncore/blob/master/examples/mnist.py) for details.
 
-Note that some methods in the library work with PyTorch 1.4+, but the installation of PyTorch is not necessary.
+Note that some methods in the library work with PyTorch 1.6+, but the installation of PyTorch is not necessary.
 
 ## Continuous Integration
 

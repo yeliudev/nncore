@@ -3,14 +3,16 @@
 import os.path as osp
 
 import nncore
-from .handlers import JsonHandler, PickleHandler, YamlHandler
+from .handlers import Hdf5Handler, JsonHandler, PickleHandler, YamlHandler
 
 _FILE_HANDLERS = {
     'json': JsonHandler(),
     'yaml': YamlHandler(),
     'yml': YamlHandler(),
     'pickle': PickleHandler(),
-    'pkl': PickleHandler()
+    'pkl': PickleHandler(),
+    'hdf5': Hdf5Handler(),
+    'h5': Hdf5Handler()
 }
 
 
@@ -22,15 +24,15 @@ def _get_handler(format):
 
 def load(name_or_file, format=None, **kwargs):
     """
-    Load data from json/yaml/pickle files.
+    Load data from json/yaml/pickle/hdf5 files.
 
     Args:
         name_or_file (str or file-like object): name of the file or a file-like
             object
         format (str, optional): if not specified, the file format will be
             inferred from the file extension, otherwise use the specified one.
-            Currently supported formats include `json`, `yaml/yml` and
-            `pickle/pkl`.
+            Currently supported formats include `json`, `yaml/yml`,
+            `pickle/pkl` and `hdf5/h5`.
 
     Returns:
         obj (any): the name_or_file from the file
@@ -50,7 +52,7 @@ def load(name_or_file, format=None, **kwargs):
 
 def dump(obj, name_or_file, format=None, **kwargs):
     """
-    Dump data to json/yaml/pickle files.
+    Dump data to json/yaml/pickle/hdf5 files.
 
     Args:
         obj (any): the python object to be dumped
@@ -58,8 +60,8 @@ def dump(obj, name_or_file, format=None, **kwargs):
             file-like object
         format (str, optional): if not specified, the file format will be
             inferred from the file extension, otherwise use the specified one.
-            Currently supported formats include `json`, `yaml/yml` and
-            `pickle/pkl`.
+            Currently supported formats include `json`, `yaml/yml`,
+            `pickle/pkl` and `hdf5/h5`.
     """
     format = format or name_or_file.split('.')[-1]
     handler = _get_handler(format)

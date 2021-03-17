@@ -6,19 +6,19 @@ from abc import ABCMeta, abstractmethod
 class FileHandler(metaclass=ABCMeta):
 
     @abstractmethod
-    def load_from_fileobj(self, file, **kwargs):
+    def load_from_fileobj(self):
         pass
 
     @abstractmethod
-    def dump_to_fileobj(self, obj, file, **kwargs):
+    def dump_to_fileobj(self):
         pass
 
     @abstractmethod
-    def load_from_str(self, string, **kwargs):
+    def load_from_str(self):
         pass
 
     @abstractmethod
-    def dump_to_str(self, obj, **kwargs):
+    def dump_to_str(self):
         pass
 
     def load_from_path(self, filename, mode='r', **kwargs):
