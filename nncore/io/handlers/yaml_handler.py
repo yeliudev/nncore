@@ -15,10 +15,10 @@ except ImportError:
 
 class YamlHandler(FileHandler):
 
-    def load_from_fileobj(self, file, **kwargs):
+    def load_from_file(self, file, **kwargs):
         return yaml.load(file, Loader=Loader, **kwargs)
 
-    def dump_to_fileobj(self, obj, file, **kwargs):
+    def dump_to_file(self, obj, file, **kwargs):
         yaml.dump(obj, file, Dumper=Dumper, **kwargs)
 
     def load_from_str(self, string, **kwargs):

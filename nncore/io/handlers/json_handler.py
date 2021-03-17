@@ -7,10 +7,10 @@ from .base import FileHandler
 
 class JsonHandler(FileHandler):
 
-    def load_from_fileobj(self, file, **kwargs):
+    def load_from_file(self, file, **kwargs):
         return json.load(file, **kwargs)
 
-    def dump_to_fileobj(self, obj, file, **kwargs):
+    def dump_to_file(self, obj, file, **kwargs):
         json.dump(obj, file, **kwargs)
 
     def load_from_str(self, string, **kwargs):

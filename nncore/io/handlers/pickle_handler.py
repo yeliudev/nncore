@@ -9,10 +9,10 @@ from .base import FileHandler
 
 class PickleHandler(FileHandler):
 
-    def load_from_fileobj(self, file, **kwargs):
+    def load_from_file(self, file, **kwargs):
         return joblib.load(file, **kwargs)
 
-    def dump_to_fileobj(self, obj, file, protocol=2, **kwargs):
+    def dump_to_file(self, obj, file, protocol=2, **kwargs):
         joblib.dump(obj, file, protocol=protocol, **kwargs)
 
     def load_from_str(self, string, **kwargs):
@@ -21,10 +21,9 @@ class PickleHandler(FileHandler):
     def dump_to_str(self, obj, protocol=2, **kwargs):
         return pickle.dumps(obj, protocol=protocol, **kwargs)
 
-    def load_from_path(self, filename, **kwargs):
+    def load_from_path(self, file, **kwargs):
         return super(PickleHandler, self).load_from_path(
-            filename, mode='rb', **kwargs)
+            file, mode='rb', **kwargs)
 
-    def dump_to_path(self, obj, filename, **kwargs):
-        super(PickleHandler, self).dump_to_path(
-            obj, filename, mode='wb', **kwargs)
+    def dump_to_path(self, obj, file, **kwargs):
+        super(PickleHandler, self).dump_to_path(obj, file, mode='wb', **kwargs)
