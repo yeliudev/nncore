@@ -1,6 +1,5 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-import os.path as osp
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from datetime import timedelta
@@ -133,7 +132,7 @@ class JSONWriter(Writer):
             else:
                 metrics[key] = engine.buffer.avg(key, window_size=window_size)
 
-        filename = osp.join(engine.work_dir, self._filename)
+        filename = nncore.join(engine.work_dir, self._filename)
         with open(filename, 'a+') as f:
             nncore.dump(metrics, f, format='json')
             f.write('\n')
@@ -158,7 +157,7 @@ class TensorboardWriter(Writer):
 
     def open(self, engine):
         if self._log_dir is None:
-            self._log_dir = osp.join(engine.work_dir, 'tf_logs')
+            self._log_dir = nncore.join(engine.work_dir, 'tf_logs')
         nncore.mkdir(self._log_dir)
 
         from torch.utils.tensorboard import SummaryWriter

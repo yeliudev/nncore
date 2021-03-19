@@ -1,6 +1,5 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-import os.path as osp
 from collections import OrderedDict
 
 import torch
@@ -74,9 +73,9 @@ class Engine(object):
             self.register_hook(hooks)
 
         time_str = nncore.get_time_str()
-        self.work_dir = work_dir or osp.join('work_dirs', time_str)
+        self.work_dir = work_dir or nncore.join('work_dirs', time_str)
 
-        log_file = osp.join(self.work_dir, time_str + '.log')
+        log_file = nncore.join(self.work_dir, time_str + '.log')
         self.logger = nncore.get_logger(logger, log_file=log_file)
 
         self.buffer = Buffer(max_size=buffer_size, logger=logger)

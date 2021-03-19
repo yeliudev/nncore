@@ -159,14 +159,15 @@ class Config(object):
         Returns:
             cfg (:obj:`Config`): the constructed config object
         """
-        filename = osp.abspath(osp.expanduser(filename))
+        filename = nncore.abs_path(osp.expanduser(filename))
         nncore.file_exist(filename, raise_error=True)
 
         format = filename.split('.')[-1]
         if format == 'py':
             with TemporaryDirectory() as tmp_dir:
                 mod_name = str(int.from_bytes(os.urandom(2), 'big'))
-                copyfile(filename, osp.join(tmp_dir, '{}.py'.format(mod_name)))
+                copyfile(filename,
+                         nncore.join(tmp_dir, '{}.py'.format(mod_name)))
                 sys.path.insert(0, tmp_dir)
                 mod = import_module(mod_name)
                 sys.path.pop(0)

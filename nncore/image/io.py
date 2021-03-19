@@ -1,7 +1,5 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-import os.path as osp
-
 import cv2
 
 import nncore
@@ -56,5 +54,5 @@ def imwrite(img, filename, params=None):
     Returns:
         flag (bool): successful or not
     """
-    nncore.mkdir(osp.dirname(filename))
+    nncore.mkdir(nncore.dir_name(filename))
     return cv2.imwrite(filename, img, params)

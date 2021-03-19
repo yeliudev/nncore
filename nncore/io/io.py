@@ -1,7 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import inspect
-import os.path as osp
 from functools import wraps
 
 import h5py
@@ -48,7 +47,7 @@ def load(name_or_file, format=None, **kwargs):
 
     if isinstance(name_or_file, str):
         return handler.load_from_path(name_or_file, **kwargs)
-    elif hasattr(name_or_file, 'read'):
+    elif hasattr(name_or_file, 'close'):
         return handler.load_from_file(name_or_file, **kwargs)
     else:
         raise TypeError(
@@ -56,7 +55,7 @@ def load(name_or_file, format=None, **kwargs):
                 type(name_or_file)))
 
 
-def dump(obj, name_or_file, format=None, **kwargs):
+def dump(obj, name_or_file, format=None, overwrite=False, **kwargs):
     """
     Dump data to json/yaml/pickle/hdf5 files.
 
@@ -67,6 +66,7 @@ def dump(obj, name_or_file, format=None, **kwargs):
             inferred from the file extension, otherwise use the specified one.
             Currently supported formats include `json`, `yaml/yml`,
             `pickle/pkl` and `hdf5/h5`.
+        overwrite (bool, optional): whether to overwrite it if the file exists
     """
     format = format or name_or_file.split('.')[-1]
     if format in ('hdf5', 'h5') and not isinstance(obj, np.ndarray):
@@ -77,9 +77,14 @@ def dump(obj, name_or_file, format=None, **kwargs):
     handler = _get_handler(format)
 
     if isinstance(name_or_file, str):
-        nncore.mkdir(osp.dirname(name_or_file))
+        if nncore.file_exist(name_or_file):
+            if overwrite:
+                nncore.remove(name_or_file)
+            else:
+                raise FileExistsError("file '{}' exists".format(name_or_file))
+        nncore.mkdir(nncore.dir_name(name_or_file))
         handler.dump_to_path(obj, name_or_file, **kwargs)
-    elif hasattr(name_or_file, 'write'):
+    elif hasattr(name_or_file, 'close'):
         handler.dump_to_file(obj, name_or_file, **kwargs)
     else:
         raise TypeError(
@@ -150,21 +155,26 @@ def list_from_file(filename, offset=0, separator=',', max_length=-1):
     return out_list
 
 
-def open(file=None, mode='r', **kwargs):
+def open(file=None, mode='r', format=None, **kwargs):
     """
     Open a file and return a file object. This method can be used as a function
     or a decorator. When used as a decorator, the function to be decorated
-    should recieve the handler using an argument named `f`. The file and mode
-    can be overrided during calls using the arguments `file` and `mode`.
+    should receive the handler using an argument named `f`. File and mode can
+    be overrided during calls using the arguments `file` and `mode`. Argument
+    `file` and `format` should not be `None` at the same time.
 
     Args:
-        file (str, optional): name of the file to be loaded
+        file (str or None, optional): name of the file to be loaded
         mode (str, optional): the loading mode to be used
+        format (str or None, optional): format of the file
 
     Returns:
         handler (file object): the opened file object
     """
-    if file.split('.')[-1] in ('hdf5', 'h5'):
+    assert file is not None or format is not None
+    format = format or file.split('.')[-1]
+
+    if format in ('hdf5', 'h5'):
         handler = h5py.File
     else:
         handler = _open
@@ -173,6 +183,11 @@ def open(file=None, mode='r', **kwargs):
         return handler(file, mode, **kwargs)
 
     def _decorator(func):
+        vars = func.__code__.co_varnames
+        if 'file' in vars or 'mode' in vars:
+            raise AttributeError(
+                "decorated function should not have 'file' or 'mode' arguments"
+            )
 
         @wraps(func)
         def _wrapper(*_args, file=file, mode=mode, **_kwargs):

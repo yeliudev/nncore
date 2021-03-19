@@ -3,35 +3,85 @@
 import os
 import os.path as osp
 from platform import system
+from shutil import rmtree
 
 
-def dir_exist(dir_name, raise_error=False):
+def abs_path(path):
+    """
+    Parse the absolute path from a relative path.
+
+    Args:
+        path (str): path to the file or directory
+
+    Returns:
+        abs_path (str): the absolute path
+    """
+    return osp.abspath(path)
+
+
+def base_name(path):
+    """
+    Parse the base name from a path.
+
+    Args:
+        path (str): path to the file or directory
+
+    Returns:
+        base_name (str): the parsed base name
+    """
+    return osp.basename(path)
+
+
+def dir_name(path):
+    """
+    Parse the directory name from a path.
+
+    Args:
+        path (str): path to the file or directory
+
+    Returns:
+        dir_name (str): the parsed directory name
+    """
+    return osp.dirname(path)
+
+
+def join(*args):
+    """
+    Combine strings into a path.
+
+    Args:
+        *args: strings to be combined
+    """
+    return osp.join(*args)
+
+
+def dir_exist(path, raise_error=False):
     """
     Check whether a directory exists.
 
     Args:
-        dir_name (str): (positive or relative) path to the directory
-        raise_error (bool, optional): if True, raise a NotADirectoryError when
-            the directory not found
+        path (str): (positive or relative) path to the directory
+        raise_error (bool, optional): if True, raise an error when the file
+            is not found
     """
-    isdir = osp.isdir(dir_name)
+    isdir = osp.isdir(path)
     if not isdir and raise_error:
-        raise NotADirectoryError("directory '{}' not found".format(dir_name))
+        raise NotADirectoryError("directory '{}' not found".format(path))
     return isdir
 
 
-def file_exist(filename, raise_error=False):
+def file_exist(path, raise_error=False):
     """
     Check whether a file exists.
 
     Args:
-        filename (str): (positive or relative) path to the file
-        raise_error (bool, optional): if True, raise a FileNotFoundError when
-            the file not found
+        path (str): (positive or relative) path to the file
+        raise_error (bool, optional): if True, raise an error when the file
+            is not found
     """
-    isfile = osp.isfile(filename)
+    isfile = osp.isfile(path)
     if not isfile and raise_error:
-        raise FileNotFoundError("file '{}' not found".format(filename))
+        raise FileNotFoundError("file '{}' not found".format(path))
     return isfile
 
 
@@ -41,8 +91,8 @@ def mkdir(dir_name, exist_ok=True, keep_empty=False):
 
     Args:
         dir_name (str): (positive or relative) path to the directory
-        exist_ok (bool, optional): if False, raise an OSError when the
-            directory exists
+        exist_ok (bool, optional): if False, raise an error if the directory
+            exists
         keep_empty (bool, optional): if True, remove all files in the directory
             if exists
     """
@@ -51,7 +101,25 @@ def mkdir(dir_name, exist_ok=True, keep_empty=False):
     os.makedirs(dir_name, exist_ok=exist_ok)
     if keep_empty:
         for f in os.listdir(dir_name):
-            os.remove(osp.join(dir_name, f))
+            os.remove(join(dir_name, f))
+
+
+def remove(path, raise_error=False):
+    """
+    Remove a file or directory.
+
+    Args:
+        path (str): (positive or relative) path to the file or directory
+        raise_error (bool, optional): if True, raise an error when the file
+            is not found
+    """
+    if file_exist(path):
+        os.remove(path)
+    elif dir_exist(path):
+        rmtree(path)
+    elif raise_error:
+        raise FileNotFoundError(
+            "file or directory '{}' not found".format(path))
 
 
 def symlink(src, dst, overwrite=True, raise_error=False):
@@ -61,9 +129,9 @@ def symlink(src, dst, overwrite=True, raise_error=False):
     Args:
         src (str): source of the symlink
         dst (str): destination of the symlink
-        overwrite (bool, optional): if true, overwrite it when an old symlink
+        overwrite (bool, optional): if True, overwrite it if an old symlink
             exists
-        raise_error (bool, optional): if true, raise error when the platform
+        raise_error (bool, optional): if True, raise an error if the platform
             does not support symlink
     """
     if system() == 'Windows' and not raise_error:

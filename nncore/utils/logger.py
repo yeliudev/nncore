@@ -1,7 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import logging
-import os.path as osp
 import sys
 
 from termcolor import colored
@@ -88,7 +87,7 @@ def get_logger(logger_or_name='nncore',
         pass
 
     if log_file is not None:
-        nncore.mkdir(osp.dirname(log_file))
+        nncore.mkdir(nncore.dir_name(log_file))
         fh = logging.FileHandler(log_file, mode='w')
         formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
         fh.setFormatter(formatter)

@@ -1,7 +1,5 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-import os.path as osp
-
 import nncore
 from ..comm import master_only
 from ..utils import save_checkpoint
@@ -34,7 +32,7 @@ class CheckpointHook(Hook):
             return
 
         filename = 'epoch_{}.pth'.format(engine.epoch + 1)
-        filepath = osp.join(self._out_dir, filename)
+        filepath = nncore.join(self._out_dir, filename)
         optimizer = engine.optimizer if self._save_optimizer else None
 
         meta = dict(
@@ -50,4 +48,4 @@ class CheckpointHook(Hook):
         save_checkpoint(engine.model, filepath, optimizer=optimizer, meta=meta)
 
         if self._create_symlink:
-            nncore.symlink(filename, osp.join(self._out_dir, 'latest.pth'))
+            nncore.symlink(filename, nncore.join(self._out_dir, 'latest.pth'))

@@ -4,6 +4,8 @@ from collections.abc import Iterable, Sequence
 from functools import partial
 from itertools import chain
 
+import numpy as np
+
 
 def iter_cast(inputs, dst_type, return_type=None):
     """
@@ -177,15 +179,35 @@ def to_list_of_dict(in_dict):
     return out_list
 
 
+def swap_element(matrix, i, j):
+    """
+    Swap two elements of an array or a tensor.
+
+    Args:
+        matrix (:obj:`np.ndarray` or :obj:`torch.Tensor`): the array or tensor
+            to be swapped
+        i (int): index of the first element
+        j (int): index of the second element
+
+    Returns:
+        matrix (:obj:`np.ndarray` or :obj:`torch.Tensor`): the swapped array
+            or tensor
+    """
+    if isinstance(matrix, np.ndarray):
+        tmp = matrix[i].copy()
+    else:
+        tmp = matrix[i].clone()
+
+    matrix[i] = matrix[j]
+    matrix[j] = tmp
+
+    return matrix
+
+
 def bind_getter(*vars):
     """
     A syntactic sugar for automatically binding getters for classes. This
     method is expected to be used as a decorator.
-
-    Args:
-        *vars: strings indicating the member variables to be binded with
-            getters. The name of member variables are expected to start with an
-            underline (e.g. `_name` or `_epoch`).
 
     Examples:
         >>> @bind_getter('name', 'depth')
@@ -202,6 +224,11 @@ def bind_getter(*vars):
         ...     @property
         ...     def depth(self):
         ...         return self._depth
+
+    Args:
+        *vars: strings indicating the member variables to be binded with
+            getters. The name of member variables are expected to start with an
+            underline (e.g. `_name` or `_epoch`).
     """
 
     def _wrapper(cls):

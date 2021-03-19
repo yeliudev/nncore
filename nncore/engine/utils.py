@@ -1,7 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import os
-import os.path as osp
 import random
 from collections import OrderedDict
 from datetime import datetime
@@ -62,11 +61,11 @@ def set_random_seed(seed=None):
     return seed
 
 
-def _load_url_dist(url):
+def _load_url_dist(url, **kwargs):
     if is_main_process():
-        torch.utils.model_zoo.load_url(url)
+        torch.utils.model_zoo.load_url(url, **kwargs)
     synchronize()
-    return torch.utils.model_zoo.load_url(url)
+    return torch.utils.model_zoo.load_url(url, **kwargs)
 
 
 def _load_state_dict(module, state_dict, strict=False, logger=None):
@@ -125,7 +124,7 @@ def _load_state_dict(module, state_dict, strict=False, logger=None):
         nncore.log_or_print(err_msg, logger, log_level='WARNING')
 
 
-def get_checkpoint(file_or_url, map_location=None):
+def get_checkpoint(file_or_url, map_location=None, **kwargs):
     """
     Get checkpoint from a file or an URL.
 
@@ -147,9 +146,9 @@ def get_checkpoint(file_or_url, map_location=None):
             if hasattr(mod, 'model_urls'):
                 urls = getattr(mod, 'model_urls')
                 model_urls.update(urls)
-        checkpoint = _load_url_dist(model_urls[file_or_url[14:]])
+        checkpoint = _load_url_dist(model_urls[file_or_url[14:]], **kwargs)
     elif file_or_url.startswith(('http://', 'https://')):
-        checkpoint = _load_url_dist(file_or_url)
+        checkpoint = _load_url_dist(file_or_url, **kwargs)
     else:
         checkpoint = torch.load(file_or_url, map_location=map_location)
     return checkpoint
@@ -159,7 +158,8 @@ def load_checkpoint(model,
                     checkpoint,
                     map_location=None,
                     strict=False,
-                    logger=None):
+                    logger=None,
+                    **kwargs):
     """
     Load checkpoint from a file or an URL.
 
@@ -175,7 +175,8 @@ def load_checkpoint(model,
             name of the logger for displaying error messages
     """
     if isinstance(checkpoint, str):
-        checkpoint = get_checkpoint(checkpoint, map_location=map_location)
+        checkpoint = get_checkpoint(
+            checkpoint, map_location=map_location, **kwargs)
     elif not isinstance(checkpoint, dict):
         raise TypeError(
             "checkpoint must be a dict or str, but got '{}'".format(
@@ -219,7 +220,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
             type(meta)))
 
     meta.update(nncore_version=nncore.__version__, time=asctime())
-    nncore.mkdir(osp.dirname(filename))
+    nncore.mkdir(nncore.dir_name(filename))
 
     state_dict = OrderedDict({
         k: v.cpu()

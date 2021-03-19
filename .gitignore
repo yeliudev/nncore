@@ -125,6 +125,6 @@ dmypy.json
 .pyre/
 
 # Temporary data
+/data/
 .vscode/
-data/
 work_dirs/

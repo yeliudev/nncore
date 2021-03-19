@@ -18,7 +18,7 @@ def test_construct():
 
 def test_build_config():
     for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
-        cfg_file = osp.join(osp.dirname(__file__), 'data', 'config', filename)
+        cfg_file = osp.join(osp.dirname(__file__), 'data', filename)
         cfg = nncore.Config.from_file(cfg_file)
         assert isinstance(cfg, nncore.Config)
         assert cfg.filename == cfg_file
@@ -34,7 +34,7 @@ def test_dict():
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
 
     for filename in ['a.py', 'b.json', 'c.yaml']:
-        cfg_file = osp.join(osp.dirname(__file__), 'data', 'config', filename)
+        cfg_file = osp.join(osp.dirname(__file__), 'data', filename)
         cfg = nncore.Config.from_file(cfg_file)
 
         assert len(cfg) == 4
