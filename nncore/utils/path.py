@@ -71,6 +71,32 @@ def split_ext(path):
     return osp.splitext(path)
 
 
+def pure_name(path):
+    """
+    Parse the filename without extension from a path.
+
+    Args:
+        path (str): path to the file
+
+    Returns:
+        pure_name (str): the parsed filename
+    """
+    return osp.splitext(osp.basename(path))[0]
+
+
+def pure_ext(path):
+    """
+    Parse the file extension from a path.
+
+    Args:
+        path (str): path to the file
+
+    Returns:
+        pure_ext (str): the parsed extension
+    """
+    return osp.splitext(osp.basename(path))[1]
+
+
 def dir_exist(path, raise_error=False):
     """
     Check whether a directory exists.

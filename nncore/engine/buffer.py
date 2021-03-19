@@ -27,6 +27,9 @@ class Buffer(object):
         self._logger = logger
         self._data = OrderedDict()
 
+    def __iter__(self):
+        return self._data.__iter__()
+
     def keys(self):
         """
         Return the keys in the buffer.
@@ -82,6 +85,18 @@ class Buffer(object):
 
         self._data[key].append(value)
 
+    def pop(self, key, default=None):
+        """
+        Return and remove the values in the buffer according to the key.
+
+        Args:
+            key (str): the key of the values
+
+        Returns:
+            values (list): the values in the buffer according to the key
+        """
+        return self._data.pop(key, default=default)
+
     def count(self, key):
         """
         Return the number of values according to the key.
@@ -96,16 +111,6 @@ class Buffer(object):
         Remove all values from the buffer.
         """
         self._data = OrderedDict()
-
-    def remove(self, key):
-        """
-        Remove values from the buffer according to the key.
-
-        Args:
-            key (str or None, optional): the key of the values. If `None`,
-                clear all the values in the buffer.
-        """
-        del self._data[key]
 
     def latest(self, key):
         """

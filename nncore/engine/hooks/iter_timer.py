@@ -53,7 +53,7 @@ class IterTimerHook(Hook):
                     '_total_time', '_iter_time', '_data_time', '_train_time',
                     '_val_time'
             ]:
-                engine.buffer.remove(key)
+                engine.buffer.pop(key)
 
     @master_only
     def before_train_iter(self, engine):

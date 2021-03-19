@@ -226,7 +226,7 @@ class EventWriterHook(Hook):
     def _empty_buffer(self, engine):
         for key in list(engine.buffer.keys()):
             if not key.startswith('_'):
-                engine.buffer.remove(key)
+                engine.buffer.pop(key)
 
     @master_only
     def before_launch(self, engine):

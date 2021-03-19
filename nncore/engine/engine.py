@@ -240,7 +240,8 @@ class Engine(object):
         for key, value in output.items():
             self.buffer.update(
                 key,
-                value.detach().cpu() if torch.is_tensor(value) else value)
+                value.detach().cpu()
+                if isinstance(value, torch.Tensor) else value)
 
         self._call_hook('after_train_iter')
         self._iter += 1
@@ -261,7 +262,8 @@ class Engine(object):
         for key, value in output.items():
             self.buffer.update(
                 key,
-                value.detach().cpu() if torch.is_tensor(value) else value)
+                value.detach().cpu()
+                if isinstance(value, torch.Tensor) else value)
 
         self._call_hook('after_val_iter')
 
