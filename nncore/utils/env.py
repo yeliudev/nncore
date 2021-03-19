@@ -69,7 +69,7 @@ def _collect_torch_build_env():
             from torch.utils.collect_env import get_pretty_env_info
             return get_pretty_env_info()
     except ImportError:
-        return None
+        pass
 
 
 def _detect_compute_compatibility(cuda_home, so_file):
@@ -117,7 +117,7 @@ def _get_module_version(mod_name):
         mod = importlib.import_module(mod_name)
         return mod.__version__
     except ImportError:
-        return None
+        pass
 
 
 def collect_env_info(modules=['nncore', 'numpy', 'PIL', 'cv2']):

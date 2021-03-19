@@ -121,7 +121,7 @@ class Engine(object):
         self._epoch = 0
         self._iter = 0
 
-    def register_hook(self, hook, before=None, overwrite=True):
+    def register_hook(self, hook, before=None, overwrite=True, **kwargs):
         """
         Register a hook into the engine.
 
@@ -136,12 +136,13 @@ class Engine(object):
         """
         if isinstance(hook, (list, tuple)):
             for h in hook:
-                self.register_hook(h, before=before)
+                self.register_hook(
+                    h, before=before, overwrite=overwrite, **kwargs)
             return
         elif isinstance(hook, dict):
-            hook = nncore.build_object(hook, HOOKS)
+            hook = nncore.build_object(hook, HOOKS, **kwargs)
         elif isinstance(hook, str):
-            hook = HOOKS.get(hook)()
+            hook = HOOKS.get(hook)(**kwargs)
         elif not isinstance(hook, Hook):
             raise TypeError("hook must be a Hook or dict, but got '{}'".format(
                 type(hook)))
@@ -161,7 +162,7 @@ class Engine(object):
             keys = list(self._hooks.keys())
             idx = keys.index(before)
             for key in keys[idx:-1]:
-                self._hooks[key].move_to_end()
+                self._hooks.move_to_end(key)
 
     def build_optimizer(self, optimizer):
         """
