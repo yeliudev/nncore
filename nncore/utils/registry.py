@@ -90,7 +90,7 @@ def build_object(cfg, parent, default=None, **kwargs):
     Remaining fields are treated as the arguments for constructing the object.
 
     Args:
-        cfg (dict): object type and arguments
+        cfg (any): object type and arguments
         parent (any): a module or a list of modules which may contain the
             expected object
         default (any, optional): the default return value when the object is
@@ -99,9 +99,8 @@ def build_object(cfg, parent, default=None, **kwargs):
     Returns:
         obj (any): the object built from the dict
     """
-    _cfg = cfg.copy()
-    _cfg.update(kwargs)
-    obj_type = _cfg.pop('type')
+    if not hasattr(cfg, 'copy'):
+        return cfg
 
     if isinstance(parent, (list, tuple)):
         for p in parent:
@@ -109,7 +108,12 @@ def build_object(cfg, parent, default=None, **kwargs):
             if obj != default:
                 return obj
         return default
-    elif hasattr(parent, 'get'):
+
+    _cfg = cfg.copy()
+    _cfg.update(kwargs)
+    obj_type = _cfg.pop('type')
+
+    if hasattr(parent, 'get'):
         obj_cls = parent.get(obj_type)
     else:
         obj_cls = getattr(parent, obj_type, None)

@@ -20,31 +20,39 @@ class GATConv(nn.Module):
                  negative_slope=0.2,
                  concat=True,
                  residual=True,
-                 bias=True,
-                 adj=None):
+                 bias=True):
         super(GATConv, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
         self.heads = heads
         self.concat = concat
         self.residual = residual
-        self.adj = adj
 
         self.w = nn.Parameter(torch.Tensor(heads, in_features, out_features))
         self.h_i = nn.Parameter(torch.Tensor(heads, out_features, 1))
         self.h_j = nn.Parameter(torch.Tensor(heads, out_features, 1))
 
         if residual:
-            self.r = nn.Linear(in_features, out_features * heads, bias=False)
+            self.r = nn.Parameter(
+                torch.Tensor(in_features, out_features * heads))
 
         if bias:
             self.bias = nn.Parameter(
                 torch.Tensor(out_features * (heads if concat else 1)))
+        else:
+            self.register_parameter('bias', None)
 
         self.dropout = nn.Dropout(p=p)
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
 
         self.reset_parameters()
+
+    def __repr__(self):
+        attrs = [
+            '{}={}'.format(attr, getattr(self, attr)) for attr in
+            ['in_features', 'out_features', 'heads', 'concat', 'residual']
+        ]
+        return '{}({})'.format(self.__class__.__name__, ', '.join(attrs))
 
     def reset_parameters(self):
         for w in (self.w, self.h_i, self.h_j):
@@ -52,10 +60,7 @@ class GATConv(nn.Module):
         if self.bias is not None:
             self.bias.data.fill_(0)
 
-    def forward(self, x, adj=None):
-        if adj is None:
-            adj = self.adj
-
+    def forward(self, x, adj):
         x = self.dropout(x)
         h = torch.matmul(x.unsqueeze(0), self.w)
 
@@ -71,7 +76,8 @@ class GATConv(nn.Module):
             if y.size(-1) == x.size(-1):
                 y += x.unsqueeze(1)
             else:
-                y += self.r(x).view(-1, self.heads, self.out_features)
+                y += torch.matmul(x, self.r).view(-1, self.heads,
+                                                  self.out_features)
 
         if self.concat:
             y = y.view(-1, self.out_features * self.heads)

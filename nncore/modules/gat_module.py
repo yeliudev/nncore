@@ -1,7 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import torch.nn as nn
-from torch.nn.modules.dropout import _DropoutNd
 
 from .bricks import GATConv, build_act_layer, build_norm_layer
 
@@ -12,7 +11,6 @@ class GATModule(nn.Module):
                  in_features,
                  out_features,
                  heads=1,
-                 adj=None,
                  bias='auto',
                  norm_cfg=dict(type='BN1d'),
                  act_cfg=dict(type='ReLU', inplace=True),
@@ -21,29 +19,25 @@ class GATModule(nn.Module):
         super(GATModule, self).__init__()
         self.with_norm = 'norm' in order and norm_cfg is not None
         self.with_act = 'act' in order and act_cfg is not None
-        self.adj = adj
         self.order = order
-
-        if self.with_norm:
-            _norm_cfg = norm_cfg.copy()
-            if _norm_cfg['type'] not in ('GN', 'LN'):
-                _norm_cfg.setdefault('num_features', out_features)
-            self.norm = build_norm_layer(_norm_cfg)
-
-        if self.with_act:
-            self.act = build_act_layer(act_cfg)
 
         self.msg_pass = GATConv(
             in_features,
             out_features,
             heads,
-            bias=bias if bias != 'auto' else not self.with_norm
-            or isinstance(self.norm, _DropoutNd),
+            bias=bias if bias != 'auto' else not self.with_norm,
             **kwargs)
 
-    def forward(self, x, adj=None):
-        if adj is None:
-            adj = self.adj
+        if self.with_norm:
+            _norm_cfg = norm_cfg.copy()
+            if _norm_cfg['type'] not in ('GN', 'LN'):
+                _norm_cfg.setdefault('num_features', out_features * heads)
+            self.norm = build_norm_layer(_norm_cfg)
+
+        if self.with_act:
+            self.act = build_act_layer(act_cfg)
+
+    def forward(self, x, adj):
         for layer in self.order:
             if layer == 'msg_pass':
                 x = self.msg_pass(x, adj)
@@ -54,11 +48,7 @@ class GATModule(nn.Module):
         return x
 
 
-def build_gat_sequence(dims,
-                       heads=None,
-                       adj=None,
-                       with_last_act=False,
-                       **kwargs):
+def build_gat_sequence(dims, heads=None, with_last_act=False, **kwargs):
     assert 'concat' not in kwargs
     _kwargs = kwargs.copy()
 
@@ -73,9 +63,9 @@ def build_gat_sequence(dims,
                 _kwargs['order'] = ('msg_pass', )
 
         module = GATModule(
-            last_out_features, dims[i], heads=heads[i], adj=adj, **_kwargs)
-        last_out_features = dims[i] * heads[i]
+            last_out_features, dims[i], heads=heads[i - 1], **_kwargs)
+        last_out_features = dims[i] * heads[i - 1]
 
         layers.append(module)
 
-    return nn.Sequential(*layers)
+    return nn.ModuleList(layers)

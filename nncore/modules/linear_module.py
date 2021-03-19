@@ -1,7 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import torch.nn as nn
-from torch.nn.modules.dropout import _DropoutNd
 
 from .bricks import build_act_layer, build_norm_layer
 
@@ -20,6 +19,11 @@ class LinearModule(nn.Module):
         self.with_act = 'act' in order and act_cfg is not None
         self.order = order
 
+        self.linear = nn.Linear(
+            in_features,
+            out_features,
+            bias=bias if bias != 'auto' else not self.with_norm)
+
         if self.with_norm:
             _norm_cfg = norm_cfg.copy()
             if _norm_cfg['type'] not in ('GN', 'LN'):
@@ -28,12 +32,6 @@ class LinearModule(nn.Module):
 
         if self.with_act:
             self.act = build_act_layer(act_cfg)
-
-        self.linear = nn.Linear(
-            in_features,
-            out_features,
-            bias=bias if bias != 'auto' else not self.with_norm
-            or isinstance(self.norm, _DropoutNd))
 
     def forward(self, x):
         for layer in self.order:

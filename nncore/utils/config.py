@@ -281,9 +281,9 @@ class Config(object):
         return self._cfg.__eq__(other)
 
     def __repr__(self):
-        file_str = '' if self._filename is None else "(filename: '{}')".format(
+        attrs = '' if self._filename is None else "(filename: '{}')".format(
             self._filename)
-        return 'Config{}: {}'.format(file_str, self._cfg.__repr__())
+        return '{}{}: {}'.format(self.__class__.__name__, attrs, self._cfg)
 
     def freeze(self):
         self._cfg.freeze()
