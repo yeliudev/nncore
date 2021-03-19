@@ -51,8 +51,24 @@ def join(*args):
 
     Args:
         *args: strings to be combined
+
+    Returns:
+        path (str): the combined path
     """
     return osp.join(*args)
+
+
+def split_ext(path):
+    """
+    Split name and extension of a path.
+
+    Args:
+        path (str): path to the file or directory
+
+    Returns:
+        name_ext (tuple[str]): the splitted name and extension
+    """
+    return osp.splitext(path)
 
 
 def dir_exist(path, raise_error=False):
@@ -63,11 +79,14 @@ def dir_exist(path, raise_error=False):
         path (str): (positive or relative) path to the directory
         raise_error (bool, optional): if True, raise an error when the file
             is not found
+
+    Returns:
+        is_dir (bool): whether the directory exists
     """
-    isdir = osp.isdir(path)
-    if not isdir and raise_error:
+    is_dir = osp.isdir(path)
+    if not is_dir and raise_error:
         raise NotADirectoryError("directory '{}' not found".format(path))
-    return isdir
+    return is_dir
 
 
 def file_exist(path, raise_error=False):
@@ -78,11 +97,14 @@ def file_exist(path, raise_error=False):
         path (str): (positive or relative) path to the file
         raise_error (bool, optional): if True, raise an error when the file
             is not found
+
+    Returns:
+        is_file (bool): whether the file exists
     """
-    isfile = osp.isfile(path)
-    if not isfile and raise_error:
+    is_file = osp.isfile(path)
+    if not is_file and raise_error:
         raise FileNotFoundError("file '{}' not found".format(path))
-    return isfile
+    return is_file
 
 
 def mkdir(dir_name, exist_ok=True, keep_empty=False):

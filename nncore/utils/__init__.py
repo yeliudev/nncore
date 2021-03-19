@@ -7,7 +7,7 @@ from .misc import (bind_getter, concat_list, is_list_of, is_seq_of,
                    is_tuple_of, iter_cast, list_cast, slice_list, swap_element,
                    to_dict_of_list, to_list_of_dict, tuple_cast)
 from .path import (abs_path, base_name, dir_exist, dir_name, file_exist, join,
-                   mkdir, remove, symlink)
+                   mkdir, remove, split_ext, symlink)
 from .progressbar import ProgressBar
 from .registry import Registry, build_object
 from .timer import Timer
@@ -18,6 +18,6 @@ __all__ = [
     'is_seq_of', 'is_tuple_of', 'iter_cast', 'list_cast', 'slice_list',
     'swap_element', 'to_dict_of_list', 'to_list_of_dict', 'tuple_cast',
     'abs_path', 'base_name', 'dir_exist', 'dir_name', 'file_exist', 'join',
-    'mkdir', 'remove', 'symlink', 'ProgressBar', 'Registry', 'build_object',
-    'Timer'
+    'mkdir', 'remove', 'split_ext', 'symlink', 'ProgressBar', 'Registry',
+    'build_object', 'Timer'
 ]

@@ -28,7 +28,7 @@ class _Formatter(logging.Formatter):
         return prefix + log[anchor:]
 
 
-def get_logger(logger_or_name='nncore',
+def get_logger(logger_or_name=None,
                fmt='[%(asctime)s %(levelname)s]: %(message)s',
                datefmt='%Y-%m-%d %H:%M:%S',
                log_level=logging.INFO,
