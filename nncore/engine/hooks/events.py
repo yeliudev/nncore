@@ -17,17 +17,7 @@ WRITERS = nncore.Registry('writer')
 
 class Writer(metaclass=ABCMeta):
 
-    @abstractmethod
-    def write(self, engine, window_size):
-        pass
-
-    def open(self, engine):
-        pass
-
-    def close(self, engine):
-        pass
-
-    def collect_metrics(self, engine, window_size):
+    def _collect_metrics(self, engine, window_size):
         metrics = OrderedDict()
 
         metrics['mode'] = engine.mode
@@ -54,12 +44,22 @@ class Writer(metaclass=ABCMeta):
 
         return metrics
 
+    @abstractmethod
+    def write(self, engine, window_size):
+        pass
+
+    def open(self, engine):
+        pass
+
+    def close(self, engine):
+        pass
+
 
 @WRITERS.register()
 class CommandLineWriter(Writer):
 
     def write(self, engine, window_size):
-        metrics = self.collect_metrics(engine, window_size)
+        metrics = self._collect_metrics(engine, window_size)
 
         if engine.mode == 'train':
             log = 'Epoch [{}][{}/{}] lr: {:.5f}, '.format(
@@ -119,7 +119,7 @@ class JSONWriter(Writer):
         nncore.mkdir(engine.work_dir)
 
     def write(self, engine, window_size):
-        metrics = self.collect_metrics(engine, window_size)
+        metrics = self._collect_metrics(engine, window_size)
 
         for key in engine.buffer.keys():
             if key.startswith('_') or key.endswith('_'):

@@ -17,53 +17,51 @@ class Timer(object):
         """
         self._start = perf_counter()
         self._paused = None
-        self._total_paused = 0
-        self._count_start = 1
+        self._paused_time = 0
+
+    def is_paused(self):
+        """
+        Check whether the timer is paused.
+        """
+        return self._paused is not None
 
     def pause(self):
         """
         Pause the timer.
         """
-        if self._paused is not None:
-            raise ValueError('trying to pause a Timer that is already paused!')
+        if self.is_paused():
+            raise RuntimeError('the timer that is already paused')
 
         self._paused = perf_counter()
-
-    def is_paused(self):
-        """
-        Returns:
-            paused (bool): whether the timer is currently paused
-        """
-        return self._paused is not None
 
     def resume(self):
         """
         Resume the timer.
         """
-        if self._paused is None:
-            raise ValueError('trying to resume a Timer that is not paused!')
+        if not self.is_paused():
+            raise RuntimeError('the timer is not paused')
 
-        self._total_paused += perf_counter() - self._paused
+        self._paused_time += perf_counter() - self._paused
         self._paused = None
-        self._count_start += 1
 
-    def seconds(self, reset=False):
+    def seconds(self):
         """
-        Returns:
-            seconds (float): the total number of seconds since the start/reset
-                of the timer, excluding the time when the timer is paused
+        Return the total number of seconds since the reset of the timer,
+        excluding the time when the timer is paused.
         """
-        if self._paused is not None:
-            end_time = self._paused
-        else:
-            end_time = perf_counter()
+        end_time = self._paused or perf_counter()
+        return end_time - self._start - self._paused_time
 
-        return end_time - self._start - self._total_paused
+    def minutes(self):
+        """
+        Return the total number of minutes since the reset of the timer,
+        excluding the time when the timer is paused.
+        """
+        return self.seconds() / 60
 
-    def avg_seconds(self):
+    def hours(self):
         """
-        Returns:
-            seconds (float): the average number of seconds between every
-                start/reset and pause
+        Return the total number of hours since the reset of the timer,
+        excluding the time when the timer is paused.
         """
-        return self.seconds() / self._count_start
+        return self.minutes() / 60

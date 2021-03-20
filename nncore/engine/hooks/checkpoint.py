@@ -37,6 +37,7 @@ class CheckpointHook(Hook):
 
         meta = dict(
             nncore_version=nncore.__version__,
+            create_time=nncore.get_time_str(),
             epoch=engine.epoch + 1,
             iter=engine.iter,
             stages=[

@@ -36,13 +36,15 @@ def generate_random_seed(length=8):
     return seed
 
 
-def set_random_seed(seed=None):
+def set_random_seed(seed=None, deterministic=False, benchmark=False):
     """
     Set random seed for `random`, `numpy`, and `torch`. If `seed` is None, this
     method will generate and return a new random seed.
 
     Args:
         seed (int or None, optional): the potential random seed to be used
+        deterministic (bool, optional): whether to use deterministic mode
+        benchmark (bool, optional): whether to use benchmark mode
 
     Returns:
         seed (int): the actually used random seed
@@ -55,8 +57,8 @@ def set_random_seed(seed=None):
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = deterministic
+    torch.backends.cudnn.benchmark = benchmark
 
     return seed
 

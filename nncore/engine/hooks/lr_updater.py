@@ -71,8 +71,8 @@ class LrUpdaterHook(Hook):
         return [lr * scale for lr in lr_groups]
 
     def before_stage(self, engine):
-        self._schd_cfg = engine.cur_stage.get('lr_schedule', None)
-        self._warm_cfg = engine.cur_stage.get('warmup', None)
+        self._schd_cfg = engine.cur_stage.get('lr_schedule')
+        self._warm_cfg = engine.cur_stage.get('warmup')
         for group in engine.optimizer.param_groups:
             group.setdefault('base_lr', group['lr'])
 

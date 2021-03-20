@@ -20,15 +20,19 @@ def get_host_info():
     return '{}@{}'.format(getuser(), gethostname())
 
 
-def get_time_str():
+def get_time_stamp():
     return time.strftime('%Y%m%d%H%M%S', time.localtime())
+
+
+def get_time_str():
+    return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
 
 
 def _collect_cuda_env():
     try:
         import torch
         from torch.utils.cpp_extension import CUDA_HOME
-        cuda_arch_list = os.environ.get('TORCH_CUDA_ARCH_LIST', None)
+        cuda_arch_list = os.environ.get('TORCH_CUDA_ARCH_LIST')
         if CUDA_HOME is not None and nncore.dir_exist(CUDA_HOME):
             try:
                 nvcc = nncore.join(CUDA_HOME, 'bin', 'nvcc')

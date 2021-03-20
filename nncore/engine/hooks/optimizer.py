@@ -76,7 +76,7 @@ class OptimizerHook(Hook):
         if self.every_n_iters_in_epoch(
                 engine, self._interval) or self.last_iter_in_epoch(engine):
             self._avg_grads(engine)
-            grad_clip = engine.cur_stage.get('grad_clip', None)
+            grad_clip = engine.cur_stage.get('grad_clip')
             if grad_clip is not None:
                 self._clip_grads(engine.model.parameters(), grad_clip)
             engine.optimizer.step()

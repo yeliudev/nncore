@@ -27,9 +27,6 @@ class Buffer(object):
         self._logger = logger
         self._data = OrderedDict()
 
-    def __iter__(self):
-        return self._data.__iter__()
-
     def keys(self):
         """
         Return the keys in the buffer.
