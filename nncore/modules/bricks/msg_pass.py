@@ -16,7 +16,7 @@ class GATConv(nn.Module):
                  in_features,
                  out_features,
                  heads=1,
-                 p=0.5,
+                 dropout=0.5,
                  negative_slope=0.2,
                  concat=True,
                  residual=True,
@@ -25,6 +25,7 @@ class GATConv(nn.Module):
         self.in_features = in_features
         self.out_features = out_features
         self.heads = heads
+        self.dropout = dropout
         self.concat = concat
         self.residual = residual
 
@@ -42,15 +43,17 @@ class GATConv(nn.Module):
         else:
             self.register_parameter('bias', None)
 
-        self.dropout = nn.Dropout(p=p)
+        self.dropout = nn.Dropout(p=dropout)
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
 
         self.reset_parameters()
 
     def __repr__(self):
         attrs = [
-            '{}={}'.format(attr, getattr(self, attr)) for attr in
-            ['in_features', 'out_features', 'heads', 'concat', 'residual']
+            '{}={}'.format(attr, getattr(self, attr)) for attr in [
+                'in_features', 'out_features', 'heads', 'dropout', 'concat',
+                'residual'
+            ]
         ]
         return '{}({})'.format(self.__class__.__name__, ', '.join(attrs))
 

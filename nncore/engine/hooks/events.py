@@ -254,5 +254,6 @@ class EventWriterHook(Hook):
 
     @master_only
     def after_val_epoch(self, engine):
-        self._write(engine, len(engine.data_loaders['val']))
+        key = 'val' if 'val' in engine.data_loaders else 'test'
+        self._write(engine, len(engine.data_loaders[key]))
         self._empty_buffer(engine)

@@ -338,15 +338,15 @@ class Engine(object):
 
         self._call_hook('before_stage')
 
-        val_cfg = self.cur_stage.get('validation', None)
         while self.epoch_in_stage < self.cur_stage['epochs']:
             self.train_epoch(**kwargs)
-            if 'val' in self.data_loaders and val_cfg is not None:
-                interval = val_cfg.get('interval', 0)
-                offset = val_cfg.get('offset', 0)
-                epoch = self.epoch_in_stage
-                if interval > 0 and epoch > offset and epoch % interval == 0:
-                    self.val_epoch(**kwargs)
+            if 'val' in self.data_loaders or 'test' in self.data_loaders:
+                cfg = self.cur_stage.get('validation')
+                if cfg is not None:
+                    itr, off = cfg.get('interval', 0), cfg.get('offset', 0)
+                    epoch = self.epoch_in_stage
+                    if itr > 0 and epoch > off and epoch % itr == 0:
+                        self.val_epoch(**kwargs)
 
         self._call_hook('after_stage')
         self._stage += 1
