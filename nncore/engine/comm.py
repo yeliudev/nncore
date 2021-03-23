@@ -12,33 +12,6 @@ import torch.multiprocessing as mp
 import nncore
 
 
-def init_dist(launcher='pytorch', backend='gloo', **kwargs):
-    """
-    Initialize a distributed process group.
-
-    Args:
-        launcher (str, optional): launcher for the process group. Currently
-            supported lauchers include `pytorch` and `slurm`.
-        backend (str or :obj:`dist.Backend`, optional): the distribution
-            backend to be used. Depending on build-time configurations, valid
-            values include `gloo` and `nccl`. This field should be given as a
-            string (e.g. `gloo`), which can also be accessed via
-            :obj:`dist.Backend` attributes (e.g. `Backend.GLOO`). If using
-            multiple processes per machine with `nccl` backend, each process
-            must have exclusive access to every GPU it uses, as sharing GPUs
-            between processes can result in deadlocks.
-    """
-    if mp.get_start_method(allow_none=True) is None:
-        mp.set_start_method('spawn')
-
-    if launcher == 'pytorch':
-        _init_dist_pytorch(backend, **kwargs)
-    elif launcher == 'slurm':
-        _init_dist_slurm(backend, **kwargs)
-    else:
-        raise TypeError("unsupported launcher: '{}'".format(launcher))
-
-
 def _init_dist_pytorch(backend, **kwargs):
     if torch.cuda.is_available():
         rank = int(os.environ['RANK'])
@@ -59,46 +32,6 @@ def _init_dist_slurm(backend, port=29500, **kwargs):
     os.environ['WORLD_SIZE'] = str(ntasks)
     os.environ['RANK'] = str(proc_id)
     dist.init_process_group(backend=backend, **kwargs)
-
-
-def is_distributed():
-    return dist.is_available() and dist.is_initialized()
-
-
-def get_rank(group=None):
-    if not is_distributed():
-        return 0
-    return dist.get_rank(group=group or dist.group.WORLD)
-
-
-def get_world_size(group=None):
-    if not is_distributed():
-        return 1
-    return dist.get_world_size(group=group or dist.group.WORLD)
-
-
-def get_dist_info(group=None):
-    if not is_distributed():
-        return 0, 1
-    group = group or dist.group.WORLD
-    return get_rank(group=group), get_world_size(group=group)
-
-
-def is_main_process():
-    return get_rank() == 0
-
-
-def synchronize(group=None):
-    """
-    Synchronize all processes in a process group.
-    """
-    if not dist.is_available():
-        return
-    if not dist.is_initialized():
-        return
-    if get_world_size(group=group) == 1:
-        return
-    dist.barrier(group=group)
 
 
 def _serialize_to_tensor(data, group):
@@ -141,6 +74,73 @@ def _pad_tensors(tensor, group):
         tensor = torch.cat((tensor, padding))
 
     return size_list, tensor
+
+
+def init_dist(launcher='pytorch', backend='gloo', **kwargs):
+    """
+    Initialize a distributed process group.
+
+    Args:
+        launcher (str, optional): launcher for the process group. Currently
+            supported lauchers include `pytorch` and `slurm`.
+        backend (str or :obj:`dist.Backend`, optional): the distribution
+            backend to be used. Depending on build-time configurations, valid
+            values include `gloo` and `nccl`. This field should be given as a
+            string (e.g. `gloo`), which can also be accessed via `dist.Backend`
+            attributes (e.g. `Backend.GLOO`). If using multiple processes per
+            machine with `nccl` backend, each process must have exclusive
+            access to every GPU it uses, as sharing GPUs between processes can
+            result in deadlocks.
+    """
+    if mp.get_start_method(allow_none=True) is None:
+        mp.set_start_method('spawn')
+
+    if launcher == 'pytorch':
+        _init_dist_pytorch(backend, **kwargs)
+    elif launcher == 'slurm':
+        _init_dist_slurm(backend, **kwargs)
+    else:
+        raise TypeError("unsupported launcher: '{}'".format(launcher))
+
+
+def is_distributed():
+    return dist.is_available() and dist.is_initialized()
+
+
+def get_rank(group=None):
+    if not is_distributed():
+        return 0
+    return dist.get_rank(group=group or dist.group.WORLD)
+
+
+def get_world_size(group=None):
+    if not is_distributed():
+        return 1
+    return dist.get_world_size(group=group or dist.group.WORLD)
+
+
+def get_dist_info(group=None):
+    if not is_distributed():
+        return 0, 1
+    group = group or dist.group.WORLD
+    return get_rank(group=group), get_world_size(group=group)
+
+
+def is_main_process():
+    return get_rank() == 0
+
+
+def synchronize(group=None):
+    """
+    Synchronize all processes in a process group.
+    """
+    if not dist.is_available():
+        return
+    if not dist.is_initialized():
+        return
+    if get_world_size(group=group) == 1:
+        return
+    dist.barrier(group=group)
 
 
 def all_gather(data, group=None):

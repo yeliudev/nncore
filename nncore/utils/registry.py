@@ -24,7 +24,7 @@ class Registry(object):
         >>> backbones.register(ResNet)
 
     Args:
-        name (str): registry name
+        name (str): name of the registry
     """
 
     def __init__(self, name):
@@ -93,8 +93,7 @@ def build_object(cfg, parent, default=None, **kwargs):
         cfg (any): object type and arguments
         parent (any): a module or a list of modules which may contain the
             expected object
-        default (any, optional): the default return value when the object is
-            not found
+        default (any, optional): the default value when the object is not found
 
     Returns:
         obj (any): the object built from the dict

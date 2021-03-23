@@ -9,7 +9,7 @@ from .timer import Timer
 
 class ProgressBar(object):
     """
-    A progress bar which can show the state of a progress. This only takes
+    A progress bar which can show the state of a progress. It only takes
     effect in the main process.
     """
 

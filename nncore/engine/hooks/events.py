@@ -145,11 +145,11 @@ class TensorboardWriter(Writer):
         """
         Args:
             log_dir (str, optional): directory of the tensorboard logs
-            input_to_model (Any, optional): the input data or data_loader or
+            input_to_model (Any, optional): the input data, data_loader or
                 name of the data_loader for constructing the model graph. If
-                None, the graph will not be added.
-                Check :meth:`torch.utils.tensorboard.SummaryWriter.add_graph`
-                for details about adding a graph to tensorboard.
+                `None`, the graph will not be added.
+                Check `torch.utils.tensorboard.SummaryWriter.add_graph` for
+                details about adding a graph to tensorboard.
         """
         self._log_dir = log_dir
         self._input_to_model = input_to_model

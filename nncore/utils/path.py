@@ -103,7 +103,7 @@ def dir_exist(path, raise_error=False):
 
     Args:
         path (str): (positive or relative) path to the directory
-        raise_error (bool, optional): if True, raise an error when the file
+        raise_error (bool, optional): if `True`, raise an error when the file
             is not found
 
     Returns:
@@ -121,7 +121,7 @@ def file_exist(path, raise_error=False):
 
     Args:
         path (str): (positive or relative) path to the file
-        raise_error (bool, optional): if True, raise an error when the file
+        raise_error (bool, optional): if `True`, raise an error when the file
             is not found
 
     Returns:
@@ -139,10 +139,10 @@ def mkdir(dir_name, exist_ok=True, keep_empty=False):
 
     Args:
         dir_name (str): (positive or relative) path to the directory
-        exist_ok (bool, optional): if False, raise an error if the directory
+        exist_ok (bool, optional): if `False`, raise an error if the directory
             exists
-        keep_empty (bool, optional): if True, remove all files in the directory
-            if exists
+        keep_empty (bool, optional): if `True`, remove all files in the
+            directory
     """
     assert isinstance(dir_name, str) and dir_name != ''
     dir_name = osp.expanduser(dir_name)
@@ -158,7 +158,7 @@ def remove(path, raise_error=False):
 
     Args:
         path (str): (positive or relative) path to the file or directory
-        raise_error (bool, optional): if True, raise an error when the file
+        raise_error (bool, optional): if `True`, raise an error when the file
             is not found
     """
     if file_exist(path):
@@ -177,9 +177,9 @@ def symlink(src, dst, overwrite=True, raise_error=False):
     Args:
         src (str): source of the symlink
         dst (str): destination of the symlink
-        overwrite (bool, optional): if True, overwrite it if an old symlink
+        overwrite (bool, optional): if `True`, overwrite it if an old symlink
             exists
-        raise_error (bool, optional): if True, raise an error if the platform
+        raise_error (bool, optional): if `True`, raise an error if the platform
             does not support symlink
     """
     if system() == 'Windows' and not raise_error:

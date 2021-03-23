@@ -6,7 +6,6 @@ from collections import OrderedDict
 from datetime import datetime
 from importlib import import_module
 from pkgutil import walk_packages
-from time import asctime
 
 import numpy as np
 import torch
@@ -14,53 +13,6 @@ import torchvision
 
 import nncore
 from .comm import is_main_process, synchronize
-
-
-def generate_random_seed(length=8):
-    """
-    Generate a random seed with at least 8 digits.
-
-    Args:
-        length (int, optional): the expected number of digits of the random
-            seed. The number must equal or be larger than 8.
-
-    Returns:
-        seed (int): the generated random seed
-    """
-    if length < 8:
-        raise ValueError(
-            'the number of digits must equal or be larger than 8, but got {}'.
-            format(length))
-    seed = os.getpid() + int(datetime.now().strftime('%S%f')) + int.from_bytes(
-        os.urandom(length - 6), 'big')
-    return seed
-
-
-def set_random_seed(seed=None, deterministic=False, benchmark=False):
-    """
-    Set random seed for `random`, `numpy`, and `torch`. If `seed` is None, this
-    method will generate and return a new random seed.
-
-    Args:
-        seed (int or None, optional): the potential random seed to be used
-        deterministic (bool, optional): whether to use deterministic mode
-        benchmark (bool, optional): whether to use benchmark mode
-
-    Returns:
-        seed (int): the actually used random seed
-    """
-    if seed is None:
-        seed = generate_random_seed()
-
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)
-
-    torch.backends.cudnn.deterministic = deterministic
-    torch.backends.cudnn.benchmark = benchmark
-
-    return seed
 
 
 def _load_url_dist(url, **kwargs):
@@ -71,22 +23,6 @@ def _load_url_dist(url, **kwargs):
 
 
 def _load_state_dict(module, state_dict, strict=False, logger=None):
-    """
-    Load state_dict to a module.
-
-    This method is modified from :meth:`nn.Module.load_state_dict`. Default
-    value for `strict` is set to `False` and the message for param mismatch
-    will be shown even if strict is `False`.
-
-    Args:
-        module (:obj:`nn.Module`): the module receives the state_dict
-        state_dict (OrderedDict): weights
-        strict (bool, optional): whether to strictly enforce that the keys
-            in :attr:`state_dict` match the keys returned by this module's
-            :meth:`nn.Module.state_dict` function.
-        logger (:obj:`logging.Logger` or str or None, optional): the logger or
-            name of the logger for displaying error messages
-    """
     unexpected_keys = []
     missing_keys = []
     err_msg = []
@@ -126,13 +62,60 @@ def _load_state_dict(module, state_dict, strict=False, logger=None):
         nncore.log_or_print(err_msg, logger, log_level='WARNING')
 
 
+def generate_random_seed(length=8):
+    """
+    Generate a random seed.
+
+    Args:
+        length (int, optional): the expected number of digits of the random
+            seed. The number must equal or be larger than 8.
+
+    Returns:
+        seed (int): the generated random seed
+    """
+    if length < 8:
+        raise ValueError(
+            'the number of digits must equal or be larger than 8, but got {}'.
+            format(length))
+    seed = os.getpid() + int(datetime.now().strftime('%S%f')) + int.from_bytes(
+        os.urandom(length - 6), 'big')
+    return seed
+
+
+def set_random_seed(seed=None, deterministic=False, benchmark=False):
+    """
+    Set random seed for `random`, `numpy` and `torch` packages. If `seed` is
+    `None`, this method will generate and return a new random seed.
+
+    Args:
+        seed (int or None, optional): the potential random seed to be used
+        deterministic (bool, optional): whether to use deterministic mode
+        benchmark (bool, optional): whether to use benchmark mode
+
+    Returns:
+        seed (int): the actually used random seed
+    """
+    if seed is None:
+        seed = generate_random_seed()
+
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+
+    torch.backends.cudnn.deterministic = deterministic
+    torch.backends.cudnn.benchmark = benchmark
+
+    return seed
+
+
 def get_checkpoint(file_or_url, map_location=None, **kwargs):
     """
     Get checkpoint from a file or an URL.
 
     Args:
         file_or_url (str): a filename or an URL
-        map_location (str or None, optional): same as :meth:`torch.load`
+        map_location (str or None, optional): same as `torch.load`
 
     Returns:
         checkpoint (dict or OrderedDict): the loaded checkpoint. It can be
@@ -167,9 +150,9 @@ def load_checkpoint(model,
 
     Args:
         model (Module): the module to load checkpoint
-        checkpoint (dict or OrderedDict or str): either a checkpoint object or
-            filename or URL or torchvision://<model_name>
-        map_location (str or None, optional): same as :meth:`torch.load`
+        checkpoint (dict or str): a `dict`, filename, URL or
+            `torchvision://<model_name>` string indicating the checkpoint
+        map_location (str or None, optional): same as `torch.load`
         strict (bool, optional): whether to allow different params for the
             model and checkpoint. If `True`, raise an error when the params do
             not match exactly.
@@ -210,7 +193,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     by default.
 
     Args:
-        model (:obj:`nn.Module`): the module whose params are to be saved
+        model (:obj:`nn.Module`): the model whose params are to be saved
         filename (str): name of the checkpoint file
         optimizer (:obj:`Optimizer`, optional): the optimizer to be saved
         meta (dict, optional): the metadata to be saved
@@ -221,7 +204,8 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         raise TypeError("meta must be a dict or None, but got '{}'".format(
             type(meta)))
 
-    meta.update(nncore_version=nncore.__version__, time=asctime())
+    meta.update(
+        nncore_version=nncore.__version__, create_time=nncore.get_time_str())
     nncore.mkdir(nncore.dir_name(filename))
 
     state_dict = OrderedDict({

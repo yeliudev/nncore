@@ -47,11 +47,11 @@ def get_logger(logger_or_name=None,
             logger or name of the logger
         fmt (str, optional): log format. The format must end with `%(message)s`
             to make sure that the colors could be rendered properly.
-        datefmt (str, optional): date format
+        datefmt (str, optional): date format for the logger
         log_level (str or int, optional): log level of the logger. Note that
             only the main process (rank 0) is affected, and other processes
             will set the level to `ERROR` thus be silent at most of the time.
-        log_file (str, optional): filename of the log file. If not None, a
+        log_file (str, optional): filename of the log file. If not `None`, a
             `FileHandler` will be added to the logger.
 
     Returns:
@@ -98,7 +98,7 @@ def get_logger(logger_or_name=None,
 
 def log_or_print(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
     """
-    Log a message with a potential logger. If `logger` is a valid
+    Print a message with a potential logger. If `logger` is a valid
     `logging.Logger` or a name of the logger, then it would be used. Otherwise
     this method will use the normal `print` function instead.
 

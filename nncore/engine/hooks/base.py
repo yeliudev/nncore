@@ -20,9 +20,9 @@ class Hook(object):
     """
     Base class for hooks that can be registered into :obj:`Engine`.
 
-    Each hook can implement several methods. In the hook methods, users should
+    Each hook can implement several methods. In hook methods, users should
     provide an argument `engine` to access more properties about the context.
-    All the hooks will be called one by one according to the order in
+    All hooks will be called one by one according to the order in
     `engine.hooks`.
     """
 
@@ -35,14 +35,14 @@ class Hook(object):
 
             token = hook_name.split('_')
 
-            # yapf:disable
             if len(token) == 3:
+
                 def _default_hook(self, engine):
                     getattr(self, '{}_{}'.format(token[0], token[2]))(engine)
             else:
+
                 def _default_hook(self, engine):
                     pass
-            # yapf:enable
 
             setattr(self, hook_name, MethodType(_default_hook, self))
 

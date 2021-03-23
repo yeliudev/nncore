@@ -27,27 +27,27 @@ _DEFAULT_HOOKS = [
                     'max_iters', 'start_iter', 'stage', 'epoch', 'iter')
 class Engine(object):
     """
-    An engine that can take over the whole training and testing process, with
-    all the baby-sitting works (stage control, optimizer configuration, lr
-    scheduling, checkpoint management, metrics & tensorboard writing, etc.)
-    done automatically.
+    An engine that can take over the whole training, validation and testing
+    process, with all the baby-sitting works (stage control, optimizer
+    configuration, lr scheduling, checkpoint management, metrics & tensorboard
+    writing, etc.) done automatically.
 
     Args:
         model (:obj:`nn.Module`): the model to be trained or tested. The
             `forward` method of the model should return a `dict` containing
-            `_num_samples` and other results.
-        data_loaders (dict): a `dict` containing the training, validating and
-            testing data loaders. It should be in the format of
-            `dict(train=train_loader, val=val_loader, test=test_loader)`.
+            `_num_samples` denoting the number of samples in the current batch.
+        data_loaders (dict): the data loaders for training, validating and
+            testing. It should be in the format of `dict(train=train_loader,
+            val=val_loader, test=test_loader)`.
         stages (dict, list[dict], optional): the stage config or list of stage
-            configs to be scheduled
+            configs to be scheduled.
         hooks (list[:obj:`Hook`] or list[dict] or list[str], optional): a list
             of hooks to be registered
         batch_processor (callable, optional): a customized callable method
             that processes a data batch. It should be in the format of
             `batch_processor(model, data, mode, **kwargs) -> dict` where mode
-            is `train`, `val` or `test`.
-        buffer_size (int, optional): the maximum size of the buffer
+            could be `train`, `val` or `test`.
+        buffer_size (int, optional): maximum size of the buffer
         logger (:obj:`logging.Logger` or str or None, optional): the logger or
             name of the logger to be used
         work_dir (str, optional): the working directory to be used
@@ -132,9 +132,8 @@ class Engine(object):
         Args:
             hook (:obj:`Hook` or dict or str or list[:obj:`Hook`] or list[dict]
                 or list[str]): the hook or list of hooks to be registered
-            before (str, optional): name of the hook to be inserted before. The
-                new hook will be inserted into the end of the hook list by
-                default.
+            before (str, optional): name of the hook to be inserted before. If
+                `None`, the new hook will be added to the end of hook list
             overwrite (bool, optional): whether to overwrite the old hook with
                 the same name if exists
         """
@@ -173,7 +172,7 @@ class Engine(object):
         Build an optimizer for the engine.
 
         Args:
-            optimizer (any): an optimizer object or a dict used for
+            optimizer (any): an optimizer object or a `dict` used for
                 constructing the optimizer
         """
         if isinstance(optimizer, dict):
@@ -185,6 +184,16 @@ class Engine(object):
             raise TypeError("invalid optimizer: '{}'".format(optimizer))
 
     def load_checkpoint(self, checkpoint, strict=False):
+        """
+        Load checkpoint from a file or an URL.
+
+        Args:
+            checkpoint (dict or str): a `dict`, filename, URL or
+                `torchvision://<model_name>` string indicating the checkpoint
+            strict (bool, optional): whether to allow different params for the
+                model and checkpoint. If `True`, raise an error when the
+                params do not match exactly.
+        """
         load_checkpoint(
             self.model,
             checkpoint,
@@ -198,6 +207,16 @@ class Engine(object):
             self.logger.info('Loaded checkpoint')
 
     def resume(self, checkpoint, strict=False):
+        """
+        Resume from a checkpoint file.
+
+        Args:
+            checkpoint (dict or str): a `dict`, filename, URL or
+                `torchvision://<model_name>` string indicating the checkpoint
+            strict (bool, optional): whether to allow different params for the
+                model and checkpoint. If `True`, raise an error when the
+                params do not match exactly.
+        """
         if isinstance(checkpoint, str):
             checkpoint = get_checkpoint(
                 checkpoint, map_location=next(self.model.parameters()).device)
@@ -369,6 +388,12 @@ class Engine(object):
         return output
 
     def launch(self, eval_mode=False, **kwargs):
+        """
+        Launch engine.
+
+        Args:
+            eval_mode (bool, optional): whether to run evaluation only
+        """
         self._model_cfg = kwargs
 
         if eval_mode:

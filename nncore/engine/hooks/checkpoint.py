@@ -13,18 +13,18 @@ class CheckpointHook(Hook):
                  interval=1,
                  save_optimizer=True,
                  create_symlink=False,
-                 out_dir=None):
+                 out=None):
         super(CheckpointHook, self).__init__()
         self._interval = interval
         self._save_optimizer = save_optimizer
         self._create_symlink = create_symlink
-        self._out_dir = out_dir
+        self._out = out
 
     @master_only
     def before_launch(self, engine):
-        if self._out_dir is None:
-            self._out_dir = engine.work_dir
-        nncore.mkdir(self._out_dir)
+        if self._out is None:
+            self._out = engine.work_dir
+        nncore.mkdir(self._out)
 
     @master_only
     def after_train_epoch(self, engine):
@@ -32,12 +32,10 @@ class CheckpointHook(Hook):
             return
 
         filename = 'epoch_{}.pth'.format(engine.epoch + 1)
-        filepath = nncore.join(self._out_dir, filename)
+        filepath = nncore.join(self._out, filename)
         optimizer = engine.optimizer if self._save_optimizer else None
 
         meta = dict(
-            nncore_version=nncore.__version__,
-            create_time=nncore.get_time_str(),
             epoch=engine.epoch + 1,
             iter=engine.iter,
             stages=[
@@ -49,4 +47,4 @@ class CheckpointHook(Hook):
         save_checkpoint(engine.model, filepath, optimizer=optimizer, meta=meta)
 
         if self._create_symlink:
-            nncore.symlink(filename, nncore.join(self._out_dir, 'latest.pth'))
+            nncore.symlink(filename, nncore.join(self._out, 'latest.pth'))

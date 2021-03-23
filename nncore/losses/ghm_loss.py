@@ -7,20 +7,22 @@ import torch.nn.functional as F
 
 class GHMCLoss(nn.Module):
     """
-    Loss introduced by the paper 'Gradient Harmonized Single-stage Detector':
-        https://arxiv.org/abs/1811.05181
+    Gradient Harmonized Classification Loss introduced in
+    https://arxiv.org/abs/1811.05181.
 
     Args:
         bins (int, optional): number of the unit regions for distribution
             calculation
         momentum (float, optional): the parameter for moving average
+        loss_weight (float, optional): weight of the loss
     """
 
-    def __init__(self, bins=10, momentum=0):
+    def __init__(self, bins=10, momentum=0, loss_weight=1):
         super(GHMCLoss, self).__init__()
 
-        self.bins = bins
-        self.momentum = momentum
+        self._bins = bins
+        self._momentum = momentum
+        self._loss_weight = loss_weight
 
         edges = torch.arange(bins + 1).float() / bins
         self.register_buffer('edges', edges)
@@ -35,13 +37,13 @@ class GHMCLoss(nn.Module):
 
         tot = target.size(1)
         n = 0
-        for i in range(self.bins):
+        for i in range(self._bins):
             inds = (g >= self.edges[i]) & (g < self.edges[i + 1])
             num_in_bin = inds.sum().item()
             if num_in_bin > 0:
-                if self.momentum > 0:
-                    self.acc_sum[i] = self.momentum * self.acc_sum[i] + (
-                        1 - self.momentum) * num_in_bin
+                if self._momentum > 0:
+                    self.acc_sum[i] = self._momentum * self.acc_sum[i] + (
+                        1 - self._momentum) * num_in_bin
                     weights[inds] = tot / self.acc_sum[i]
                 else:
                     weights[inds] = tot / num_in_bin
@@ -52,4 +54,5 @@ class GHMCLoss(nn.Module):
         loss = F.binary_cross_entropy_with_logits(
             pred, target, weights, reduction='sum') / tot
 
+        loss *= self._loss_weight
         return loss

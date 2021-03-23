@@ -140,11 +140,11 @@ class CfgNode(OrderedDict):
 @bind_getter('filename')
 class Config(object):
     """
-    A facility for better :obj:`CfgNode` objects.
+    A facility for better `CfgNode` objects.
 
-    This class is a wrapper for :obj:`CfgNode` which can be initialized from
-    a config file. Users can use the static method :meth:`Config.from_file` to
-    create a :obj:`Config` object.
+    This class is a wrapper for `CfgNode` which can be initialized from a
+    config file. Users can use the static method `Config.from_file` to create
+    a `Config` object.
     """
 
     @staticmethod
@@ -153,7 +153,7 @@ class Config(object):
         Initialize a Config object from a file.
 
         Args:
-            filename (str): key of the config file. Currently supported
+            filename (str): name of the config file. Currently supported
                 formats include `py`, `json`, and `yaml/yml`.
 
         Returns:

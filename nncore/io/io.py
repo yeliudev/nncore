@@ -40,7 +40,7 @@ def load(name_or_file, format=None, **kwargs):
             `pickle/pkl` and `hdf5/h5`.
 
     Returns:
-        obj (any): the name_or_file from the file
+        obj (any): the loaded object
     """
     format = format or name_or_file.split('.')[-1]
     handler = _get_handler(format)
@@ -60,7 +60,7 @@ def dump(obj, name_or_file, format=None, overwrite=False, **kwargs):
     Dump data to json/yaml/pickle/hdf5 files.
 
     Args:
-        obj (any): the python object to be dumped
+        obj (any): the object to be dumped
         name_or_file (str or file object): name of the file or a file object
         format (str, optional): if not specified, the file format will be
             inferred from the file extension, otherwise use the specified one.
@@ -102,7 +102,7 @@ def loads(string, format='pickle', **kwargs):
             formats include `json`, `yaml/yml`, and `pickle/pkl`.
 
     Returns:
-        obj (any): the name_or_file from the file
+        obj (any): the loaded object
     """
     assert format not in ('hdf5', 'h5')
     handler = _get_handler(format)
@@ -119,7 +119,7 @@ def dumps(obj, format='pickle', **kwargs):
             formats include `json`, `yaml/yml`, and `pickle/pkl`.
 
     Returns:
-        string (str): the string of the dumped file
+        string (str): the dumped string
     """
     assert format not in ('hdf5', 'h5')
     handler = _get_handler(format)
@@ -138,7 +138,7 @@ def list_from_file(filename, offset=0, separator=',', max_length=-1):
         max_length (int, optional): the maximum number of lines to be loaded
 
     Returns:
-        out_list (list[str]): A list of strings.
+        out_list (list[str]): the loaded list
     """
     out_list, count = [], 0
     with _open(filename, 'r') as f:

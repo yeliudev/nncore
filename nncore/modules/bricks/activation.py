@@ -42,11 +42,11 @@ class Clamp(nn.Module):
 
     def __init__(self, min=-1, max=1):
         super(Clamp, self).__init__()
-        self.min = min
-        self.max = max
+        self._min = min
+        self._max = max
 
     def forward(self, x):
-        return torch.clamp(x, min=self.min, max=self.max)
+        return torch.clamp(x, min=self._min, max=self._max)
 
 
 def build_act_layer(cfg, **kwargs):

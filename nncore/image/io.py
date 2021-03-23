@@ -48,8 +48,7 @@ def imwrite(img, filename, params=None):
     Args:
         img (:obj:`np.ndarray`): the image array to be written
         filename (str): name of the image file
-        params (None or list, optional): same as opencv's :meth:`imwrite`
-            interface
+        params (None or list, optional): same as OpenCV's `imwrite` interface
 
     Returns:
         flag (bool): successful or not
