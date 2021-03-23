@@ -6,6 +6,7 @@ import torch
 
 import nncore
 from .buffer import Buffer
+from .comm import gather, is_main_process, synchronize
 from .hooks import HOOKS, Hook
 from .utils import get_checkpoint, load_checkpoint
 
@@ -18,12 +19,12 @@ _DEFAULT_STAGES = dict(
 
 _DEFAULT_HOOKS = [
     'TimerHook', 'LrUpdaterHook', 'OptimizerHook', 'CheckpointHook',
-    'EventWriterHook'
+    'EvalHook', 'EventWriterHook'
 ]
 
 
-@nncore.bind_getter('mode', 'hooks', 'max_stages', 'max_epochs', 'max_iters',
-                    'start_iter', 'stage', 'epoch', 'iter')
+@nncore.bind_getter('mode', 'model_cfg', 'hooks', 'max_stages', 'max_epochs',
+                    'max_iters', 'start_iter', 'stage', 'epoch', 'iter')
 class Engine(object):
     """
     An engine that can take over the whole training and testing process, with
@@ -32,18 +33,20 @@ class Engine(object):
     done automatically.
 
     Args:
-        model (:obj:`nn.Module`): the model to be trained or tested
-        data_loaders (dict): a dict object containing the training and
-            validating data loaders. Should be in the format of
-            `dict(train=train_loader, val=val_loader)`.
+        model (:obj:`nn.Module`): the model to be trained or tested. The
+            `forward` method of the model should return a `dict` containing
+            `_num_samples` and other results.
+        data_loaders (dict): a `dict` containing the training, validating and
+            testing data loaders. It should be in the format of
+            `dict(train=train_loader, val=val_loader, test=test_loader)`.
         stages (dict, list[dict], optional): the stage config or list of stage
             configs to be scheduled
-        hooks (list[:obj:`Hook`] or list[dict] or list[str], optional): the
-            list of hooks to be registered
-        batch_processor (callable, optional): A customized callable method
-            that processes a data batch. Should be in the format of
+        hooks (list[:obj:`Hook`] or list[dict] or list[str], optional): a list
+            of hooks to be registered
+        batch_processor (callable, optional): a customized callable method
+            that processes a data batch. It should be in the format of
             `batch_processor(model, data, mode, **kwargs) -> dict` where mode
-            is either 'train' or 'val'.
+            is `train`, `val` or `test`.
         buffer_size (int, optional): the maximum size of the buffer
         logger (:obj:`logging.Logger` or str or None, optional): the logger or
             name of the logger to be used
@@ -61,8 +64,12 @@ class Engine(object):
                  work_dir=None,
                  **kwargs):
         self.model = model
-        self.data_loaders = data_loaders
         self.batch_processor = batch_processor
+
+        self.data_loaders = dict(
+            train=data_loaders['train'],
+            val=data_loaders.get('val', data_loaders.get('test')),
+            test=data_loaders.get('test', data_loaders.get('val')))
 
         if isinstance(stages, dict):
             stages.update(kwargs)
@@ -221,14 +228,14 @@ class Engine(object):
         self.logger.info('Resumed stage {}, epoch {}, iter {}'.format(
             self._stage + 1, self._epoch, self._iter))
 
-    def train_iter(self, data, **kwargs):
+    def train_iter(self, data):
         self._call_hook('before_train_iter')
 
         if callable(self.batch_processor):
             output = self.batch_processor(
-                self.model, data, mode=self._mode, **kwargs)
+                self.model, data, mode=self._mode, **self._model_cfg)
         else:
-            output = self.model(data, mode=self._mode, **kwargs)
+            output = self.model(data, mode=self._mode, **self._model_cfg)
 
         self.losses = {k: v for k, v in output.items() if 'loss' in k}
         if 'loss' not in output:
@@ -244,15 +251,15 @@ class Engine(object):
         self._call_hook('after_train_iter')
         self._iter += 1
 
-    def val_iter(self, data, **kwargs):
+    def val_iter(self, data):
         self._call_hook('before_val_iter')
 
         if callable(self.batch_processor):
             output = self.batch_processor(
-                self.model, data, mode=self._mode, **kwargs)
+                self.model, data, mode=self._mode, **self._model_cfg)
         else:
             with torch.no_grad():
-                output = self.model(data, mode=self._mode, **kwargs)
+                output = self.model(data, mode=self._mode, **self._model_cfg)
 
         if any('loss' in key for key in output) and 'loss' not in output:
             output['loss'] = sum(v for k, v in output.items() if 'loss' in k)
@@ -265,13 +272,13 @@ class Engine(object):
 
         self._call_hook('after_val_iter')
 
-    def test_iter(self, data, **kwargs):
+    def test_iter(self, data):
         if callable(self.batch_processor):
             output = self.batch_processor(
-                self.model, data, mode=self._mode, **kwargs)
+                self.model, data, mode=self._mode, **self._model_cfg)
         else:
             with torch.no_grad():
-                output = self.model(data, mode=self._mode, **kwargs)
+                output = self.model(data, mode=self._mode, **self._model_cfg)
 
         for key, value in output.items():
             self.buffer.update(
@@ -279,48 +286,44 @@ class Engine(object):
                 value.detach().cpu()
                 if isinstance(value, torch.Tensor) else value)
 
-    def train_epoch(self, **kwargs):
+    def train_epoch(self):
         self._mode = 'train'
         self.model.train()
-        self.data_loader = self.data_loaders['train']
+        self.data_loader = self.data_loaders[self._mode]
         self._call_hook('before_train_epoch')
 
         for data in self.data_loader:
-            self.train_iter(data, **kwargs)
+            self.train_iter(data)
 
         self._call_hook('after_train_epoch')
         self._epoch += 1
 
-    def val_epoch(self, **kwargs):
+    def val_epoch(self):
         self.logger.info('Validating...')
         self._mode = 'val'
         self.model.eval()
-
-        key = 'val' if 'val' in self.data_loaders else 'test'
-        self.data_loader = self.data_loaders[key]
+        self.data_loader = self.data_loaders[self._mode]
         self._call_hook('before_val_epoch')
 
         prog_bar = nncore.ProgressBar(len(self.data_loader))
         for data in self.data_loader:
-            self.val_iter(data, **kwargs)
+            self.val_iter(data)
             prog_bar.update()
 
         self._call_hook('after_val_epoch')
 
-    def test_epoch(self, **kwargs):
+    def test_epoch(self):
         self.logger.info('Evaluating...')
         self._mode = 'test'
         self.model.eval()
-
-        key = 'test' if 'test' in self.data_loaders else 'val'
-        self.data_loader = self.data_loaders[key]
+        self.data_loader = self.data_loaders[self._mode]
 
         prog_bar = nncore.ProgressBar(len(self.data_loader))
         for data in self.data_loader:
-            self.test_iter(data, **kwargs)
+            self.test_iter(data)
             prog_bar.update()
 
-    def run_stage(self, **kwargs):
+    def run_stage(self):
         if isinstance(self.cur_stage['optimizer'], dict):
             optim = self.cur_stage['optimizer'].copy()
             optim_type = optim.pop('type')
@@ -339,39 +342,48 @@ class Engine(object):
         self._call_hook('before_stage')
 
         while self.epoch_in_stage < self.cur_stage['epochs']:
-            self.train_epoch(**kwargs)
+            self.train_epoch()
             if 'val' in self.data_loaders or 'test' in self.data_loaders:
                 cfg = self.cur_stage.get('validation')
                 if cfg is not None:
                     itr, off = cfg.get('interval', 0), cfg.get('offset', 0)
                     epoch = self.epoch_in_stage
                     if itr > 0 and epoch > off and epoch % itr == 0:
-                        self.val_epoch(**kwargs)
+                        self.val_epoch()
 
         self._call_hook('after_stage')
         self._stage += 1
 
-    def evaluate(self, buffer_key='val', eval_cfg=dict(), **kwargs):
-        self.test_epoch(**kwargs)
+    def evaluate(self):
+        blob = self.buffer.pop('out')
+        blob = gather(blob)
 
-        if isinstance(buffer_key, (list, tuple)):
-            blob = {k: self.buffer.pop(k) for k in buffer_key}
+        if is_main_process():
+            blob = nncore.concat_list(blob)
+            output = self.data_loader.dataset.evaluate(
+                blob, logger=self.logger)
         else:
-            blob = self.buffer.pop(buffer_key)
+            output = dict()
 
-        output = self.data_loader.dataset.evaluate(
-            blob, logger=self.logger, **eval_cfg)
-        self.logger.info(', '.join(
-            ['{}: {}'.format(k, v) for k, v in output.items()]))
-
+        synchronize()
         return output
 
-    def launch(self, **kwargs):
-        self.logger.info('Start running, host: {}, work_dir: {}'.format(
+    def launch(self, eval_mode=False, **kwargs):
+        self._model_cfg = kwargs
+
+        if eval_mode:
+            self.test_epoch()
+            output = self.evaluate()
+            self.logger.info(
+                'Evaluation results: ' +
+                ', '.join(['{}: {}'.format(k, v) for k, v in output.items()]))
+            return output
+
+        self.logger.info('Launch engine, host: {}, work_dir: {}'.format(
             nncore.get_host_info(), self.work_dir))
         self._call_hook('before_launch')
 
         while self._stage < self._max_stages:
-            self.run_stage(**kwargs)
+            self.run_stage()
 
         self._call_hook('after_launch')

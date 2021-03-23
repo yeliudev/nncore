@@ -16,7 +16,7 @@ class GATConv(nn.Module):
                  in_features,
                  out_features,
                  heads=1,
-                 dropout=0.5,
+                 dropout=0,
                  negative_slope=0.2,
                  concat=True,
                  residual=True,
@@ -43,8 +43,8 @@ class GATConv(nn.Module):
         else:
             self.register_parameter('bias', None)
 
-        self.dropout = nn.Dropout(p=dropout)
-        self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
+        self.d = nn.Dropout(p=dropout)
+        self.a = nn.LeakyReLU(negative_slope=negative_slope)
 
         self.reset_parameters()
 
@@ -54,7 +54,7 @@ class GATConv(nn.Module):
                 'in_features', 'out_features', 'heads', 'dropout', 'concat',
                 'residual'
             ]
-        ]
+        ] + ['bias={}'.format(self.bias is not None)]
         return '{}({})'.format(self.__class__.__name__, ', '.join(attrs))
 
     def reset_parameters(self):
@@ -64,20 +64,20 @@ class GATConv(nn.Module):
             self.bias.data.fill_(0)
 
     def forward(self, x, adj):
-        x = self.dropout(x)
-        h = torch.matmul(x.unsqueeze(0), self.w)
+        x = self.d(x)
+        h = torch.matmul(x[None, :], self.w)
 
         h_i = torch.bmm(h, self.h_i)
         h_j = torch.bmm(h, self.h_j)
 
-        att = self.leaky_relu(h_i + h_j.transpose(1, 2))
-        att = self.dropout(F.softmax(att + adj, dim=-1))
+        att = self.a(h_i + h_j.transpose(1, 2))
+        att = self.d(F.softmax(att + adj, dim=-1))
 
         y = torch.bmm(att, h).transpose(0, 1).contiguous()
 
         if self.residual:
             if y.size(-1) == x.size(-1):
-                y += x.unsqueeze(1)
+                y += x[:, None]
             else:
                 y += torch.matmul(x, self.r).view(-1, self.heads,
                                                   self.out_features)

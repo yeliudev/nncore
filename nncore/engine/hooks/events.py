@@ -223,7 +223,7 @@ class EventWriterHook(Hook):
         for w in self._writers:
             w.write(engine, window_size)
 
-    def _empty_buffer(self, engine):
+    def _clear_buffer(self, engine):
         for key in list(engine.buffer.keys()):
             if not key.startswith('_'):
                 engine.buffer.pop(key)
@@ -247,13 +247,11 @@ class EventWriterHook(Hook):
 
         self._write(
             engine,
-            len(engine.data_loaders['train']) % self._interval
-            or self._interval
+            len(engine.data_loader) % self._interval or self._interval
             if self.last_iter_in_epoch(engine) else self._interval)
-        self._empty_buffer(engine)
+        self._clear_buffer(engine)
 
     @master_only
     def after_val_epoch(self, engine):
-        key = 'val' if 'val' in engine.data_loaders else 'test'
-        self._write(engine, len(engine.data_loaders[key]))
-        self._empty_buffer(engine)
+        self._write(engine, len(engine.data_loader))
+        self._clear_buffer(engine)

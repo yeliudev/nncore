@@ -9,7 +9,7 @@ class ClosureHook(Hook):
     def __init__(self, fn_name, fn):
         super(ClosureHook, self).__init__()
         if isinstance(fn_name, (list, tuple)):
-            for name, func in zip([fn_name, fn]):
+            for name, func in zip((fn_name, fn)):
                 self._add_hook(name, func)
         else:
             self._add_hook(fn_name, fn)
