@@ -12,6 +12,13 @@ class Buffer(object):
     """
     A buffer that can track a series of values and provide access to smoothed
     scalar values over a window.
+
+    Args:
+        max_size (int, optional): maximal number of values that can be stored
+            in the buffer. When the capacity of the buffer is exhausted, old
+            values will be removed.
+        logger (:obj:`logging.Logger` or str or None, optional): the potential
+            logger or name of the logger to be used
     """
 
     def __init__(self, max_size=100000, logger=None):
@@ -70,7 +77,8 @@ class Buffer(object):
         """
         if key not in self._data:
             self._data[key] = []
-        elif len(self._data[key]) == self._max_size:
+        elif not key.startswith('_') and len(
+                self._data[key]) == self._max_size:
             if warning:
                 nncore.log_or_print(
                     "Number of '{}' values in the buffer exceeds max size "

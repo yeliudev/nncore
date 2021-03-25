@@ -1,6 +1,7 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 from collections import OrderedDict
+from itertools import permutations
 
 import torch
 
@@ -66,10 +67,10 @@ class Engine(object):
         self.model = model
         self.batch_processor = batch_processor
 
-        self.data_loaders = dict(
-            train=data_loaders['train'],
-            val=data_loaders.get('val', data_loaders.get('test')),
-            test=data_loaders.get('test', data_loaders.get('val')))
+        for a, b in permutations(('val', 'test')):
+            if a in data_loaders and b not in data_loaders:
+                data_loaders[b] = data_loaders[a]
+        self.data_loaders = data_loaders
 
         if isinstance(stages, dict):
             stages.update(kwargs)
@@ -79,7 +80,7 @@ class Engine(object):
         if hooks is not None:
             self.register_hook(hooks)
 
-        time_str = nncore.get_time_stamp()
+        time_str = nncore.get_timestamp()
         self.work_dir = work_dir or nncore.join('work_dirs', time_str)
 
         log_file = nncore.join(self.work_dir, time_str + '.log')

@@ -180,6 +180,7 @@ def open(file=None, mode='r', format=None, **kwargs):
         handler = _open
 
     if '@' not in inspect.stack()[1][4][0]:
+        nncore.mkdir(nncore.dir_name(file))
         return handler(file, mode, **kwargs)
 
     def _decorator(func):
@@ -191,6 +192,7 @@ def open(file=None, mode='r', format=None, **kwargs):
 
         @wraps(func)
         def _wrapper(*_args, file=file, mode=mode, **_kwargs):
+            nncore.mkdir(nncore.dir_name(file))
             with handler(file, mode, **kwargs) as f:
                 func(*_args, **_kwargs, f=f)
 

@@ -20,12 +20,12 @@ def get_host_info():
     return '{}@{}'.format(getuser(), gethostname())
 
 
-def get_time_stamp():
-    return time.strftime('%Y%m%d%H%M%S', time.localtime())
-
-
 def get_time_str():
     return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
+
+
+def get_timestamp():
+    return time.strftime('%Y%m%d%H%M%S', time.localtime())
 
 
 def _collect_cuda_env():
