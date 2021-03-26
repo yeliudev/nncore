@@ -63,9 +63,9 @@ class GATModule(nn.Module):
         return x
 
 
-def build_gat_sequence(dims, heads=None, with_last_act=False, **kwargs):
+def build_gat_modules(dims, heads=None, with_last_act=False, **kwargs):
     """
-    Build a sequence of gat-norm-actvation layers.
+    Build a module list containing gat-norm-actvation layers.
 
     Args:
         dims (list[int]): the sequence of numbers of dimensions of features
@@ -75,7 +75,7 @@ def build_gat_sequence(dims, heads=None, with_last_act=False, **kwargs):
             after the last gat layer
 
     Returns:
-        layers (:obj:`nn.ModuleList`): the constructed sequence
+        layers (:obj:`nn.ModuleList`): the constructed module list
     """
     assert 'concat' not in kwargs
     _kwargs = kwargs.copy()

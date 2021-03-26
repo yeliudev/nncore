@@ -15,7 +15,7 @@ _DEFAULT_STAGES = dict(
     epochs=5,
     optimizer=dict(type='SGD', lr=1e-2, momentum=0.9, weight_decay=1e-4),
     lr_schedule=dict(type='iter', policy='cosine'),
-    warmup=dict(type='iter', policy='linear', steps=500, ratio=1e-3),
+    warmup=dict(type='iter', policy='linear', steps=500, ratio=0.001),
     validation=dict(interval=1))
 
 _DEFAULT_HOOKS = [
