@@ -81,16 +81,18 @@ def init_dist(launcher='pytorch', backend='gloo', **kwargs):
     Initialize a distributed process group.
 
     Args:
-        launcher (str, optional): launcher for the process group. Currently
-            supported lauchers include `pytorch` and `slurm`.
-        backend (str or :obj:`dist.Backend`, optional): the distribution
-            backend to be used. Depending on build-time configurations, valid
-            values include `gloo` and `nccl`. This field should be given as a
-            string (e.g. `gloo`), which can also be accessed via `dist.Backend`
-            attributes (e.g. `Backend.GLOO`). If using multiple processes per
-            machine with `nccl` backend, each process must have exclusive
-            access to every GPU it uses, as sharing GPUs between processes can
-            result in deadlocks.
+        launcher (str, optional): Launcher for the process group. Currently
+            supported launchers include ``pytorch`` and ``slurm``. Default:
+            ``'pytorch'``.
+        backend (:obj:`dist.Backend` or str, optional): The distribution
+            backend to be used. This field should be given as a
+            :obj:`dist.Backend` object or a string (e.g. ``'gloo'``) which can
+            also be accessed via ``dist.Backend`` attributes. Depending on
+            build-time configurations, valid values include ``'gloo'`` and
+            ``'nccl'``. If using multiple processes per machine with ``nccl``
+            backend, each process must have exclusive access to every GPU it
+            uses, as sharing GPUs between processes can result in deadlocks.
+            Default: ``'gloo'``.
     """
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method('spawn')
@@ -145,15 +147,16 @@ def synchronize(group=None):
 
 def all_gather(data, group=None):
     """
-    Run all_gather on arbitrary serializable data.
+    Perform ``all_gather`` on arbitrary serializable data.
 
     Args:
-        data (any): any serializable object
-        group (ProcessGroup or None, optional): a torch process group. If
-            `None`, use the default process group.
+        data (any): Any serializable object.
+        group (:obj:`ProcessGroup` or None, optional): The torch process group
+            to be used. If ``None``, the default process group will be used.
+            Default: ``None``.
 
     Returns:
-        gathered (list[data]): a list of data gathered from each rank
+        list: The list of data gathered from each rank.
     """
     if get_world_size(group=group) == 1:
         return [data]
@@ -176,17 +179,18 @@ def all_gather(data, group=None):
 
 def gather(data, dst=0, group=None):
     """
-    Run gather on arbitrary serializable data.
+    Perform ``gather`` on arbitrary serializable data.
 
     Args:
-        data (any): any serializable object
-        dst (int, optional): destination rank
-        group (ProcessGroup or None, optional): a torch process group. If
-            `None`, use the default process group.
+        data (any): Any serializable object.
+        dst (int, optional): The destination rank. Default: ``0``.
+        group (:obj:`ProcessGroup` or None, optional): The torch process group
+            to be used. If ``None``, the default process group will be used.
+            Default: ``None``.
 
     Returns:
-        gathered (list[data]) or None: on dst, a list of data gathered from
-            each rank. Otherwise, None.
+        list or ``None``: On ``dst``, it should be a list of data gathered \
+            from each rank. Otherwise, ``None``.
     """
     rank, world_size = get_dist_info(group=group)
     if world_size == 1:
@@ -214,7 +218,7 @@ def gather(data, dst=0, group=None):
 
 def master_only(func):
     """
-    A decorator that lets a function only be executed in the main process.
+    A decorator that makes a function can only be executed in the main process.
     """
 
     @wraps(func)

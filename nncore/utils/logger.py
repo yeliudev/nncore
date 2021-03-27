@@ -38,24 +38,28 @@ def get_logger(logger_or_name=None,
 
     If the logger has not been initialized, this method will initialize the
     logger by adding one or two handlers, otherwise the initialized logger will
-    be directly returned. During initialization, a `StreamHandler` will always
-    be added. If `log_file` is specified and the process rank is 0, a
-    `FileHandler` will also be added.
+    be directly returned. During initialization, a ``StreamHandler`` will
+    always be added. If ``log_file`` is specified and the process rank is
+    ``0``, a ``FileHandler`` will also be added.
 
     Args:
-        logger_or_name (:obj:`logging.Logger` or str or None, optional): the
-            logger or name of the logger
-        fmt (str, optional): log format. The format must end with `%(message)s`
-            to make sure that the colors could be rendered properly.
-        datefmt (str, optional): date format for the logger
-        log_level (str or int, optional): log level of the logger. Note that
+        logger_or_name (:obj:`logging.Logger` or str or None, optional): The
+            logger or name of the logger. Default: ``None``.
+        fmt (str, optional): Logging format of the logger. The format must end
+            with ``%(message)s`` to make sure that the colors could be rendered
+            properly. Default: ``'[%(asctime)s %(levelname)s]: %(message)s'``.
+        datefmt (str, optional): Date format of the logger. Default:
+            ``'%Y-%m-%d %H:%M:%S'``.
+        log_level (str or int, optional): Log level of the logger. Note that
             only the main process (rank 0) is affected, and other processes
-            will set the level to `ERROR` thus be silent at most of the time.
-        log_file (str, optional): filename of the log file. If not `None`, a
-            `FileHandler` will be added to the logger.
+            will set the level to ``ERROR`` thus be silent at most of the time.
+            Default: ``logging.INFO``.
+        log_file (str, optional): Path to the log file. If specified, a
+            ``FileHandler`` will be added to the logger of the main process.
+            Default: ``None``.
 
     Returns:
-        logger (:obj:`logging.Logger`): the expected logger
+        :obj:`logging.Logger`: The expected logger.
     """
     if isinstance(logger_or_name, logging.Logger):
         return logger_or_name
@@ -98,15 +102,17 @@ def get_logger(logger_or_name=None,
 
 def log_or_print(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
     """
-    Print a message with a potential logger. If `logger` is a valid
-    `logging.Logger` or a name of the logger, then it would be used. Otherwise
-    this method will use the normal `print` function instead.
+    Print a message with a potential logger. If ``logger`` is a valid
+    ``logging.Logger`` or a name of the logger, then it would be used.
+    Otherwise this method will use the normal ``print`` function instead.
 
     Args:
-        msg (str): the message to be logged
-        logger_or_name (:obj:`logging.Logger` or str or None, optional): the
-            potential logger or name of the logger to be used
-        log_level (int, optional): log level of the logger
+        msg (str): The message to be logged.
+        logger_or_name (:obj:`logging.Logger` or str or None, optional): The
+            potential logger or name of the logger to be used. Default:
+            ``None``.
+        log_level (int, optional): Log level of the logger. Default:
+            ``logging.INFO``.
     """
     level = logging._checkLevel(log_level)
     if isinstance(logger_or_name, logging.Logger):

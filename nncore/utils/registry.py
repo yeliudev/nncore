@@ -8,11 +8,15 @@ class Registry(object):
     """
     A registry to map strings to objects.
 
-    Records in the `self.items` maintain the registry of objects. For each
+    Records in the ``self.items`` maintain the registry of objects. For each
     record, the key is the object name and the value is the object itself. The
-    method `self.register` can be used as a decorator or a normal function.
+    method :meth:`self.register` can be used as a decorator or a normal
+    function.
 
-    Examples:
+    Args:
+        name (str): Name of the registry.
+
+    Example:
         >>> backbones = Registry('backbone')
         >>> @backbones.register()
         >>> class ResNet(object):
@@ -22,9 +26,6 @@ class Registry(object):
         >>> class ResNet(object):
         ...     pass
         >>> backbones.register(ResNet)
-
-    Args:
-        name (str): name of the registry
     """
 
     def __init__(self, name):
@@ -84,19 +85,21 @@ class Registry(object):
 
 def build_object(cfg, parent, default=None, **kwargs):
     """
-    Initialize an object from a dict.
+    Initialize an object from a ``dict``.
 
-    The dict must contain a key `type`, which is a indicating the object type.
-    Remaining fields are treated as the arguments for constructing the object.
+    The ``dict`` must contain a key ``type``, which is a indicating the object
+    type. Remaining fields are treated as the arguments for constructing the
+    object.
 
     Args:
-        cfg (any): object type and arguments
-        parent (any): a module or a list of modules which may contain the
-            expected object
-        default (any, optional): the default value when the object is not found
+        cfg (any): The object or object configs.
+        parent (any): The module or a ``list`` of modules which may contain the
+            expected object.
+        default (any, optional): The default value when the object is not
+            found. Default: ``None``.
 
     Returns:
-        obj (any): the object built from the dict
+        any: The constructed object.
     """
     if not hasattr(cfg, 'copy'):
         return cfg

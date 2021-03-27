@@ -12,23 +12,27 @@ def sigmoid_focal_loss(pred,
                        reduction='mean',
                        loss_weight=1):
     """
-    Focal Loss introduced in https://arxiv.org/abs/1708.02002.
+    Focal Loss introduced in [1].
 
     Args:
-        pred (:obj:`torch.Tensor`): the predictions for each example
-        target (:obj:`torch.Tensor`): the binary classification label for
-            each element (0 for negative classes and 1 for positive classes)
-        alpha (int or float, optional): weighting factor in range (0, 1) to
-            balance positive vs negative examples. -1 means no weighting.
-        gamma (int or float, optional): exponent of the modulating factor
-            (1 - p_t) to balance easy vs hard examples
-        reduction (str, optional): reduction methods. Currently supported
-            methods include `none`, `mean` and `sum`.
-        loss_weight (float, optional): weight of the loss
+        pred (:obj:`torch.Tensor`): The predictions for each example.
+        target (:obj:`torch.Tensor`): The binary classification label for
+            each element (0 for negative classes and 1 for positive classes).
+        alpha (int or float, optional): Weighting factor in range ``(0, 1)`` to
+            balance positive vs negative examples. ``-1`` means no weighting.
+            Default: ``-1``.
+        gamma (int or float, optional): Exponent of the modulating factor
+            ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
+        reduction (str, optional): Reduction method. Currently supported
+            methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
+            ``'mean'``.
+        loss_weight (float, optional): Weight of the loss. Default: ``1``.
 
     Returns:
-        loss (:obj:`torch.Tensor`): the loss tensor with reduction option
-            applied
+        :obj:`torch.Tensor`: The loss tensor with reduction option applied.
+
+    References:
+        1. Lin et al. (https://arxiv.org/abs/1708.02002)
     """
     p = torch.sigmoid(pred)
     ce_loss = F.binary_cross_entropy_with_logits(
@@ -56,23 +60,27 @@ def sigmoid_focal_loss_star(pred,
                             reduction='mean',
                             loss_weight=1):
     """
-    Focal Loss* introduced in https://arxiv.org/abs/1708.02002.
+    Focal Loss* introduced in [1].
 
     Args:
-        pred (:obj:`torch.Tensor`): the predictions for each example
-        target (:obj:`torch.Tensor`): the binary classification label for
-            each element (0 for negative classes and 1 for positive classes)
-        alpha (int or float, optional): weighting factor in range (0, 1) to
-            balance positive vs negative examples. -1 means no weighting.
-        gamma (int or float, optional): gamma parameter described in FL*.
-            -1 means no weighting.
-        reduction (str, optional): reduction methods. Currently supported
-            methods include `none`, `mean` and `sum`.
-        loss_weight (float, optional): weight of the loss
+        pred (:obj:`torch.Tensor`): The predictions for each example.
+        target (:obj:`torch.Tensor`): The binary classification label for
+            each element (0 for negative classes and 1 for positive classes).
+        alpha (int or float, optional): Weighting factor in range ``(0, 1)`` to
+            balance positive vs negative examples. ``-1`` means no weighting.
+            Default: ``-1``.
+        gamma (int or float, optional): Exponent of the modulating factor
+            ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
+        reduction (str, optional): Reduction method. Currently supported
+            methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
+            ``'mean'``.
+        loss_weight (float, optional): Weight of the loss. Default: ``1``.
 
     Returns:
-        loss (:obj:`torch.Tensor`): the loss tensor with reduction option
-            applied
+        :obj:`torch.Tensor`: The loss tensor with reduction option applied.
+
+    References:
+        1. Lin et al. (https://arxiv.org/abs/1708.02002)
     """
     shifted_inputs = gamma * (pred * (2 * target - 1))
     loss = -F.logsigmoid(shifted_inputs) / gamma
@@ -92,16 +100,21 @@ def sigmoid_focal_loss_star(pred,
 
 class FocalLoss(nn.Module):
     """
-    Focal Loss introduced in https://arxiv.org/abs/1708.02002.
+    Focal Loss introduced in [1].
 
     Args:
-        alpha (int or float, optional): weighting factor in range (0, 1) to
-            balance positive vs negative examples. -1 means no weighting.
-        gamma (int or float, optional): exponent of the modulating factor
-            (1 - p_t) to balance easy vs hard examples
-        reduction (str, optional): reduction methods. Currently supported
-            methods include `none`, `mean` and `sum`.
-        loss_weight (float, optional): weight of the loss
+        alpha (int or float, optional): Weighting factor in range ``(0, 1)`` to
+            balance positive vs negative examples. ``-1`` means no weighting.
+            Default: ``-1``.
+        gamma (int or float, optional): Exponent of the modulating factor
+            ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
+        reduction (str, optional): Reduction method. Currently supported
+            methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
+            ``'mean'``.
+        loss_weight (float, optional): Weight of the loss. Default: ``1``.
+
+    References:
+        1. Lin et al. (https://arxiv.org/abs/1708.02002)
     """
 
     def __init__(self, alpha=-1, gamma=2, reduction='mean', loss_weight=1):
@@ -123,16 +136,21 @@ class FocalLoss(nn.Module):
 
 class FocalLossStar(nn.Module):
     """
-    Focal Loss* introduced in https://arxiv.org/abs/1708.02002.
+    Focal Loss* introduced in [1].
 
     Args:
-        alpha (int or float, optional): weighting factor in range (0, 1) to
-            balance positive vs negative examples. -1 means no weighting.
-        gamma (int or float, optional): gamma parameter described in FL*.
-            -1 means no weighting.
-        reduction (str, optional): reduction methods. Currently supported
-            methods include `none`, `mean` and `sum`.
-        loss_weight (float, optional): weight of the loss
+        alpha (int or float, optional): Weighting factor in range ``(0, 1)`` to
+            balance positive vs negative examples. ``-1`` means no weighting.
+            Default: ``-1``.
+        gamma (int or float, optional): Exponent of the modulating factor
+            ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
+        reduction (str, optional): Reduction method. Currently supported
+            methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
+            ``'mean'``.
+        loss_weight (float, optional): Weight of the loss. Default: ``1``.
+
+    References:
+        1. Lin et al. (https://arxiv.org/abs/1708.02002)
     """
 
     def __init__(self, alpha=-1, gamma=1, reduction='mean', loss_weight=1):

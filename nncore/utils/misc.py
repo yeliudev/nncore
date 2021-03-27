@@ -12,14 +12,14 @@ def iter_cast(inputs, dst_type, return_type=None):
     Cast elements of an iterable object into some type.
 
     Args:
-        inputs (Iterable): the input object
-        dst_type (type): destination type
-        return_type (type, optional): the type of returned object. If
+        inputs (Iterable): The input iterable object.
+        dst_type (type): Destination type.
+        return_type (type, optional): The type of returned object. If
             specified, the output object will be converted to this type,
-            otherwise an iterator.
+            otherwise an iterator. Default: ``None``.
 
     Returns:
-        out_iter (iterator or specified type): the converted object
+        iterator or specified type: The converted object.
     """
     if not isinstance(inputs, Iterable):
         raise TypeError('inputs must be an iterable object')
@@ -36,18 +36,18 @@ def iter_cast(inputs, dst_type, return_type=None):
 
 def list_cast(inputs, dst_type):
     """
-    Cast elements of an iterable object into a list of some type.
+    Cast elements of an iterable object into a ``list`` of some type.
 
-    A partial method of `iter_cast`.
+    A partial method of :meth:`iter_cast`.
     """
     return iter_cast(inputs, dst_type, return_type=list)
 
 
 def tuple_cast(inputs, dst_type):
     """
-    Cast elements of an iterable object into a tuple of some type.
+    Cast elements of an iterable object into a ``tuple`` of some type.
 
-    A partial method of `iter_cast`.
+    A partial method of :meth:`iter_cast`.
     """
     return iter_cast(inputs, dst_type, return_type=tuple)
 
@@ -57,12 +57,12 @@ def is_seq_of(seq, expected_type, seq_type=None):
     Check whether it is a sequence of some type.
 
     Args:
-        seq (Sequence): the sequence to be checked
-        expected_type (type): expected type of sequence items
-        seq_type (type, optional): expected sequence type
+        seq (Sequence): The sequence to be checked.
+        expected_type (type): Expected type of sequence items.
+        seq_type (type, optional): Expected sequence type. Default: ``None``.
 
     Returns:
-        flag (bool): whether the sequence is valid
+        bool: Whether the sequence is valid.
     """
     if seq_type is None:
         exp_seq_type = Sequence
@@ -79,32 +79,32 @@ def is_seq_of(seq, expected_type, seq_type=None):
 
 def is_list_of(seq, expected_type):
     """
-    Check whether it is a list of some type.
+    Check whether it is a ``list`` of some type.
 
-    A partial method of `is_seq_of`.
+    A partial method of :meth:`is_seq_of`.
     """
     return is_seq_of(seq, expected_type, seq_type=list)
 
 
 def is_tuple_of(seq, expected_type):
     """
-    Check whether it is a tuple of some type.
+    Check whether it is a ``tuple`` of some type.
 
-    A partial method of `is_seq_of`.
+    A partial method of :meth:`is_seq_of`.
     """
     return is_seq_of(seq, expected_type, seq_type=tuple)
 
 
 def slice_list(in_list, lens):
     """
-    Slice a list into several sub lists by a list of given length.
+    Slice a ``list`` into several sub lists by a ``list`` of given length.
 
     Args:
-        in_list (list): the list to be sliced
-        lens (int or list): the expected length of each out list
+        in_list (list): The list to be sliced.
+        lens (list or int): The expected length of each out list.
 
     Returns:
-        out_list (list): a list of sliced list
+        list: The sliced lists.
     """
     if isinstance(lens, int):
         assert len(in_list) % lens == 0
@@ -125,26 +125,26 @@ def slice_list(in_list, lens):
 
 def concat_list(in_list):
     """
-    Concatenate a list of list into a single list.
+    Concatenate a ``list`` of ``list`` into a single ``list``.
 
     Args:
-        in_list (list): the list of list to be merged
+        in_list (list): The list of list to be merged.
 
     Returns:
-        out_list (list): the concatenated flat list
+        list: The concatenated flat list.
     """
     return list(chain(*in_list))
 
 
 def to_dict_of_list(in_list):
     """
-    Convert a list of dict to a dict of list.
+    Convert a ``list`` of ``dict`` to a ``dict`` of ``list``.
 
     Args:
-        in_list (list): the list of dict to be converted
+        in_list (list): The ``list`` of ``dict`` to be converted.
 
     Returns:
-        out_dict (dict): the converted dict of list
+        dict: The converted ``dict`` of ``list``.
     """
     for i in range(len(in_list) - 1):
         if in_list[i].keys() != in_list[i + 1].keys():
@@ -159,13 +159,13 @@ def to_dict_of_list(in_list):
 
 def to_list_of_dict(in_dict):
     """
-    Convert a dict of list to a list of dict.
+    Convert a ``dict`` of ``list`` to a ``list`` of ``dict``.
 
     Args:
-        in_dict (dict): the dict of list to be converted
+        in_dict (dict): the ``dict`` of ``list`` to be converted.
 
     Returns:
-        out_list (list): the converted list of dict
+        list: The converted ``list`` of ``dict``.
     """
     values = in_dict.values()
     for i in range(len(in_dict) - 1):
@@ -184,14 +184,13 @@ def swap_element(matrix, i, j):
     Swap two elements of an array or a tensor.
 
     Args:
-        matrix (:obj:`np.ndarray` or :obj:`torch.Tensor`): the array or tensor
-            to be swapped
-        i (int): index of the first element
-        j (int): index of the second element
+        matrix (:obj:`np.ndarray` or :obj:`torch.Tensor`): The array or tensor
+            to be swapped.
+        i (int): Index of the first element.
+        j (int): Index of the second element.
 
     Returns:
-        matrix (:obj:`np.ndarray` or :obj:`torch.Tensor`): the swapped array
-            or tensor
+        :obj:`np.ndarray` or :obj:`torch.Tensor`: The swapped array or tensor.
     """
     if isinstance(matrix, np.ndarray):
         tmp = matrix[i].copy()
@@ -209,12 +208,17 @@ def bind_getter(*vars):
     A syntactic sugar for automatically binding getters for classes. This
     method is expected to be used as a decorator.
 
-    Examples:
+    Args:
+        *vars: strings indicating the member variables to be binded with
+            getters. The name of member variables are expected to start with an
+            underline (e.g. `_name` or `_epoch`).
+
+    Example:
         >>> @bind_getter('name', 'depth')
         >>> class Backbone:
         ...     _name = 'ResNet'
         ...     _depth = 50
-    equals to:
+        ... # equals to:
         >>> class Backbone:
         ...     _name = 'ResNet'
         ...     _depth = 50
@@ -224,11 +228,6 @@ def bind_getter(*vars):
         ...     @property
         ...     def depth(self):
         ...         return self._depth
-
-    Args:
-        *vars: strings indicating the member variables to be binded with
-            getters. The name of member variables are expected to start with an
-            underline (e.g. `_name` or `_epoch`).
     """
 
     def _wrapper(cls):
@@ -236,6 +235,7 @@ def bind_getter(*vars):
             method = partial(
                 lambda self, key: getattr(self, key, None),
                 key='_{}'.format(var))
+            method.__doc__ = f"Return the '{var}' property."
             setattr(cls, var, property(method))
         return cls
 

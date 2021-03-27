@@ -16,11 +16,11 @@
 
 NNCore is a library that provides common functionalities for Machine Learning and Deep Learning researchers. This project aims at helping users focus more on science but not engineering during researches. The essential functionalities include but are not limited to:
 
-* Universal I/O APIs
-* Efficient implementations of layers and losses that are not included in PyTorch
-* Extended methods for distributed training
-* More powerful data loading techniques
-* An engine that can take over the whole training and testing process, with all the baby-sitting works (stage control, optimizer configuration, lr scheduling, checkpoint management, metrics & tensorboard writing, etc.) done automatically. See an [example](https://github.com/yeliudev/nncore/blob/main/examples/mnist.py) for details.
+- Universal I/O APIs
+- Efficient implementations of layers and losses that are not included in PyTorch
+- Extended methods for distributed training
+- More powerful data loading techniques
+- An engine that can take over the whole training and testing process, with all the baby-sitting works (stage control, optimizer configuration, lr scheduling, checkpoint management, metrics & tensorboard writing, etc.) done automatically. See an [example](https://github.com/yeliudev/nncore/blob/main/examples/mnist.py) for details.
 
 Note that some methods in the library work with PyTorch 1.6+, but the installation of PyTorch is not necessary.
 
@@ -36,19 +36,23 @@ Note that some methods in the library work with PyTorch 1.6+, but the installati
 
 ## Installation
 
-You may install nncore from PyPI
+You may install nncore directly from PyPI
 
 ```
 pip install nncore
 ```
 
-or directly from source
+or manually from source
 
 ```
 git clone https://github.com/yeliudev/nncore.git
 cd nncore
 pip install -e .
 ```
+
+## Getting Started
+
+Please refer to our [documentation](https://nncore.readthedocs.io/) for how to incorperate nncore into your projects.
 
 ## Acknowledgements
 

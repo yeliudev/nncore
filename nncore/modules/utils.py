@@ -22,18 +22,18 @@ def _fuse_conv_bn(conv, bn):
 
 def fuse_conv_bn(model):
     """
-    During inference, the functionary of batch norm layers is turned off
-    but only the mean and var alone channels are used, which exposes the
-    chance to fuse it with the preceding conv layers to save computations and
-    simplify network structures.
+    During inference, the functionary of batch norm layers is turned off but
+    only the mean and var alone channels are used, which exposes the chance to
+    fuse it with the preceding conv layers to save computations and simplify
+    network structures.
 
     Args:
-        model (:obj:`nn.Module`): the module whose conv-bn structure to be
-            fused
+        model (:obj:`nn.Module`): The module whose ``conv-bn`` structure to be
+            fused.
 
     Returns:
-        model (:obj:`nn.Module`): the module whose conv-bn structure has been
-            fused
+        :obj:`nn.Module`: The module whose ``conv-bn`` structure has been \
+            fused.
     """
     last_conv = None
     last_conv_name = None
@@ -68,13 +68,13 @@ def update_bn_stats(model, data_loader, num_iters=200):
     average of per-batch mean/variance instead of the running average.
 
     Args:
-        model (:obj:`nn.Module`): the model whose bn stats will be recomputed
+        model (:obj:`nn.Module`): The model whose bn stats will be recomputed.
 
             Note that:
 
             1. This function will not alter the training mode of the given
                model. Users are responsible for setting the layers that needs
-               precise-BN to training mode, prior to calling this function.
+               precise-bn to training mode, prior to calling this function.
 
             2. Be careful if your models contain other stateful layers in
                addition to BN, i.e. layers whose state can change in forward
@@ -82,9 +82,9 @@ def update_bn_stats(model, data_loader, num_iters=200):
                them unchanged, you need to either pass in a submodule without
                those layers, or backup the states.
 
-        data_loader (iterator): an iterator. Produces data as inputs to the
-            model.
-        num_iters (int, optional): number of iterations to compute the stats
+        data_loader (iterator): The data loader to be used.
+        num_iters (int, optional): Number of iterations to compute the stats.
+            Default: ``200``.
     """
     assert len(data_loader) >= num_iters
 
@@ -127,14 +127,16 @@ def publish_model(in_file,
     output checkpoint file.
 
     Args:
-        in_file (str): name of the input checkpoint file
-        out_file (str): name of the output checkpoint file
-        keys_to_remove (list[str], optional): the list of keys to be removed
-            from the checkpoint
-        hash_type (str, optional): type of the hash algorithm. Currently
-            supported algorithms include `md5`, `sha1`, `sha224`, `sha256`,
-            `sha384`, `sha512`, `blake2b`, `blake2s`, `sha3_224`, `sha3_256`,
-            `sha3_384`, `sha3_512`, `shake_128`, and `shake_256`.
+        in_file (str): Path to the input checkpoint file.
+        out_file (str): Path to the output checkpoint file.
+        keys_to_remove (list[str], optional): The list of keys to be removed
+            from the checkpoint. Default: ``['optimizer']``.
+        hash_type (str, optional): Type of the hash algorithm. Currently
+            supported algorithms include ``'md5'``, ``'sha1'``, ``'sha224'``,
+            ``'sha256'``, ``'sha384'``, ``'sha512'``, ``'blake2b'``,
+            ``'blake2s'``, ``'sha3_224'``, ``'sha3_256'``, ``'sha3_384'``,
+            ``'sha3_512'``, ``'shake_128'`` and ``'shake_256'``. Default:
+            ``'sha256'``.
     """
     checkpoint = torch.load(in_file, map_location='cpu')
     for key in keys_to_remove:

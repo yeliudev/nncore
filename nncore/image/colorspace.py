@@ -8,12 +8,12 @@ def bgr2gray(img, keep_dim=False):
     Convert a BGR image to a grayscale image.
 
     Args:
-        img (:obj:`np.ndarray`): the input image
-        keep_dim (bool, optional): whether to keep the number of dimensions of
-            the input image
+        img (:obj:`np.ndarray`): The input image.
+        keep_dim (bool, optional): Whether to keep the number of dimensions of
+            the input image. Default: ``False``.
 
     Returns:
-        img (:obj:`np.ndarray`): the converted grayscale image
+        :obj:`np.ndarray`: The converted grayscale image.
     """
     out_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     if keep_dim:
@@ -26,12 +26,12 @@ def rgb2gray(img, keep_dim=False):
     Convert an RGB image to a grayscale image.
 
     Args:
-        img (:obj:`np.ndarray`): the input image
-        keep_dim (bool, optional): whether to keep the number of dimensions of
-            the input image
+        img (:obj:`np.ndarray`): The input image.
+        keep_dim (bool, optional): Whether to keep the number of dimensions of
+            the input image. Default: ``False``.
 
     Returns:
-        img (:obj:`np.ndarray`): the converted grayscale image
+        :obj:`np.ndarray`: The converted grayscale image.
     """
     out_img = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     if keep_dim:
@@ -44,10 +44,10 @@ def gray2bgr(img):
     Convert a grayscale image to a BGR image.
 
     Args:
-        img (:obj:`np.ndarray`): the input image
+        img (:obj:`np.ndarray`): The input image.
 
     Returns:
-        img (:obj:`np.ndarray`): the converted BGR image
+        :obj:`np.ndarray`: The converted BGR image.
     """
     img = img[..., None] if img.ndim == 2 else img
     out_img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
@@ -59,10 +59,10 @@ def gray2rgb(img):
     Convert a grayscale image to an RGB image.
 
     Args:
-        img (:obj:`np.ndarray`): the input image
+        img (:obj:`np.ndarray`): The input image.
 
     Returns:
-        img (:obj:`np.ndarray`): the converted RGB image
+        :obj:`np.ndarray`: The converted RGB image.
     """
     img = img[..., None] if img.ndim == 2 else img
     out_img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
@@ -82,10 +82,10 @@ def _convert_color_factory(src, dst):
     Convert {} image to {} image.
 
     Args:
-        img (:obj:`np.ndarray`): the input image
+        img (:obj:`np.ndarray`): The input image.
 
     Returns:
-        img (:obj:`np.ndarray`): the converted {} image
+        :obj:`np.ndarray`: The converted {} image.
     """.format(src_with_article, dst_with_article, dst)
 
     return _convert_color

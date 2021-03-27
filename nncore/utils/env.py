@@ -133,10 +133,10 @@ def collect_env_info(modules=['nncore', 'numpy', 'PIL', 'cv2']):
     version, etc., and return a string describing the environment.
 
     Args:
-        modules (list[str], optional): the list of module names to be checked
+        modules (list[str], optional): The list of module names to be checked.
 
     Returns:
-        info (str): the information about the environment
+        str: The information about the environment.
     """
     info = []
 

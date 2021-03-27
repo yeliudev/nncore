@@ -8,11 +8,11 @@ def bbox_area(bboxes):
     Compute the areas of bounding boxes.
 
     Args:
-        bboxes (:obj:`Tensor[N, 4]`): bboxes to be computed. They are expected
-            to be in (x1, y1, x2, y2) format.
+        bboxes (:obj:`Tensor[N, 4]`): Bounding boxes to be computed. They are
+            expected to be in ``(x1, y1, x2, y2)`` format.
 
     Returns:
-        areas (:obj:`Tensor[N]`): the computed areas
+        :obj:`Tensor[N]`: The computed areas.
     """
     return (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
 
@@ -22,15 +22,15 @@ def bbox_intersection(bboxes1, bboxes2, aligned=False):
     Compute the intersections among bounding boxes.
 
     Args:
-        bboxes1 (:obj:`Tensor[N, 4]`): bboxes to be computed. They are
-            expected to be in (x1, y1, x2, y2) format
-        bboxes2 (:obj:`Tensor[M, 4]`): bboxes to be computed. They are
-            expected to be in (x1, y1, x2, y2) format
-        aligned (bool, optional): whether to only compute the intersection of
-            the aligned bboxes
+        bboxes1 (:obj:`Tensor[N, 4]`): Bounding boxes to be computed. They are
+            expected to be in ``(x1, y1, x2, y2)`` format.
+        bboxes2 (:obj:`Tensor[M, 4]`): Bounding boxes to be computed. They are
+            expected to be in ``(x1, y1, x2, y2)`` format.
+        aligned (bool, optional): Whether to only compute the intersections
+            among aligned bounding boxes. Default: ``False``.
 
     Returns:
-        inter (:obj:`Tensor[N, M]`): the computed intersection values
+        :obj:`Tensor[N, M]`: The computed intersection values.
     """
     if aligned:
         lt = torch.max(bboxes1[:, :2], bboxes2[:, :2])
@@ -53,15 +53,15 @@ def bbox_iou(bboxes1, bboxes2, aligned=False):
     Compute the intersection-over-unions (IoUs) among bounding boxes.
 
     Args:
-        bboxes1 (:obj:`Tensor[N, 4]`): bboxes to be computed. They are
-            expected to be in (x1, y1, x2, y2) format
-        bboxes2 (:obj:`Tensor[M, 4]`): bboxes to be computed. They are
-            expected to be in (x1, y1, x2, y2) format
-        aligned (bool, optional): whether to only compute the IoU of the
-            aligned bboxes
+        bboxes1 (:obj:`Tensor[N, 4]`): Bounding boxes to be computed. They are
+            expected to be in ``(x1, y1, x2, y2)`` format.
+        bboxes2 (:obj:`Tensor[M, 4]`): Bounding boxes to be computed. They are
+            expected to be in ``(x1, y1, x2, y2)`` format.
+        aligned (bool, optional): Whether to only compute the IoU among
+            aligned bounding boxes. Default: ``False``.
 
     Returns:
-        iou (:obj:`Tensor[N, M]`): the computed pairwise IoU values
+        :obj:`Tensor[N, M]`: The computed pairwise IoU values.
     """
     area1 = bbox_area(bboxes1)
     area2 = bbox_area(bboxes2)
@@ -77,15 +77,15 @@ def bbox_iof(bboxes1, bboxes2, aligned=False):
     Compute the intersection-over-foregrounds (IoFs) among bounding boxes.
 
     Args:
-        bboxes1 (:obj:`Tensor[N, 4]`): bboxes to be computed. They are
-            expected to be in (x1, y1, x2, y2) format
-        bboxes2 (:obj:`Tensor[M, 4]`): bboxes to be computed. They are
-            expected to be in (x1, y1, x2, y2) format
-        aligned (bool, optional): whether to only compute the IoF of the
-            aligned bboxes
+        bboxes1 (:obj:`Tensor[N, 4]`): Bounding boxes to be computed. They are
+            expected to be in ``(x1, y1, x2, y2)`` format.
+        bboxes2 (:obj:`Tensor[M, 4]`): Bounding boxes to be computed. They are
+            expected to be in ``(x1, y1, x2, y2)`` format.
+        aligned (bool, optional): Whether to only compute the IoF among
+            aligned bounding boxes. Default: ``False``.
 
     Returns:
-        iof (:obj:`Tensor[N, M]`): the computed pairwise IoF values
+        :obj:`Tensor[N, M]`: The computed pairwise IoF values.
     """
     area_forground = bbox_area(bboxes1)
 
@@ -101,13 +101,13 @@ def remove_small_bboxes(bboxes, min_size):
     the minimum size.
 
     Args:
-        bboxes (:obj:`Tensor[N, 4]`): bboxes to be computed. They are expected
-            to be in (x1, y1, x2, y2) format.
-        min_size (float): the minimum size
+        bboxes (:obj:`Tensor[N, 4]`): Bounding boxes to be computed. They are
+            expected to be in ``(x1, y1, x2, y2)`` format.
+        min_size (float): The minimum size of bounding boxes.
 
     Returns:
-        keep (:obj:`Tensor[K]`): indices of the bboxes that have both sides
-            larger than `min_size`
+        :obj:`Tensor[K]`: Indices of the bounding boxes that have both sides \
+            larger than ``min_size``.
     """
     ws, hs = bboxes[:, 2] - bboxes[:, 0], bboxes[:, 3] - bboxes[:, 1]
 

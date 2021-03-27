@@ -7,7 +7,7 @@ from .utils import *  # noqa: F401,F403
 
 try:
     from .image import *  # noqa: F401,F403
-except ImportError:
+except ModuleNotFoundError:
     warnings.warn("Please install opencv-python to enable 'nncore.image'")
 
 __version__ = '0.0.6'

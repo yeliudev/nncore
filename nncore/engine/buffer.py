@@ -10,26 +10,18 @@ import nncore
 @nncore.bind_getter('max_size')
 class Buffer(object):
     """
-    A buffer that can track a series of values and provide access to smoothed
+    A buffer that tracks a series of values and provide access to smoothed
     scalar values over a window.
 
     Args:
-        max_size (int, optional): maximal number of values that can be stored
+        max_size (int, optional): Maximal number of values that can be stored
             in the buffer. When the capacity of the buffer is exhausted, old
-            values will be removed.
-        logger (:obj:`logging.Logger` or str or None, optional): the potential
-            logger or name of the logger to be used
+            values will be removed. Default: ``100000``.
+        logger (:obj:`logging.Logger` or str or None, optional): The potential
+            logger or name of the logger to be used. Default: ``None``.
     """
 
     def __init__(self, max_size=100000, logger=None):
-        """
-        Args:
-            max_length (int, optional): maximal number of values that can be
-                stored in the buffer. When the capacity of the buffer is
-                exhausted, old values will be removed.
-            logger (:obj:`logging.Logger` or str or None, optional): the
-                potential logger or name of the logger to be used
-        """
         self._max_size = max_size
         self._logger = logger
         self._data = OrderedDict()
@@ -57,23 +49,25 @@ class Buffer(object):
         Return the values in the buffer according to the key.
 
         Args:
-            key (str): the key of the values
+            key (str): The key of the values.
+            default (any, optional): The default return value when the key is
+                not in the buffer. Default: ``None``.
 
         Returns:
-            values (list): the values in the buffer according to the key
+            list: The values in the buffer according to the key.
         """
         return self._data.get(key, default=default)
 
     def update(self, key, value, warning=True):
         """
-        Add a new value. If the length of the buffer exceeds `self._max_size`,
-        the oldest element will be removed from the buffer.
+        Add a new value. If the length of the buffer exceeds
+        ``self._max_size``, the oldest element will be removed from the buffer.
 
         Args:
-            key (str): the key of the values
-            value (number): the value of the values
-            warning (bool, optional): whether to show warning when deleting
-                values
+            key (str): The key of the values.
+            value (number): The new value of the values.
+            warning (bool, optional): Whether to show warning when deleting
+                values. Default: ``True``.
         """
         if key not in self._data:
             self._data[key] = []
@@ -95,10 +89,12 @@ class Buffer(object):
         Return and remove the values in the buffer according to the key.
 
         Args:
-            key (str): the key of the values
+            key (str): The key of the values.
+            default (any, optional): The default return value when the key is
+                not in the buffer. Default: ``None``.
 
         Returns:
-            values (list): the values in the buffer according to the key
+            list: The values in the buffer according to the key.
         """
         return self._data.pop(key, default=default)
 
@@ -107,7 +103,7 @@ class Buffer(object):
         Return the number of values according to the key.
 
         Args:
-            key (str): the key of the values
+            key (str): The key of the values.
         """
         return len(self._data[key])
 
@@ -119,24 +115,25 @@ class Buffer(object):
 
     def latest(self, key):
         """
-        Return the latest value added to the buffer.
+        Return the latest value in the buffer.
 
         Args:
-            key (str): the key of the values
+            key (str): The key of the values.
         """
         return self._data[key][-1]
 
     def median(self, key, window_size=None):
         """
-        Return the median of the latest `window_size` values in the buffer.
+        Return the median of the latest ``window_size`` values in the buffer.
 
         Args:
-            key (str): the key of the values
-            window_size (int or None, optional): the window_size of the values
-                to be computed
+            key (str): The key of the values.
+            window_size (int or None, optional): The window size of the values
+                to be computed. If ``None``, all the values will be taken into
+                account. Default: ``None``.
 
         Returns:
-            median (number): the median of the latest `window_size` values
+            float: The median of the latest ``window_size`` values.
         """
         if window_size is None or window_size > len(self._data[key]):
             window_size = len(self._data[key])
@@ -155,15 +152,16 @@ class Buffer(object):
 
     def mean(self, key, window_size=None):
         """
-        Return the mean of the latest `window_size` values in the buffer.
+        Return the mean of the latest ``window_size`` values in the buffer.
 
         Args:
-            key (str): the key of the values
-            window_size (int or None, optional): the window_size of the values
-                to be computed
+            key (str): The key of the values.
+            window_size (int or None, optional): The window size of the values
+                to be computed. If ``None``, all the values will be taken into
+                account. Default: ``None``.
 
         Returns:
-            mean (number): the mean of the latest `window_size` values
+            float: The mean of the latest ``window_size`` values.
         """
         if window_size is None or window_size > len(self._data[key]):
             window_size = len(self._data[key])
@@ -178,15 +176,16 @@ class Buffer(object):
 
     def sum(self, key, window_size=None):
         """
-        Return the sum of the latest `window_size` values in the buffer.
+        Return the sum of the latest ``window_size`` values in the buffer.
 
         Args:
-            key (str): the key of the values
-            window_size (int or None, optional): the window_size of the values
-                to be computed
+            key (str): The key of the values.
+            window_size (int or None, optional): The window size of the values
+                to be computed. If ``None``, all the values will be taken into
+                account. Default: ``None``.
 
         Returns:
-            sum (number): the sum of the latest `window_size` values
+            float: The sum of the latest ``window_size`` values.
         """
         if window_size is None or window_size > len(self._data[key]):
             window_size = len(self._data[key])
@@ -201,19 +200,21 @@ class Buffer(object):
 
     def avg(self, key, by='_num_samples', window_size=None):
         """
-        Return the average of the latest `window_size` values in the buffer.
+        Return the average of the latest ``window_size`` values in the buffer.
         Note that since not all the values in the buffer are count from the
         same number of samples, the exact average of these values should be
         computed with the number of samples.
 
         Args:
-            key (str): the key of the values
-            by (str, optional): the key of the number of samples
-            window_size (int or None, optional): the window_size of the values
-                to be computed
+            key (str): The key of the values.
+            by (str, optional): The key of number of samples. Default:
+                ``'_num_samples'``.
+            window_size (int or None, optional): The window size of the values
+                to be computed. If ``None``, all the values will be taken into
+                account. Default: ``None``.
 
         Returns:
-            avg (number): the average of the latest `window_size` values
+            float: The average of the latest ``window_size`` values.
         """
         if window_size is None or window_size > len(self._data[key]):
             window_size = len(self._data[key])

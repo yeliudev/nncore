@@ -33,14 +33,14 @@ def load(name_or_file, format=None, **kwargs):
     Load data from json/yaml/pickle/hdf5 files.
 
     Args:
-        name_or_file (str or file object): name of the file or a file object
-        format (str, optional): if not specified, the file format will be
-            inferred from the file extension, otherwise use the specified one.
-            Currently supported formats include `json`, `yaml/yml`,
-            `pickle/pkl` and `hdf5/h5`.
+        name_or_file (str or file object): Path to the file or a file object.
+        format (str, optional): Format of the file. If ``None``, the file
+            format will be inferred from the file extension. Currently
+            supported formats include ``json``, ``yaml/yml``, ``pickle/pkl``
+            and ``hdf5/h5``. Default: ``None``.
 
     Returns:
-        obj (any): the loaded object
+        any: The loaded data.
     """
     format = format or name_or_file.split('.')[-1]
     handler = _get_handler(format)
@@ -60,13 +60,14 @@ def dump(obj, name_or_file, format=None, overwrite=False, **kwargs):
     Dump data to json/yaml/pickle/hdf5 files.
 
     Args:
-        obj (any): the object to be dumped
-        name_or_file (str or file object): name of the file or a file object
-        format (str, optional): if not specified, the file format will be
-            inferred from the file extension, otherwise use the specified one.
-            Currently supported formats include `json`, `yaml/yml`,
-            `pickle/pkl` and `hdf5/h5`.
-        overwrite (bool, optional): whether to overwrite it if the file exists
+        obj (any): The object to be dumped.
+        name_or_file (str or file object): Path to the file or a file object.
+        format (str, optional): Format of the file. If ``None``, the file
+            format will be inferred from the file extension. Currently
+            supported formats include ``json``, ``yaml/yml``, ``pickle/pkl``
+            and ``hdf5/h5``. Default: ``None``.
+        overwrite (bool, optional): Whether to overwrite it if the file exists.
+            Default: ``False``.
     """
     format = format or name_or_file.split('.')[-1]
     if format in ('hdf5', 'h5') and not isinstance(obj, np.ndarray):
@@ -97,12 +98,13 @@ def loads(string, format='pickle', **kwargs):
     Load data from a json/yaml/pickle style string.
 
     Args:
-        string (str or btyearray): string of the file
-        format (str, optional): format of the string. Currently supported
-            formats include `json`, `yaml/yml`, and `pickle/pkl`.
+        string (str or btyearray): String of the data.
+        format (str, optional): Format of the string. Currently supported
+            formats include ``json``, ``yaml/yml`` and ``pickle/pkl``. Default:
+            ``'pickle'``.
 
     Returns:
-        obj (any): the loaded object
+        any: The loaded data.
     """
     assert format not in ('hdf5', 'h5')
     handler = _get_handler(format)
@@ -114,12 +116,13 @@ def dumps(obj, format='pickle', **kwargs):
     Dump data to a json/yaml/pickle style string.
 
     Args:
-        obj (any): the python object to be dumped
-        format (str, optional): format of the string. Currently supported
-            formats include `json`, `yaml/yml`, and `pickle/pkl`.
+        obj (any): The object to be dumped.
+        format (str, optional): Format of the string. Currently supported
+            formats include ``json``, ``yaml/yml`` and ``pickle/pkl``. Default:
+            ``'pickle'``.
 
     Returns:
-        string (str): the dumped string
+        str: The dumped string.
     """
     assert format not in ('hdf5', 'h5')
     handler = _get_handler(format)
@@ -128,17 +131,21 @@ def dumps(obj, format='pickle', **kwargs):
 
 def list_from_file(filename, offset=0, separator=',', max_length=-1):
     """
-    Load a text file and parse the content as a list of tuples or strings.
+    Load a text file and parse the content as a ``list`` of ``tuples`` or
+    ``str``.
 
     Args:
-        filename (str): name of the file to be loaded
-        offset (int, optional): the offset of lines
-        separator (str or None, optional): the separator to be used to parse
-            tuples. If `None`, each line would be treated as a string.
-        max_length (int, optional): the maximum number of lines to be loaded
+        filename (str): Path to the file to be loaded.
+        offset (int, optional): The offset of line numbers. Default: ``0``.
+        separator (str or None, optional): The separator to be used to parse
+            tuples. If ``None``, each line would be treated as a ``str``.
+            Default: ``','``.
+        max_length (int, optional): The maximum number of lines to be loaded.
+            ``-1`` means all the lines from the file will be loaded. Default:
+            ``-1``.
 
     Returns:
-        out_list (list[str]): the loaded list
+        list[str]: The loaded string list.
     """
     out_list, count = [], 0
     with _open(filename, 'r') as f:
@@ -159,17 +166,20 @@ def open(file=None, mode='r', format=None, **kwargs):
     """
     Open a file and return a file object. This method can be used as a function
     or a decorator. When used as a decorator, the function to be decorated
-    should receive the handler using an argument named `f`. File and mode can
-    be overrided during calls using the arguments `file` and `mode`. Argument
-    `file` and `format` should not be `None` at the same time.
+    should receive the handler using an argument named ``f``. File and mode can
+    be overrided during calls using the arguments ``file`` and ``mode``.
+    Argument ``file`` and ``format`` should not be ``None`` at the same time.
 
     Args:
-        file (str or None, optional): name of the file to be loaded
-        mode (str, optional): the loading mode to be used
-        format (str or None, optional): format of the file
+        file (str or None, optional): Path to the file to be loaded.
+        mode (str, optional): The loading mode to be used. Default: ``'r'``.
+        format (str, optional): Format of the file. If ``None``, the file
+            format will be inferred from the file extension. Currently
+            supported formats include ``json``, ``yaml/yml``, ``pickle/pkl``
+            and ``hdf5/h5``. Default: ``None``.
 
     Returns:
-        handler (file object): the opened file object
+        file-like object: The opened file object.
     """
     assert file is not None or format is not None
     format = format or file.split('.')[-1]

@@ -12,18 +12,24 @@ MASSAGE_PASSING_LAYERS = nncore.Registry('massage passing layer')
 @MASSAGE_PASSING_LAYERS.register()
 class GATConv(nn.Module):
     """
-    Graph Attention Layer introduced in https://arxiv.org/abs/1708.02002.
+    Graph Attention Layer introduced in [1].
 
     Args:
-        in_features (int): number of input features
-        out_features (int): number of output features
-        heads (int, optional): number of attention heads
-        dropout (float, optional): the probability of dropping elements
-        negative_slope (float, optional): the negative slope of `LeakyReLU`
-        concat (bool, optional): whether to concatenate the features from
-            different attention heads
-        residual (bool, optional): whether to add residual connections
-        bias (bool, optional): whether to add the bias term
+        in_features (int): Number of input features.
+        out_features (int): Number of output features.
+        heads (int, optional): Number of attention heads. Default: ``1``.
+        dropout (float, optional): The probability of dropping elements.
+            Default: ``0``.
+        negative_slope (float, optional): The negative slope of ``LeakyReLU``.
+            Default: ``0.2``.
+        concat (bool, optional): Whether to concatenate the features from
+            different attention heads. Default: ``True``.
+        residual (bool, optional): Whether to add residual connections.
+            Default: ``True``.
+        bias (bool, optional): Whether to add the bias term. Default: ``True``.
+
+    References:
+        1. Lin et al. (https://arxiv.org/abs/1710.10903)
     """
 
     def __init__(self,

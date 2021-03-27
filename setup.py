@@ -1,6 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-import os.path as osp
+import os
 import re
 from platform import system
 
@@ -16,7 +16,7 @@ OPENCV_INSTALL_REQUIRES = 'opencv-python-headless>=3', 'opencv-python>=3'
 
 
 def get_version():
-    version_file = osp.join('nncore', '__init__.py')
+    version_file = os.path.join('nncore', '__init__.py')
     with open(version_file, encoding='utf-8') as f:
         lines = f.readlines()
     for line in lines:
@@ -70,4 +70,5 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=get_install_requires(),
+    extras_require={'docs': ['torch>=1.6', 'torchvision>=0.7']},
     packages=find_packages(exclude=('.github', 'examples', 'tests')))

@@ -34,24 +34,30 @@ class Engine(object):
     writing, etc.) done automatically.
 
     Args:
-        model (:obj:`nn.Module`): the model to be trained or tested. The
-            `forward` method of the model should return a `dict` containing
-            `_num_samples` denoting the number of samples in the current batch.
-        data_loaders (dict): the data loaders for training, validating and
-            testing. It should be in the format of `dict(train=train_loader,
-            val=val_loader, test=test_loader)`.
-        stages (dict, list[dict], optional): the stage config or list of stage
-            configs to be scheduled.
-        hooks (list[:obj:`Hook`] or list[dict] or list[str], optional): a list
-            of hooks to be registered
-        batch_processor (callable, optional): a customized callable method
+        model (:obj:`nn.Module`): The model to be trained or tested. The
+            ``forward`` method of the model should return a ``dict`` containing
+            ``_num_samples`` indicating the number of samples in the current
+            batch.
+        data_loaders (dict): The data loaders for training, validating and
+            testing. It should be in the format of
+            ``dict(train=train_loader, val=val_loader, test=test_loader)``.
+        stages (dict, list[dict], optional): The stage config or list of stage
+            configs to be scheduled. Default: ``_DEFAULT_STAGES``.
+        hooks (list[:obj:`Hook`] or list[dict] or list[str], optional): The
+            list of hooks to be registered. Each hook could be represented as a
+            :obj:`Hook` object, a ``dict`` or a ``str``. Default:
+            ``_DEFAULT_HOOKS``.
+        batch_processor (callable, optional): A customized callable method
             that processes a data batch. It should be in the format of
-            `batch_processor(model, data, mode, **kwargs) -> dict` where mode
-            could be `train`, `val` or `test`.
-        buffer_size (int, optional): maximum size of the buffer
-        logger (:obj:`logging.Logger` or str or None, optional): the logger or
-            name of the logger to be used
-        work_dir (str, optional): the working directory to be used
+            ``batch_processor(model, data, mode, **kwargs) -> dict`` where mode
+            could be ``train``, ``val`` or ``test``. If ``None``, the default
+            batch processors will be used. Default: ``None``.
+        buffer_size (int, optional): Maximum size of the buffer. Default:
+            ``100000``.
+        logger (:obj:`logging.Logger` or str or None, optional): The logger or
+            name of the logger to be used. Default: ``None``.
+        work_dir (str, optional): Path to the working directory. If ``None``,
+            the default working directory will be used Default: ``None``.
     """
 
     def __init__(self,
@@ -131,12 +137,14 @@ class Engine(object):
         Register a hook into the engine.
 
         Args:
-            hook (:obj:`Hook` or dict or str or list[:obj:`Hook`] or list[dict]
-                or list[str]): the hook or list of hooks to be registered
-            before (str, optional): name of the hook to be inserted before. If
-                `None`, the new hook will be added to the end of hook list
-            overwrite (bool, optional): whether to overwrite the old hook with
-                the same name if exists
+            hook (list or :obj:`Hook` or dict or str): The hook or list of
+                hooks to be registered. Each hook could be represented as a
+                :obj:`Hook` object, a ``dict`` or a ``str``.
+            before (str, optional): Name of the hook to be inserted before. If
+                ``None``, the new hook will be added to the end of hook list.
+                Default: ``None``.
+            overwrite (bool, optional): Whether to overwrite the old hook with
+                the same name if exists. Default: ``True``.
         """
         if isinstance(hook, (list, tuple)):
             for h in hook:
@@ -173,8 +181,8 @@ class Engine(object):
         Build an optimizer for the engine.
 
         Args:
-            optimizer (any): an optimizer object or a `dict` used for
-                constructing the optimizer
+            optimizer (any): The optimizer object or a ``dict`` used for
+                constructing the optimizer.
         """
         if isinstance(optimizer, dict):
             self.optimizer = nncore.build_object(
@@ -189,11 +197,12 @@ class Engine(object):
         Load checkpoint from a file or an URL.
 
         Args:
-            checkpoint (dict or str): a `dict`, filename, URL or
-                `torchvision://<model_name>` string indicating the checkpoint
-            strict (bool, optional): whether to allow different params for the
-                model and checkpoint. If `True`, raise an error when the
-                params do not match exactly.
+            checkpoint (dict or str): A ``dict``, filename, URL or
+                ``torchvision://<model_name>`` string indicating the
+                checkpoint.
+            strict (bool, optional): Whether to allow different params for the
+                model and checkpoint. If ``True``, raise an error when the
+                params do not match exactly. Default: ``False``.
         """
         load_checkpoint(
             self.model,
@@ -212,11 +221,12 @@ class Engine(object):
         Resume from a checkpoint file.
 
         Args:
-            checkpoint (dict or str): a `dict`, filename, URL or
-                `torchvision://<model_name>` string indicating the checkpoint
-            strict (bool, optional): whether to allow different params for the
-                model and checkpoint. If `True`, raise an error when the
-                params do not match exactly.
+            checkpoint (dict or str): A `dict`, filename, URL or
+                ``torchvision://<model_name>`` string indicating the
+                checkpoint.
+            strict (bool, optional): Whether to allow different params for the
+                model and checkpoint. If ``True``, raise an error when the
+                params do not match exactly. Default: ``False``.
         """
         if isinstance(checkpoint, str):
             checkpoint = get_checkpoint(
@@ -393,7 +403,8 @@ class Engine(object):
         Launch engine.
 
         Args:
-            eval_mode (bool, optional): whether to run evaluation only
+            eval_mode (bool, optional): Whether to only run evaluation.
+                Default: ``False``.
         """
         self._model_cfg = kwargs
 

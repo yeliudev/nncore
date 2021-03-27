@@ -21,9 +21,9 @@ class Hook(object):
     Base class for hooks that can be registered into :obj:`Engine`.
 
     Each hook can implement several methods. In hook methods, users should
-    provide an argument `engine` to access more properties about the context.
+    provide an argument ``engine`` to access more properties about the context.
     All hooks will be called one by one according to the order in
-    `engine.hooks`.
+    ``engine.hooks``.
     """
 
     def __init__(self, name=None):

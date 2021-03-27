@@ -7,14 +7,17 @@ import torch.nn.functional as F
 
 class GHMCLoss(nn.Module):
     """
-    Gradient Harmonized Classification Loss introduced in
-    https://arxiv.org/abs/1811.05181.
+    Gradient Harmonized Classification Loss introduced in [1].
 
     Args:
-        bins (int, optional): number of the unit regions for distribution
-            calculation
-        momentum (float, optional): the parameter for moving average
-        loss_weight (float, optional): weight of the loss
+        bins (int, optional): Number of the unit regions for distribution
+            calculation. Default: ``10``.
+        momentum (float, optional): The parameter for moving average. Default:
+            ``0``.
+        loss_weight (float, optional): Weight of the loss. Default: ``1``.
+
+    References:
+        1. Li et al. (https://arxiv.org/abs/1811.05181)
     """
 
     def __init__(self, bins=10, momentum=0, loss_weight=1):

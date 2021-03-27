@@ -11,20 +11,20 @@ _COLOR_SPACES = {
 }
 
 
-def imread(filename, flag='color', to_rgb=False):
+def imread(filename, flag='color', to_rgb=True):
     """
     Read an image from a file.
 
     Args:
-        filename (str): name of the image file
-        flag (str or int, optional): flags specifying the color type of the
-            loaded image. Currently supported flags include `color`,
-            `grayscale`, and `unchanged`.
-        to_rgb (bool, optional): whether to convert channel order from `bgr` to
-            `rgb`.
+        filename (str): Path to the image file.
+        flag (str or int, optional): Flags specifying the color type of the
+            loaded image. Currently supported flags include ``'color'``,
+            ``'grayscale'`` and ``'unchanged'``. Default: ``'color'``.
+        to_rgb (bool, optional): Whether to convert channel order from ``bgr``
+            to ``rgb``. Default: ``True``.
 
     Returns:
-        img (:obj:`np.ndarray`): the loaded image array
+        :obj:`np.ndarray`: The loaded image array.
     """
     if not isinstance(filename, str):
         raise TypeError(
@@ -46,12 +46,13 @@ def imwrite(img, filename, params=None):
     Write an image to a file.
 
     Args:
-        img (:obj:`np.ndarray`): the image array to be written
-        filename (str): name of the image file
-        params (None or list, optional): same as OpenCV's `imwrite` interface
+        img (:obj:`np.ndarray`): The image array to be written.
+        filename (str): Path to the image file.
+        params (list or None, optional): Same as :meth:``cv2.imwrite``
+            interface. Default: ``None``.
 
     Returns:
-        flag (bool): successful or not
+        bool: Successful or not.
     """
     nncore.mkdir(nncore.dir_name(filename))
     return cv2.imwrite(filename, img, params)

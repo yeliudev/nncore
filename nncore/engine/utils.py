@@ -67,11 +67,11 @@ def generate_random_seed(length=8):
     Generate a random seed.
 
     Args:
-        length (int, optional): the expected number of digits of the random
-            seed. The number must equal or be larger than 8.
+        length (int, optional): The expected number of digits of the random
+            seed. The number must equal or be larger than 8. Default: ``8``.
 
     Returns:
-        seed (int): the generated random seed
+        int: The generated random seed.
     """
     if length < 8:
         raise ValueError(
@@ -84,16 +84,21 @@ def generate_random_seed(length=8):
 
 def set_random_seed(seed=None, deterministic=False, benchmark=False):
     """
-    Set random seed for `random`, `numpy` and `torch` packages. If `seed` is
-    `None`, this method will generate and return a new random seed.
+    Set random seed for ``random``, ``numpy`` and ``torch`` packages. If
+    ``seed`` is ``None``, this method will generate and return a new random
+    seed.
 
     Args:
-        seed (int or None, optional): the potential random seed to be used
-        deterministic (bool, optional): whether to use deterministic mode
-        benchmark (bool, optional): whether to use benchmark mode
+        seed (int or None, optional): The potential random seed to be used.
+            If ``None``, a new random seed will be generated. Default:
+            ``None``.
+        deterministic (bool, optional): Whether to enable deterministic mode.
+            Default: ``False``.
+        benchmark (bool, optional): Whether to enable benchmark mode. Default:
+            ``False``.
 
     Returns:
-        seed (int): the actually used random seed
+        int: The actually used random seed.
     """
     if seed is None:
         seed = generate_random_seed()
@@ -114,12 +119,13 @@ def get_checkpoint(file_or_url, map_location=None, **kwargs):
     Get checkpoint from a file or an URL.
 
     Args:
-        file_or_url (str): a filename or an URL
-        map_location (str or None, optional): same as `torch.load`
+        file_or_url (str): The filename or URL of the checkpoint.
+        map_location (str or None, optional): Same as :meth:`torch.load`.
+            Default: ``None``.
 
     Returns:
-        checkpoint (dict or OrderedDict): the loaded checkpoint. It can be
-            either an OrderedDict storing model weights or a dict containing
+        dict or OrderedDict: The loaded checkpoint. It can be either an \
+            ``OrderedDict`` storing model weights or a ``dict`` containing \
             other information, which depends on the checkpoint.
     """
     if file_or_url.startswith('torchvision://'):
@@ -149,15 +155,17 @@ def load_checkpoint(model,
     Load checkpoint from a file or an URL.
 
     Args:
-        model (Module): the module to load checkpoint
-        checkpoint (dict or str): a `dict`, filename, URL or
-            `torchvision://<model_name>` string indicating the checkpoint
-        map_location (str or None, optional): same as `torch.load`
-        strict (bool, optional): whether to allow different params for the
-            model and checkpoint. If `True`, raise an error when the params do
-            not match exactly.
-        logger (:obj:`logging.Logger` or str or None, optional): the logger or
-            name of the logger for displaying error messages
+        model (:obj:`nn.Module`): The module to load checkpoint.
+        checkpoint (dict or str): A ``dict``, filename, URL or
+            ``torchvision://<model_name>`` string indicating the checkpoint.
+        map_location (str or None, optional): Same as :meth:``torch.load``
+            interface.
+        strict (bool, optional): Whether to allow different params for the
+            model and checkpoint. If ``True``, raise an error when the params
+            do not match exactly. Default: ``False``.
+        logger (:obj:`logging.Logger` or str or None, optional): The logger or
+            name of the logger for displaying error messages. Default:
+            ``None``.
     """
     if isinstance(checkpoint, str):
         checkpoint = get_checkpoint(
@@ -188,15 +196,16 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     """
     Save checkpoint to a file.
 
-    The checkpoint object will have 3 fields: `meta`, `state_dict`, and
-    `optimizer`, where `meta` contains the version of nncore and the time info
-    by default.
+    The checkpoint object will have 3 fields: ``meta``, ``state_dict`` and
+    ``optimizer``, where ``meta`` contains the version of nncore and the time
+    info by default.
 
     Args:
-        model (:obj:`nn.Module`): the model whose params are to be saved
-        filename (str): name of the checkpoint file
-        optimizer (:obj:`Optimizer`, optional): the optimizer to be saved
-        meta (dict, optional): the metadata to be saved
+        model (:obj:`nn.Module`): The model whose params are to be saved.
+        filename (str): Path to the checkpoint file.
+        optimizer (:obj:`optim.Optimizer`, optional): The optimizer to be
+            saved. Default: ``None``.
+        meta (dict, optional): The metadata to be saved. Default: ``None``.
     """
     if meta is None:
         meta = dict()
