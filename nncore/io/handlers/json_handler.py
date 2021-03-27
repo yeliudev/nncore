@@ -6,6 +6,9 @@ from .base import FileHandler
 
 
 class JsonHandler(FileHandler):
+    """
+    Handler for JSON files.
+    """
 
     def load_from_file(self, file, **kwargs):
         return json.load(file, **kwargs)

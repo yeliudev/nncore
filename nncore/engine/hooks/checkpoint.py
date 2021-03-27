@@ -8,6 +8,21 @@ from .base import HOOKS, Hook
 
 @HOOKS.register()
 class CheckpointHook(Hook):
+    """
+    Save checkpoints every specified epoch during training.
+
+    Args:
+        interval (int, optional): The interval of saving checkpoints. Default:
+            ``1``.
+        save_optimizer (bool, optional): Whether to incorperate optimizer
+            statuses into checkpoints. Default: ``True``.
+        create_symlink (bool, optional): Whether to create a symlink to the
+            latest checkpoint. This argument is invalid on Windows due to the
+            limitations of its file system. Default: ``False``.
+        out (str or None, optional): Path to the output directory. If ``None``,
+            :obj:`enging.work_dir` will be used as the default path. Default:
+            ``None``.
+    """
 
     def __init__(self,
                  interval=1,

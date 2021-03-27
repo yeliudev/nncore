@@ -14,6 +14,9 @@ except ImportError:
 
 
 class YamlHandler(FileHandler):
+    """
+    Handler for YAML files.
+    """
 
     def load_from_file(self, file, **kwargs):
         return yaml.load(file, Loader=Loader, **kwargs)

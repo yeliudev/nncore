@@ -35,7 +35,7 @@ class Engine(object):
 
     Args:
         model (:obj:`nn.Module`): The model to be trained or tested. The
-            ``forward`` method of the model should return a ``dict`` containing
+            :obj:`forward` method of the model should return a dict containing
             ``_num_samples`` indicating the number of samples in the current
             batch.
         data_loaders (dict): The data loaders for training, validating and
@@ -45,8 +45,7 @@ class Engine(object):
             configs to be scheduled. Default: ``_DEFAULT_STAGES``.
         hooks (list[:obj:`Hook`] or list[dict] or list[str], optional): The
             list of hooks to be registered. Each hook could be represented as a
-            :obj:`Hook` object, a ``dict`` or a ``str``. Default:
-            ``_DEFAULT_HOOKS``.
+            :obj:`Hook`, a dict or a str. Default: ``_DEFAULT_HOOKS``.
         batch_processor (callable, optional): A customized callable method
             that processes a data batch. It should be in the format of
             ``batch_processor(model, data, mode, **kwargs) -> dict`` where mode
@@ -139,7 +138,7 @@ class Engine(object):
         Args:
             hook (list or :obj:`Hook` or dict or str): The hook or list of
                 hooks to be registered. Each hook could be represented as a
-                :obj:`Hook` object, a ``dict`` or a ``str``.
+                :obj:`Hook`, a dict or a str.
             before (str, optional): Name of the hook to be inserted before. If
                 ``None``, the new hook will be added to the end of hook list.
                 Default: ``None``.
@@ -181,7 +180,7 @@ class Engine(object):
         Build an optimizer for the engine.
 
         Args:
-            optimizer (any): The optimizer object or a ``dict`` used for
+            optimizer (any): A :obj:`optim.Optimizer` or a dict used for
                 constructing the optimizer.
         """
         if isinstance(optimizer, dict):
@@ -197,7 +196,7 @@ class Engine(object):
         Load checkpoint from a file or an URL.
 
         Args:
-            checkpoint (dict or str): A ``dict``, filename, URL or
+            checkpoint (dict or str): A dict, a filename, an URL or a
                 ``torchvision://<model_name>`` string indicating the
                 checkpoint.
             strict (bool, optional): Whether to allow different params for the

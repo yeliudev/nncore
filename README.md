@@ -10,7 +10,7 @@
 [![License](https://badgen.net/github/license/yeliudev/nncore?label=License)](https://github.com/yeliudev/nncore/blob/main/LICENSE)
 [![Coveralls](https://badgen.net/coveralls/c/github/yeliudev/nncore/main?label=Coverage)](https://coveralls.io/github/yeliudev/nncore?branch=main)
 [![Gitter](https://badgen.net/badge/Chat/on%20gitter/cyan?icon=gitter)](https://gitter.im/nncore-dev/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
-[![Codacy](https://badgen.net/codacy/grade/c55266f7dc904b5d8c31b15bafb1117c?label=Code%20Quality&icon=codacy)](https://www.codacy.com/gh/yeliudev/nncore/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yeliudev/nncore&amp;utm_campaign=Badge_Grade)
+[![Codacy](https://badgen.net/codacy/grade/2a8a24217cfe4263bb6b02298706a237?label=Code%20Quality&icon=codacy)](https://www.codacy.com/gh/yeliudev/nncore/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yeliudev/nncore&amp;utm_campaign=Badge_Grade)
 
 </div>
 

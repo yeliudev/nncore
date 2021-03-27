@@ -44,6 +44,11 @@ def _cosine(base_lr, progress, max_progress, target_lr=0, **kwargs):
 
 @HOOKS.register()
 class LrUpdaterHook(Hook):
+    """
+    Update learning rate every specified step or epoch. Currently supported
+    learning rate schedules include ``step``, ``exp``, ``poly``, ``inv`` and
+    ``cosine``.
+    """
 
     def _base_lr(self, engine):
         return [group['base_lr'] for group in engine.optimizer.param_groups]

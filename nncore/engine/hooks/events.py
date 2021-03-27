@@ -16,6 +16,13 @@ WRITERS = nncore.Registry('writer')
 
 
 class Writer(metaclass=ABCMeta):
+    """
+    Base class for writers that can be incorperated into
+    :obj:`EventWriterHook`.
+
+    The inherited classes must provide a :obj:`write` method to write logs, and
+    optionally override :obj:`open` or :obj:`close` method to handle files.
+    """
 
     def _collect_metrics(self, engine, window_size):
         metrics = OrderedDict()
@@ -57,6 +64,9 @@ class Writer(metaclass=ABCMeta):
 
 @WRITERS.register()
 class CommandLineWriter(Writer):
+    """
+    Write logs to commandline using :obj:`logging.Logger`.
+    """
 
     def write(self, engine, window_size):
         metrics = self._collect_metrics(engine, window_size)
@@ -107,6 +117,13 @@ class CommandLineWriter(Writer):
 
 @WRITERS.register()
 class JSONWriter(Writer):
+    """
+    Write logs to JSON files.
+
+    Args:
+        filename (str, optional): Path to the output JSON file. Default:
+            ``'metrics.json'``.
+    """
 
     def __init__(self, filename='metrics.json'):
         """
@@ -141,15 +158,16 @@ class JSONWriter(Writer):
 @WRITERS.register()
 class TensorboardWriter(Writer):
     """
+    Write logs to Tensorboard.
+
     Args:
         log_dir (str, optional): Directory of the tensorboard logs.
             Default: ``None``.
         input_to_model (any, optional): The input data, data_loader or
             name of the data_loader for constructing the model graph. If
             ``None``, the graph will not be added. Please check
-            :meth:``torch.utils.tensorboard.SummaryWriter.add_graph`` for
-            more details about adding a graph to tensorboard. Default:
-            ``None``.
+            :obj:`torch.utils.tensorboard.SummaryWriter.add_graph` for more
+            details about adding a graph to tensorboard. Default: ``None``.
     """
 
     def __init__(self, log_dir=None, input_to_model=None, **kwargs):
@@ -212,6 +230,20 @@ class TensorboardWriter(Writer):
 
 @HOOKS.register()
 class EventWriterHook(Hook):
+    """
+    Write logs every specified step during training. This hook relies on
+    :obj:`TimerHook` and it works with several :obj:`Writer` objects to log
+    metrics, images, videos, audios, etc. In distributed training, only the
+    main process will write the logs.
+
+    Args:
+        interval (int, optional): The interval of writing logs. Default:
+            ``50``.
+        writers (list[:obj:`Writer`] or list[str], optional): The list of
+            writers or name of writers to be used. Currently supported writers
+            include :obj:`CommandLineWriter`, :obj:`JSONWriter` and
+            :obj:`TensorboardWriter`. Default: ``['CommandLineWriter']``.
+    """
 
     def __init__(self, interval=50, writers=['CommandLineWriter']):
         super(EventWriterHook, self).__init__()

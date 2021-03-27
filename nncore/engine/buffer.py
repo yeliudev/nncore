@@ -61,7 +61,8 @@ class Buffer(object):
     def update(self, key, value, warning=True):
         """
         Add a new value. If the length of the buffer exceeds
-        ``self._max_size``, the oldest element will be removed from the buffer.
+        :obj:`self._max_size`, the oldest element will be removed from the
+        buffer.
 
         Args:
             key (str): The key of the values.

@@ -8,6 +8,14 @@ from .container import DataContainer
 
 
 def collate(batch, samples_per_gpu=-1):
+    """
+    A collate function for :obj:`DataLoader` with :obj:`DataContainer` support.
+
+    Args:
+        batch (any): The batch of data to be collated.
+        samples_per_gpu (int, optional): Number of samples per GPU. ``-1``
+            means moving all the data to a single GPU. Default: ``-1``.
+    """
     if isinstance(batch[0], DataContainer):
         stacked = []
         if samples_per_gpu < 0:

@@ -8,9 +8,9 @@ class Registry(object):
     """
     A registry to map strings to objects.
 
-    Records in the ``self.items`` maintain the registry of objects. For each
+    Records in the :obj:`self.items` maintain the registry of objects. For each
     record, the key is the object name and the value is the object itself. The
-    method :meth:`self.register` can be used as a decorator or a normal
+    method :obj:`self.register` can be used as a decorator or a normal
     function.
 
     Args:
@@ -85,15 +85,15 @@ class Registry(object):
 
 def build_object(cfg, parent, default=None, **kwargs):
     """
-    Initialize an object from a ``dict``.
+    Initialize an object from a dict.
 
-    The ``dict`` must contain a key ``type``, which is a indicating the object
+    The dict must contain a key ``type``, which is a indicating the object
     type. Remaining fields are treated as the arguments for constructing the
     object.
 
     Args:
         cfg (any): The object or object configs.
-        parent (any): The module or a ``list`` of modules which may contain the
+        parent (any): The module or a list of modules which may contain the
             expected object.
         default (any, optional): The default value when the object is not
             found. Default: ``None``.

@@ -131,15 +131,14 @@ def dumps(obj, format='pickle', **kwargs):
 
 def list_from_file(filename, offset=0, separator=',', max_length=-1):
     """
-    Load a text file and parse the content as a ``list`` of ``tuples`` or
-    ``str``.
+    Load a text file and parse the content as a list of tuples or str.
 
     Args:
         filename (str): Path to the file to be loaded.
         offset (int, optional): The offset of line numbers. Default: ``0``.
         separator (str or None, optional): The separator to be used to parse
-            tuples. If ``None``, each line would be treated as a ``str``.
-            Default: ``','``.
+            tuples. If ``None``, each line would be treated as a str. Default:
+            ``','``.
         max_length (int, optional): The maximum number of lines to be loaded.
             ``-1`` means all the lines from the file will be loaded. Default:
             ``-1``.

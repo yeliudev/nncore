@@ -105,12 +105,19 @@ def _scatter_kwargs(inputs, kwargs, target_gpus, dim=0):
 
 
 class NNDataParallel(DataParallel):
+    """
+    A :obj:`nn.DataParallel` class with :obj:`DataContainer` support.
+    """
 
     def scatter(self, inputs, kwargs, device_ids):
         return _scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
 
 class NNDistributedDataParallel(DistributedDataParallel):
+    """
+    A :obj:`nn.DistributedDataParallel` class with :obj:`DataContainer`
+    support.
+    """
 
     def to_kwargs(self, inputs, kwargs, device_id):
         return _scatter_kwargs(inputs, kwargs, [device_id], dim=self.dim)

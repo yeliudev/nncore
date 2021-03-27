@@ -8,6 +8,9 @@ from .base import FileHandler
 
 
 class PickleHandler(FileHandler):
+    """
+    Handler for Pickle files.
+    """
 
     def load_from_file(self, file, **kwargs):
         return joblib.load(file, **kwargs)

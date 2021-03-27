@@ -23,7 +23,7 @@ class Hook(object):
     Each hook can implement several methods. In hook methods, users should
     provide an argument ``engine`` to access more properties about the context.
     All hooks will be called one by one according to the order in
-    ``engine.hooks``.
+    :obj:`engine.hooks`.
     """
 
     def __init__(self, name=None):

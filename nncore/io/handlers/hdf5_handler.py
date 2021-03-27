@@ -6,6 +6,9 @@ from .base import FileHandler
 
 
 class Hdf5Handler(FileHandler):
+    """
+    Handler for HDF5 files.
+    """
 
     def load_from_file(self, file, dataset, **kwargs):
         obj = file.get(dataset, **kwargs)

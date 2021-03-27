@@ -13,6 +13,19 @@ from .base import HOOKS, Hook
 
 @HOOKS.register()
 class OptimizerHook(Hook):
+    """
+    Perform back propagation and update parameters of the model every
+    specified step. This hook supports CPU, single GPU and distributed
+    training.
+
+    Args:
+        interval (int, optional): The interval of updating parameters. Default:
+            ``1``.
+        coalesce (bool, optional): Whether to coalesce the weights in
+            distributed training. Default: ``True``.
+        bucket_size_mb (int, optional): Size of the bucket. ``-1`` means not
+            restricting the bucket size. Default: ``-1``.
+    """
 
     def __init__(self, interval=1, coalesce=True, bucket_size_mb=-1):
         super(OptimizerHook, self).__init__()

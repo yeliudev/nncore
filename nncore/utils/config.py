@@ -15,9 +15,9 @@ from .misc import bind_getter
 
 class CfgNode(OrderedDict):
     """
-    An extended ``OrderedDict`` class with several practical methods.
+    An extended :obj:`OrderedDict` class with several practical methods.
 
-    This class is an extension of the built-in type ``OrderedDict``. The
+    This class is an extension of the built-in type :obj:`OrderedDict`. The
     interface is the same as a dict object and also allows access config values
     as attributes. The input to the init method could be either a single dict
     or several named parameters.
@@ -140,17 +140,17 @@ class CfgNode(OrderedDict):
 @bind_getter('filename')
 class Config(object):
     """
-    A facility for better ``CfgNode`` objects.
+    A facility for better :obj:`CfgNode` objects.
 
-    This class is a wrapper for ``CfgNode`` which can be initialized from a
-    config file. Users can use the static method :meth:`Config.from_file` to
-    create a ``Config`` object.
+    This class is a wrapper for :obj:`CfgNode` which can be initialized from a
+    config file. Users can use the static method :obj:`Config.from_file` to
+    create a :obj:`Config` object.
     """
 
     @staticmethod
     def from_file(filename):
         """
-        Initialize a ``Config`` object from a file.
+        Initialize a :obj:`Config` object from a file.
 
         Args:
             filename (str): Path to the config file. Currently supported

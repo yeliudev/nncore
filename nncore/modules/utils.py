@@ -28,11 +28,11 @@ def fuse_conv_bn(model):
     network structures.
 
     Args:
-        model (:obj:`nn.Module`): The module whose ``conv-bn`` structure to be
+        model (:obj:`nn.Module`): The module whose ``Conv-BN`` structure to be
             fused.
 
     Returns:
-        :obj:`nn.Module`: The module whose ``conv-bn`` structure has been \
+        :obj:`nn.Module`: The module whose ``Conv-BN`` structure has been \
             fused.
     """
     last_conv = None

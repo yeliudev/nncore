@@ -87,7 +87,7 @@ def init_dist(launcher='pytorch', backend='gloo', **kwargs):
         backend (:obj:`dist.Backend` or str, optional): The distribution
             backend to be used. This field should be given as a
             :obj:`dist.Backend` object or a string (e.g. ``'gloo'``) which can
-            also be accessed via ``dist.Backend`` attributes. Depending on
+            also be accessed via :obj:`dist.Backend` attributes. Depending on
             build-time configurations, valid values include ``'gloo'`` and
             ``'nccl'``. If using multiple processes per machine with ``nccl``
             backend, each process must have exclusive access to every GPU it
@@ -147,7 +147,7 @@ def synchronize(group=None):
 
 def all_gather(data, group=None):
     """
-    Perform ``all_gather`` on arbitrary serializable data.
+    Perform :obj:`dist.all_gather` on arbitrary serializable data.
 
     Args:
         data (any): Any serializable object.
@@ -179,7 +179,7 @@ def all_gather(data, group=None):
 
 def gather(data, dst=0, group=None):
     """
-    Perform ``gather`` on arbitrary serializable data.
+    Perform :obj:`dist.gather` on arbitrary serializable data.
 
     Args:
         data (any): Any serializable object.

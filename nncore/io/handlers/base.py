@@ -4,6 +4,12 @@ from abc import ABCMeta, abstractmethod
 
 
 class FileHandler(metaclass=ABCMeta):
+    """
+    Base class for file handlers. The inherited classes must provide the
+    :obj:`load_from_file` and :obj:`dump_to_file` methods, and optionally
+    override :obj:`load_from_str` or :obj:`dump_to_str` to support loading or
+    dumping data to strings.
+    """
 
     @abstractmethod
     def load_from_file(self):

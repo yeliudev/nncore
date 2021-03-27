@@ -9,6 +9,9 @@ from .base import HOOKS, Hook
 
 @HOOKS.register()
 class TimerHook(Hook):
+    """
+    Compute and save timings into :obj:`enging.buffer` during training.
+    """
 
     def __init__(self):
         super(TimerHook, self).__init__()

@@ -70,5 +70,5 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=get_install_requires(),
-    extras_require={'docs': ['torch>=1.6', 'torchvision>=0.7']},
-    packages=find_packages(exclude=('.github', 'examples', 'tests')))
+    extras_require={'docs': ['torch>=1.8', 'torchvision>=0.9']},
+    packages=find_packages(exclude=('.github', 'docs', 'examples', 'tests')))

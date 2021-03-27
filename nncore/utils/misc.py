@@ -36,18 +36,18 @@ def iter_cast(inputs, dst_type, return_type=None):
 
 def list_cast(inputs, dst_type):
     """
-    Cast elements of an iterable object into a ``list`` of some type.
+    Cast elements of an iterable object into a list of some type.
 
-    A partial method of :meth:`iter_cast`.
+    A partial method of :obj:`iter_cast`.
     """
     return iter_cast(inputs, dst_type, return_type=list)
 
 
 def tuple_cast(inputs, dst_type):
     """
-    Cast elements of an iterable object into a ``tuple`` of some type.
+    Cast elements of an iterable object into a tuple of some type.
 
-    A partial method of :meth:`iter_cast`.
+    A partial method of :obj:`iter_cast`.
     """
     return iter_cast(inputs, dst_type, return_type=tuple)
 
@@ -79,25 +79,25 @@ def is_seq_of(seq, expected_type, seq_type=None):
 
 def is_list_of(seq, expected_type):
     """
-    Check whether it is a ``list`` of some type.
+    Check whether it is a list of some type.
 
-    A partial method of :meth:`is_seq_of`.
+    A partial method of :obj:`is_seq_of`.
     """
     return is_seq_of(seq, expected_type, seq_type=list)
 
 
 def is_tuple_of(seq, expected_type):
     """
-    Check whether it is a ``tuple`` of some type.
+    Check whether it is a tuple of some type.
 
-    A partial method of :meth:`is_seq_of`.
+    A partial method of :obj:`is_seq_of`.
     """
     return is_seq_of(seq, expected_type, seq_type=tuple)
 
 
 def slice_list(in_list, lens):
     """
-    Slice a ``list`` into several sub lists by a ``list`` of given length.
+    Slice a list into several sub lists by a list of given length.
 
     Args:
         in_list (list): The list to be sliced.
@@ -125,7 +125,7 @@ def slice_list(in_list, lens):
 
 def concat_list(in_list):
     """
-    Concatenate a ``list`` of ``list`` into a single ``list``.
+    Concatenate a list of list into a single list.
 
     Args:
         in_list (list): The list of list to be merged.
@@ -138,13 +138,13 @@ def concat_list(in_list):
 
 def to_dict_of_list(in_list):
     """
-    Convert a ``list`` of ``dict`` to a ``dict`` of ``list``.
+    Convert a list of dict to a dict of list.
 
     Args:
-        in_list (list): The ``list`` of ``dict`` to be converted.
+        in_list (list): The list of dict to be converted.
 
     Returns:
-        dict: The converted ``dict`` of ``list``.
+        dict: The converted dict of list.
     """
     for i in range(len(in_list) - 1):
         if in_list[i].keys() != in_list[i + 1].keys():
@@ -159,13 +159,13 @@ def to_dict_of_list(in_list):
 
 def to_list_of_dict(in_dict):
     """
-    Convert a ``dict`` of ``list`` to a ``list`` of ``dict``.
+    Convert a dict of list to a list of dict.
 
     Args:
-        in_dict (dict): the ``dict`` of ``list`` to be converted.
+        in_dict (dict): the dict of list to be converted.
 
     Returns:
-        list: The converted ``list`` of ``dict``.
+        list: The converted list of dict.
     """
     values = in_dict.values()
     for i in range(len(in_dict) - 1):
@@ -216,15 +216,20 @@ def bind_getter(*vars):
     Example:
         >>> @bind_getter('name', 'depth')
         >>> class Backbone:
+        ...
         ...     _name = 'ResNet'
         ...     _depth = 50
-        ... # equals to:
+        ...
+        ... # Equals to:
         >>> class Backbone:
+        ...
         ...     _name = 'ResNet'
         ...     _depth = 50
+        ...
         ...     @property
         ...     def name(self):
         ...         return self._name
+        ...
         ...     @property
         ...     def depth(self):
         ...         return self._depth

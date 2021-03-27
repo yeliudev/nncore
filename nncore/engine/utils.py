@@ -120,12 +120,12 @@ def get_checkpoint(file_or_url, map_location=None, **kwargs):
 
     Args:
         file_or_url (str): The filename or URL of the checkpoint.
-        map_location (str or None, optional): Same as :meth:`torch.load`.
-            Default: ``None``.
+        map_location (str or None, optional): Same as the :obj:`torch.load`
+            interface. Default: ``None``.
 
     Returns:
-        dict or OrderedDict: The loaded checkpoint. It can be either an \
-            ``OrderedDict`` storing model weights or a ``dict`` containing \
+        :obj:`OrderedDict` or dict: The loaded checkpoint. It can be either \
+            an :obj:`OrderedDict` storing model weights or a dict containing \
             other information, which depends on the checkpoint.
     """
     if file_or_url.startswith('torchvision://'):
@@ -156,9 +156,9 @@ def load_checkpoint(model,
 
     Args:
         model (:obj:`nn.Module`): The module to load checkpoint.
-        checkpoint (dict or str): A ``dict``, filename, URL or
+        checkpoint (dict or str): A dict, a filename, an URL or a
             ``torchvision://<model_name>`` string indicating the checkpoint.
-        map_location (str or None, optional): Same as :meth:``torch.load``
+        map_location (str or None, optional): Same as the :obj:`torch.load`
             interface.
         strict (bool, optional): Whether to allow different params for the
             model and checkpoint. If ``True``, raise an error when the params

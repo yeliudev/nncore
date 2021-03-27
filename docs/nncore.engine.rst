@@ -1,32 +1,32 @@
 nncore.engine
-=====================
+===================
 
-Hooks
----------------------------
+Engine
+-------------------
 
-.. automodule:: nncore.engine.hooks
+.. automodule:: nncore.engine.engine
    :members:
 
 Buffer
----------------------------
+-------------------
 
 .. automodule:: nncore.engine.buffer
    :members:
 
 Comm
--------------------------
+-------------------
 
 .. automodule:: nncore.engine.comm
    :members:
 
-Engine
----------------------------
+Hooks
+-------------------
 
-.. automodule:: nncore.engine.engine
+.. automodule:: nncore.engine.hooks
    :members:
 
 Utils
---------------------------
+-------------------
 
 .. automodule:: nncore.engine.utils
    :members:

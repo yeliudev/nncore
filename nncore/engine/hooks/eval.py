@@ -5,6 +5,15 @@ from .base import HOOKS, Hook
 
 @HOOKS.register()
 class EvalHook(Hook):
+    """
+    Perform evaluation every specified epoch during training.
+
+    Args:
+        interval (int, optional): The interval of performing evaluation.
+            Default: ``1``.
+        run_test (bool, optional): Whether to run test before performing
+            evaluation. Default: ``False``.
+    """
 
     def __init__(self, interval=1, run_test=False):
         super(EvalHook, self).__init__()

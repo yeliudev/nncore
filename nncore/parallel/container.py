@@ -21,6 +21,22 @@ def _assert_tensor_type(func):
 
 @nncore.bind_getter('data', 'stack', 'pad_value', 'pad_dims', 'to_gpu')
 class DataContainer(object):
+    """
+    A wrapper for data to make it easily be padded and be scattered to
+    different GPUs.
+
+    Args:
+        data (any): The object to be wrapped.
+        stack (bool, optional): Whether to stack the data during scattering.
+            This argument is valid only when the data is a :obj:`torch.Tensor`.
+            Default: ``False``.
+        pad_value (int, optional): The value to be used for padding. Default:
+            ``0``.
+        pad_dims (int, optional): Number of dimensions to be padded. Default:
+            ``2``.
+        to_gpu (bool, optional): Whether to move the data to GPU before
+            feeding it to the model. Default: ``True``.
+    """
 
     def __init__(self,
                  data,

@@ -9,6 +9,19 @@ from .base import HOOK_NAMES, HOOKS, Hook
 
 @HOOKS.register()
 class EmptyCacheHook(Hook):
+    """
+    Empty cache every epoch during training.
+
+    Args:
+        names (list[str]): The list of hook names to empty cache. Expected
+            values include ``'before_launch'``, ``'after_launch'``,
+            ``'before_stage'``, ``'after_stage'``, ``'before_epoch'``,
+            ``'after_epoch'``, ``'before_iter'``, ``'after_iter'``,
+            ``'before_train_epoch'``, ``'after_train_epoch'``,
+            ``'before_val_epoch'``, ``'after_val_epoch'``,
+            ``'before_train_iter'``, ``'after_train_iter'``,
+            ``'before_val_iter'`` and ``'after_val_iter'``
+    """
 
     def __init__(self, names=[]):
         super(EmptyCacheHook, self).__init__()

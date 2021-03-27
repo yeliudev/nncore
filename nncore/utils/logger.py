@@ -38,9 +38,9 @@ def get_logger(logger_or_name=None,
 
     If the logger has not been initialized, this method will initialize the
     logger by adding one or two handlers, otherwise the initialized logger will
-    be directly returned. During initialization, a ``StreamHandler`` will
+    be directly returned. During initialization, a :obj:`StreamHandler` will
     always be added. If ``log_file`` is specified and the process rank is
-    ``0``, a ``FileHandler`` will also be added.
+    ``0``, a :obj:`FileHandler` will also be added.
 
     Args:
         logger_or_name (:obj:`logging.Logger` or str or None, optional): The
@@ -53,9 +53,9 @@ def get_logger(logger_or_name=None,
         log_level (str or int, optional): Log level of the logger. Note that
             only the main process (rank 0) is affected, and other processes
             will set the level to ``ERROR`` thus be silent at most of the time.
-            Default: ``logging.INFO``.
+            Default: :obj:`logging.INFO`.
         log_file (str, optional): Path to the log file. If specified, a
-            ``FileHandler`` will be added to the logger of the main process.
+            :obj:`FileHandler` will be added to the logger of the main process.
             Default: ``None``.
 
     Returns:
@@ -103,8 +103,8 @@ def get_logger(logger_or_name=None,
 def log_or_print(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
     """
     Print a message with a potential logger. If ``logger`` is a valid
-    ``logging.Logger`` or a name of the logger, then it would be used.
-    Otherwise this method will use the normal ``print`` function instead.
+    :obj:`logging.Logger` or a name of the logger, then it would be used.
+    Otherwise this method will use the normal :obj:`print` function instead.
 
     Args:
         msg (str): The message to be logged.
@@ -112,7 +112,7 @@ def log_or_print(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
             potential logger or name of the logger to be used. Default:
             ``None``.
         log_level (int, optional): Log level of the logger. Default:
-            ``logging.INFO``.
+            :obj:`logging.INFO`.
     """
     level = logging._checkLevel(log_level)
     if isinstance(logger_or_name, logging.Logger):
