@@ -14,9 +14,9 @@ class Buffer(object):
     scalar values over a window.
 
     Args:
-        max_size (int, optional): Maximal number of values that can be stored
-            in the buffer. When the capacity of the buffer is exhausted, old
-            values will be removed. Default: ``100000``.
+        max_size (int, optional): Maximal number of internal values that can
+            be stored in the buffer. When the capacity of the buffer is
+            exhausted, old values will be removed. Default: ``100000``.
         logger (:obj:`logging.Logger` or str or None, optional): The potential
             logger or name of the logger to use. Default: ``None``.
     """
@@ -58,7 +58,7 @@ class Buffer(object):
         """
         return self._data.get(key, default=default)
 
-    def update(self, key, value, warning=True):
+    def update(self, key, value, warning=False):
         """
         Add a new value. If the length of the buffer exceeds
         :obj:`self._max_size`, the oldest element will be removed from the
@@ -67,8 +67,8 @@ class Buffer(object):
         Args:
             key (str): The key of the values.
             value (number): The new value of the values.
-            warning (bool, optional): Whether to show warning when deleting
-                values. Default: ``True``.
+            warning (bool, optional): Whether to display warning when removing
+                values. Default: ``False``.
         """
         if key not in self._data:
             self._data[key] = []

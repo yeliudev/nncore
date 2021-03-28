@@ -220,7 +220,7 @@ def bind_getter(*vars):
         ...     _name = 'ResNet'
         ...     _depth = 50
         ...
-        ... # Equals to:
+        >>> # Equals to:
         >>> class Backbone:
         ...
         ...     _name = 'ResNet'
@@ -240,7 +240,7 @@ def bind_getter(*vars):
             method = partial(
                 lambda self, key: getattr(self, key, None),
                 key='_{}'.format(var))
-            method.__doc__ = f"Return the '{var}' property."
+            method.__doc__ = None
             setattr(cls, var, property(method))
         return cls
 

@@ -54,7 +54,7 @@ class LrUpdaterHook(Hook):
         - `cosine`: target_lr (float, Default: ``0``)
         - `exp`: gamma (float)
         - `poly`: power (float, Default: ``1``), min_lr (float, Default: ``0``)
-        - `poly`: gamma (float), power (float, Default: ``1``)
+        - `inv`: gamma (float), power (float, Default: ``1``)
     """
 
     def _base_lr(self, engine):

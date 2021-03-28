@@ -36,8 +36,9 @@ class Engine(object):
     Args:
         model (:obj:`nn.Module`): The model to be trained or tested. The
             :obj:`forward` method of the model should return a dict containing
-            ``_num_samples`` indicating the number of samples in the current
-            batch.
+            a ``_num_samples`` field indicating the number of samples in the
+            current batch, and optionally an ``out`` field denoting the model
+            outputs to be collected and evaluated.
         data_loaders (dict): The data loaders for training, validating and
             testing. It should be in the format of
             ``dict(train=train_loader, val=val_loader, test=test_loader)``.
@@ -46,54 +47,45 @@ class Engine(object):
             containing the following fields:
 
             - `epochs` (int): Number of epochs in the stage.
-
             - `optimizer` (:obj:`optim.Optimizer` or dict): The optimizer or \
-                an optimizer config used for constructing the optimizer. The \
-                optimizer config should contain the following fields:
+                an optimizer config containing the following fields:
 
                 - `type` (str): Type of the optimizer, which could be \
                     accessed via :obj:`torch.optim` attributes, e.g. ``'SGD'``.
-
                 - `configs for the optimizer, e.g.` ``lr=0.01, momentum=0.9``.
 
             - `lr_schedule` (dict, optional): The learning rate schedule \
-                config. It should contain the following fields:
+                config containing the following fields:
 
                 - `type` (str): Type of the learning rate schedule. Expected \
                     values include ``'epoch'`` and ``'iter'``, indicating \
                     updating learning rates every epoch or iteration.
-
                 - `policy` (str): The learning rate policy to use. Currently \
                     supported policies include ``step``, ``cosine``, ``exp``, \
                     ``poly`` and ``inv``.
-
                 - `configs for the learning rate policy, e.g.` \
                     ``target_lr=0``. Please refer to :obj:`LrUpdaterHook` for \
                     full configs.
 
-            - `warmup` (dict, optional): The warmup policy config. It should \
-                contain the following fields:
+            - `warmup` (dict, optional): The warmup policy config containing \
+                the following fields:
 
                 - `type` (str): Type of the warmup schedule. Expected values \
                     include ``'epoch'`` and ``'iter'``, indicating warming up \
                     for ``step`` epochs for iterations.
-
                 - `policy` (str): The warmup policy to use. Currently \
                     supported policies include ``linear``, ``exp`` and \
                     ``constant``.
-
                 - `step` (int): Number of steps to warmup.
-
-                - `ratio` (float): The ratio of learning rate to start with.
+                - `ratio` (float): The ratio of learning rate to start with. \
                     Expected values are in the range of ``0 ~ 1``.
 
-            - `validation` (dict, optional): The validation config. It should \
-                contain the following fields:
+            - `validation` (dict, optional): The validation config containing \
+                the following fields:
 
                 - `interval` (int, optional): The interval of performing \
                     validation. ``0`` means not performing validation. \
                     Default: ``0``.
-
                 - `offset` (int, optional): The number of epochs to skip \
                     before counting the interval. Default: ``0``.
 
@@ -104,7 +96,8 @@ class Engine(object):
         batch_processor (callable, optional): A customized callable method
             that processes a data batch. It should be follow the prototype of
             ``batch_processor(model, data, mode, **kwargs) -> dict`` where
-            ``mode`` could be ``'train'``, ``'val'`` or ``'test'``. If not
+            ``mode`` could be ``'train'``, ``'val'`` or ``'test'`` and the
+            output dict should be in the same format with ``model``. If not
             specified, the default batch processors will be used. Default:
             ``None``.
         buffer_size (int, optional): Maximum size of the buffer. Default:
@@ -114,6 +107,37 @@ class Engine(object):
         work_dir (str, optional): Path to the working directory. If not
             specified, the default working directory will be used. Default:
             ``None``.
+
+    Example:
+        >>> # Build model
+        >>> model = build_model()
+        ...
+        >>> # Build data loaders
+        >>> train_loader = build_dataloader(split='train')
+        >>> val_loader = build_dataloader(split='val')
+        >>> data_loaders = dict(train=train_loader, val=val_loader)
+        ...
+        >>> # Configure stages:
+        >>> # [Stage 1] Train the model for 5 epochs using Adam optimizer with
+        >>> # a fixed learning rate (1e-3) and a linear warmup policy.
+        >>> # [Stage 2] Train the model for another 3 epochs using SGD with
+        >>> # momentum optimizer and a iter-based cosine learning rate
+        >>> # schedule. Perform validation after every training epoch.
+        >>> stages = [
+        ...     dict(
+        ...         epochs=5,
+        ...         optimizer=dict(type='Adam', lr=1e-3),
+        ...         warmup=dict(type='iter', policy='linear', steps=500)),
+        ...     dict(
+        ...         epochs=3,
+        ...         optimizer=dict(type='SGD', lr=1e-3, momentum=0.9),
+        ...         lr_schedule=dict(type='iter', policy='cosine'),
+        ...         validation=dict(interval=1))
+        ... ]
+        ...
+        >>> # Initialize and launch engine
+        >>> engine = Engine(model, data_loaders, stages=stages)
+        >>> engine.launch()
     """
 
     def __init__(self,

@@ -10,13 +10,13 @@ import nncore
 def _assert_tensor_type(func):
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def _wrapper(*args, **kwargs):
         if not isinstance(args[0].data, torch.Tensor):
             raise AttributeError('{} has no attribute {} for type {}'.format(
                 args[0].__class__.__name__, func.__name__, args[0].datatype))
         return func(*args, **kwargs)
 
-    return wrapper
+    return _wrapper
 
 
 @nncore.bind_getter('data', 'stack', 'pad_value', 'pad_dims', 'to_gpu')

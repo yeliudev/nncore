@@ -106,22 +106,61 @@ def init_dist(launcher='pytorch', backend='gloo', **kwargs):
 
 
 def is_distributed():
+    """
+    Check whether the current process is distributed.
+
+    Returns:
+        bool: Whether the current process is distributed.
+    """
     return dist.is_available() and dist.is_initialized()
 
 
 def get_rank(group=None):
+    """
+    Get the rank of the current process in a process group.
+
+    Args:
+        group (:obj:`dist.ProcessGroup` or None, optional): The process group
+            to use. If not specified, the default process group will be used.
+            Default: ``None``.
+
+    Returns:
+        int: The process rank.
+    """
     if not is_distributed():
         return 0
     return dist.get_rank(group=group or dist.group.WORLD)
 
 
 def get_world_size(group=None):
+    """
+    Get the world size of a process group.
+
+    Args:
+        group (:obj:`dist.ProcessGroup` or None, optional): The process group
+            to use. If not specified, the default process group will be used.
+            Default: ``None``.
+
+    Returns:
+        int: The world size.
+    """
     if not is_distributed():
         return 1
     return dist.get_world_size(group=group or dist.group.WORLD)
 
 
 def get_dist_info(group=None):
+    """
+    Get the rank of the current process and the world size of a process group.
+
+    Args:
+        group (:obj:`dist.ProcessGroup` or None, optional): The process group
+            to use. If not specified, the default process group will be used.
+            Default: ``None``.
+
+    Returns:
+        tuple[int]: The process rank and the world size.
+    """
     if not is_distributed():
         return 0, 1
     group = group or dist.group.WORLD
@@ -129,6 +168,12 @@ def get_dist_info(group=None):
 
 
 def is_main_process():
+    """
+    Check whether the current process is the main process.
+
+    Returns:
+        bool: Whether the current process is the main process.
+    """
     return get_rank() == 0
 
 
@@ -151,7 +196,7 @@ def all_gather(data, group=None):
 
     Args:
         data (any): Any serializable object.
-        group (:obj:`ProcessGroup` or None, optional): The torch process group
+        group (:obj:`dist.ProcessGroup` or None, optional): The process group
             to use. If not specified, the default process group will be used.
             Default: ``None``.
 
@@ -184,7 +229,7 @@ def gather(data, dst=0, group=None):
     Args:
         data (any): Any serializable object.
         dst (int, optional): The destination rank. Default: ``0``.
-        group (:obj:`ProcessGroup` or None, optional): The torch process group
+        group (:obj:`dist.ProcessGroup` or None, optional): The process group
             to use. If not specified, the default process group will be used.
             Default: ``None``.
 
@@ -222,8 +267,8 @@ def master_only(func):
     """
 
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def _wrapper(*args, **kwargs):
         if is_main_process():
             return func(*args, **kwargs)
 
-    return wrapper
+    return _wrapper

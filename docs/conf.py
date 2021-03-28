@@ -43,6 +43,9 @@ extensions = [
     'sphinx.ext.autodoc', 'sphinx.ext.napoleon', 'sphinx.ext.viewcode'
 ]
 
+# Sort the automatically documented members by source order
+autodoc_member_order = 'bysource'
+
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
