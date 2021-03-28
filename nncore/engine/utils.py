@@ -85,12 +85,12 @@ def generate_random_seed(length=8):
 def set_random_seed(seed=None, deterministic=False, benchmark=False):
     """
     Set random seed for ``random``, ``numpy`` and ``torch`` packages. If
-    ``seed`` is ``None``, this method will generate and return a new random
-    seed.
+    ``seed`` is not specified, this method will generate and return a new
+    random seed.
 
     Args:
-        seed (int or None, optional): The potential random seed to be used.
-            If ``None``, a new random seed will be generated. Default:
+        seed (int or None, optional): The potential random seed to use.
+            If not specified, a new random seed will be generated. Default:
             ``None``.
         deterministic (bool, optional): Whether to enable deterministic mode.
             Default: ``False``.

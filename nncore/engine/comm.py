@@ -85,14 +85,14 @@ def init_dist(launcher='pytorch', backend='gloo', **kwargs):
             supported launchers include ``pytorch`` and ``slurm``. Default:
             ``'pytorch'``.
         backend (:obj:`dist.Backend` or str, optional): The distribution
-            backend to be used. This field should be given as a
-            :obj:`dist.Backend` object or a string (e.g. ``'gloo'``) which can
-            also be accessed via :obj:`dist.Backend` attributes. Depending on
-            build-time configurations, valid values include ``'gloo'`` and
-            ``'nccl'``. If using multiple processes per machine with ``nccl``
-            backend, each process must have exclusive access to every GPU it
-            uses, as sharing GPUs between processes can result in deadlocks.
-            Default: ``'gloo'``.
+            backend to use. This field should be given as a :obj:`dist.Backend`
+            object or a string (e.g. ``'gloo'``) which can also be accessed
+            via :obj:`dist.Backend` attributes. Depending on build-time
+            configurations, valid values include ``'gloo'`` and ``'nccl'``. If
+            using multiple processes per machine with ``nccl`` backend, each
+            process must have exclusive access to every GPU it uses, as
+            sharing GPUs between processes can result in deadlocks. Default:
+            ``'gloo'``.
     """
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method('spawn')
@@ -152,7 +152,7 @@ def all_gather(data, group=None):
     Args:
         data (any): Any serializable object.
         group (:obj:`ProcessGroup` or None, optional): The torch process group
-            to be used. If ``None``, the default process group will be used.
+            to use. If not specified, the default process group will be used.
             Default: ``None``.
 
     Returns:
@@ -185,7 +185,7 @@ def gather(data, dst=0, group=None):
         data (any): Any serializable object.
         dst (int, optional): The destination rank. Default: ``0``.
         group (:obj:`ProcessGroup` or None, optional): The torch process group
-            to be used. If ``None``, the default process group will be used.
+            to use. If not specified, the default process group will be used.
             Default: ``None``.
 
     Returns:

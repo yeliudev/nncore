@@ -41,22 +41,79 @@ class Engine(object):
         data_loaders (dict): The data loaders for training, validating and
             testing. It should be in the format of
             ``dict(train=train_loader, val=val_loader, test=test_loader)``.
-        stages (dict, list[dict], optional): The stage config or list of stage
-            configs to be scheduled. Default: ``_DEFAULT_STAGES``.
+        stages (list[dict], dict, optional): The stage config or list of stage
+            configs to be scheduled. Each stage config should be a dict
+            containing the following fields:
+
+            - `epochs` (int): Number of epochs in the stage.
+
+            - `optimizer` (:obj:`optim.Optimizer` or dict): The optimizer or \
+                an optimizer config used for constructing the optimizer. The \
+                optimizer config should contain the following fields:
+
+                - `type` (str): Type of the optimizer, which could be \
+                    accessed via :obj:`torch.optim` attributes, e.g. ``'SGD'``.
+
+                - `configs for the optimizer, e.g.` ``lr=0.01, momentum=0.9``.
+
+            - `lr_schedule` (dict, optional): The learning rate schedule \
+                config. It should contain the following fields:
+
+                - `type` (str): Type of the learning rate schedule. Expected \
+                    values include ``'epoch'`` and ``'iter'``, indicating \
+                    updating learning rates every epoch or iteration.
+
+                - `policy` (str): The learning rate policy to use. Currently \
+                    supported policies include ``step``, ``cosine``, ``exp``, \
+                    ``poly`` and ``inv``.
+
+                - `configs for the learning rate policy, e.g.` \
+                    ``target_lr=0``. Please refer to :obj:`LrUpdaterHook` for \
+                    full configs.
+
+            - `warmup` (dict, optional): The warmup policy config. It should \
+                contain the following fields:
+
+                - `type` (str): Type of the warmup schedule. Expected values \
+                    include ``'epoch'`` and ``'iter'``, indicating warming up \
+                    for ``step`` epochs for iterations.
+
+                - `policy` (str): The warmup policy to use. Currently \
+                    supported policies include ``linear``, ``exp`` and \
+                    ``constant``.
+
+                - `step` (int): Number of steps to warmup.
+
+                - `ratio` (float): The ratio of learning rate to start with.
+                    Expected values are in the range of ``0 ~ 1``.
+
+            - `validation` (dict, optional): The validation config. It should \
+                contain the following fields:
+
+                - `interval` (int, optional): The interval of performing \
+                    validation. ``0`` means not performing validation. \
+                    Default: ``0``.
+
+                - `offset` (int, optional): The number of epochs to skip \
+                    before counting the interval. Default: ``0``.
+
+            Default: ``_DEFAULT_STAGES``.
         hooks (list[:obj:`Hook`] or list[dict] or list[str], optional): The
             list of hooks to be registered. Each hook could be represented as a
             :obj:`Hook`, a dict or a str. Default: ``_DEFAULT_HOOKS``.
         batch_processor (callable, optional): A customized callable method
-            that processes a data batch. It should be in the format of
-            ``batch_processor(model, data, mode, **kwargs) -> dict`` where mode
-            could be ``train``, ``val`` or ``test``. If ``None``, the default
-            batch processors will be used. Default: ``None``.
+            that processes a data batch. It should be follow the prototype of
+            ``batch_processor(model, data, mode, **kwargs) -> dict`` where
+            ``mode`` could be ``'train'``, ``'val'`` or ``'test'``. If not
+            specified, the default batch processors will be used. Default:
+            ``None``.
         buffer_size (int, optional): Maximum size of the buffer. Default:
             ``100000``.
         logger (:obj:`logging.Logger` or str or None, optional): The logger or
-            name of the logger to be used. Default: ``None``.
-        work_dir (str, optional): Path to the working directory. If ``None``,
-            the default working directory will be used Default: ``None``.
+            name of the logger to use. Default: ``None``.
+        work_dir (str, optional): Path to the working directory. If not
+            specified, the default working directory will be used. Default:
+            ``None``.
     """
 
     def __init__(self,
@@ -140,8 +197,8 @@ class Engine(object):
                 hooks to be registered. Each hook could be represented as a
                 :obj:`Hook`, a dict or a str.
             before (str, optional): Name of the hook to be inserted before. If
-                ``None``, the new hook will be added to the end of hook list.
-                Default: ``None``.
+                not specified, the new hook will be added to the end of hook
+                list. Default: ``None``.
             overwrite (bool, optional): Whether to overwrite the old hook with
                 the same name if exists. Default: ``True``.
         """
@@ -180,8 +237,8 @@ class Engine(object):
         Build an optimizer for the engine.
 
         Args:
-            optimizer (any): A :obj:`optim.Optimizer` or a dict used for
-                constructing the optimizer.
+            optimizer (:obj:`optim.Optimizer` or dict): The optimizer or an
+                optimizer config used for constructing the optimizer.
         """
         if isinstance(optimizer, dict):
             self.optimizer = nncore.build_object(

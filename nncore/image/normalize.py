@@ -10,8 +10,8 @@ def imnormalize(img, mean, std):
 
     Args:
         img (:obj:`np.ndarray`): The image to be normalized.
-        mean (:obj:`np.ndarray`): The mean to be used.
-        std (:obj:`np.ndarray`): The standard deviation to be used.
+        mean (:obj:`np.ndarray`): The mean to use.
+        std (:obj:`np.ndarray`): The standard deviation to use.
 
     Returns:
         :obj:`np.ndarray`: The normalized image.
@@ -31,8 +31,8 @@ def imdenormalize(img, mean, std):
 
     Args:
         img (:obj:`np.ndarray`): The image to be denormalized.
-        mean (:obj:`np.ndarray`): The mean to be used.
-        std (:obj:`np.ndarray`): The standard deviation to be used.
+        mean (:obj:`np.ndarray`): The mean to use.
+        std (:obj:`np.ndarray`): The standard deviation to use.
 
     Returns:
         :obj:`np.ndarray`: The denormalized image.

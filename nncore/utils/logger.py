@@ -109,8 +109,7 @@ def log_or_print(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
     Args:
         msg (str): The message to be logged.
         logger_or_name (:obj:`logging.Logger` or str or None, optional): The
-            potential logger or name of the logger to be used. Default:
-            ``None``.
+            potential logger or name of the logger to use. Default: ``None``.
         log_level (int, optional): Log level of the logger. Default:
             :obj:`logging.INFO`.
     """

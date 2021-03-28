@@ -83,7 +83,14 @@ class GATConv(nn.Module):
         if self.bias is not None:
             self.bias.data.fill_(0)
 
-    def forward(self, x, adj):
+    def forward(self, x, graph):
+        """
+        Args:
+            x (:obj:`torch.Tensor[N, M]`): The input node features.
+            graph (:obj:`torch.Tensor[N, N]`): The graph structure where
+                ``graph[i, j] == 0`` means there is an link from node ``i`` to
+                node ``j`` while ``graph[i, j] == -inf`` means not.
+        """
         x = self.d(x)
         h = torch.matmul(x[None, :], self.w)
 
@@ -91,7 +98,7 @@ class GATConv(nn.Module):
         h_j = torch.bmm(h, self.h_j)
 
         att = self.a(h_i + h_j.transpose(1, 2))
-        att = self.d(F.softmax(att + adj, dim=-1))
+        att = self.d(F.softmax(att + graph, dim=-1))
 
         y = torch.bmm(att, h).transpose(0, 1).contiguous()
 

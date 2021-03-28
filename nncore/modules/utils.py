@@ -82,7 +82,7 @@ def update_bn_stats(model, data_loader, num_iters=200):
                them unchanged, you need to either pass in a submodule without
                those layers, or backup the states.
 
-        data_loader (iterator): The data loader to be used.
+        data_loader (iterator): The data loader to use.
         num_iters (int, optional): Number of iterations to compute the stats.
             Default: ``200``.
     """

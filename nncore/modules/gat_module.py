@@ -55,10 +55,17 @@ class GATModule(nn.Module):
         if self.with_act:
             self.act = build_act_layer(act_cfg)
 
-    def forward(self, x, adj):
+    def forward(self, x, graph):
+        """
+        Args:
+            x (:obj:`torch.Tensor[N, M]`): The input node features.
+            graph (:obj:`torch.Tensor[N, N]`): The graph structure where
+                ``graph[i, j] == 0`` means there is an link from node ``i`` to
+                node ``j`` while ``graph[i, j] == -inf`` means not.
+        """
         for layer in self.order:
             if layer == 'msg_pass':
-                x = self.msg_pass(x, adj)
+                x = self.msg_pass(x, graph)
             elif layer == 'norm' and self.with_norm:
                 x = self.norm(x)
             elif layer == 'act' and self.with_act:
@@ -73,7 +80,7 @@ def build_gat_modules(dims, heads=None, with_last_act=False, **kwargs):
     Args:
         dims (list[int]): The sequence of numbers of dimensions of features.
         heads (list[int], optional): The sequence of numbers of attention
-            heads in gat layers. If ``None``, all the gat layers will have
+            heads in gat layers. If not specified, all the gat layers will have
             only ``1`` head. Default: ``None``.
         with_last_act (bool, optional): Whether to add an activation layer
             after the last gat layer. Default: ``False``.

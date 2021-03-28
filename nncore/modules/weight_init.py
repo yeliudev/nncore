@@ -59,7 +59,7 @@ def xavier_init_(module, gain=1, bias=0, distribution='normal'):
         module (:obj:`nn.Module`): The module to be initialized.
         gain (int, optional): The scaling factor. Default: ``1``.
         bias (int, optional): The bias for the module. Default: ``0``.
-        distribution (str, optional): The type of distribution to be used.
+        distribution (str, optional): The type of distribution to use.
             Expected values include ``normal`` and ``uniform``. Default:
             ``'normal'``.
 
@@ -91,7 +91,7 @@ def kaiming_init_(module,
             variance of the weights are preserved. Expected values include
             ``'fan_in'`` and ``'fan_out'``. Default: ``'fan_in'``.
         bias (int, optional): The bias for the module. Default: ``0``.
-        distribution (str, optional): The type of distribution to be used.
+        distribution (str, optional): The type of distribution to use.
             Expected values include ``normal`` and ``uniform``. Default:
             ``'normal'``.
 

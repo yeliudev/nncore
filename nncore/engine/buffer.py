@@ -18,7 +18,7 @@ class Buffer(object):
             in the buffer. When the capacity of the buffer is exhausted, old
             values will be removed. Default: ``100000``.
         logger (:obj:`logging.Logger` or str or None, optional): The potential
-            logger or name of the logger to be used. Default: ``None``.
+            logger or name of the logger to use. Default: ``None``.
     """
 
     def __init__(self, max_size=100000, logger=None):
@@ -130,8 +130,8 @@ class Buffer(object):
         Args:
             key (str): The key of the values.
             window_size (int or None, optional): The window size of the values
-                to be computed. If ``None``, all the values will be taken into
-                account. Default: ``None``.
+                to be computed. If not specified, all the values will be taken
+                into account. Default: ``None``.
 
         Returns:
             float: The median of the latest ``window_size`` values.
@@ -158,8 +158,8 @@ class Buffer(object):
         Args:
             key (str): The key of the values.
             window_size (int or None, optional): The window size of the values
-                to be computed. If ``None``, all the values will be taken into
-                account. Default: ``None``.
+                to be computed. If not specified, all the values will be taken
+                into account. Default: ``None``.
 
         Returns:
             float: The mean of the latest ``window_size`` values.
@@ -182,8 +182,8 @@ class Buffer(object):
         Args:
             key (str): The key of the values.
             window_size (int or None, optional): The window size of the values
-                to be computed. If ``None``, all the values will be taken into
-                account. Default: ``None``.
+                to be computed. If not specified, all the values will be taken
+                into account. Default: ``None``.
 
         Returns:
             float: The sum of the latest ``window_size`` values.
@@ -211,8 +211,8 @@ class Buffer(object):
             by (str, optional): The key of number of samples. Default:
                 ``'_num_samples'``.
             window_size (int or None, optional): The window size of the values
-                to be computed. If ``None``, all the values will be taken into
-                account. Default: ``None``.
+                to be computed. If not specified, all the values will be taken
+                into account. Default: ``None``.
 
         Returns:
             float: The average of the latest ``window_size`` values.

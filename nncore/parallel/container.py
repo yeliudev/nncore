@@ -30,7 +30,7 @@ class DataContainer(object):
         stack (bool, optional): Whether to stack the data during scattering.
             This argument is valid only when the data is a :obj:`torch.Tensor`.
             Default: ``False``.
-        pad_value (int, optional): The value to be used for padding. Default:
+        pad_value (int, optional): The value to use for padding. Default:
             ``0``.
         pad_dims (int, optional): Number of dimensions to be padded. Default:
             ``2``.

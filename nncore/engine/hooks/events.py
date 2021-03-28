@@ -164,8 +164,8 @@ class TensorboardWriter(Writer):
         log_dir (str, optional): Directory of the tensorboard logs.
             Default: ``None``.
         input_to_model (any, optional): The input data, data_loader or
-            name of the data_loader for constructing the model graph. If
-            ``None``, the graph will not be added. Please check
+            name of the data_loader for constructing the model graph. If not
+            specified, the graph will not be added. Please check
             :obj:`torch.utils.tensorboard.SummaryWriter.add_graph` for more
             details about adding a graph to tensorboard. Default: ``None``.
     """
@@ -240,7 +240,7 @@ class EventWriterHook(Hook):
         interval (int, optional): The interval of writing logs. Default:
             ``50``.
         writers (list[:obj:`Writer`] or list[str], optional): The list of
-            writers or name of writers to be used. Currently supported writers
+            writers or name of writers to use. Currently supported writers
             include :obj:`CommandLineWriter`, :obj:`JSONWriter` and
             :obj:`TensorboardWriter`. Default: ``['CommandLineWriter']``.
     """

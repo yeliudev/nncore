@@ -34,7 +34,7 @@ def load(name_or_file, format=None, **kwargs):
 
     Args:
         name_or_file (str or file object): Path to the file or a file object.
-        format (str, optional): Format of the file. If ``None``, the file
+        format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json``, ``yaml/yml``, ``pickle/pkl``
             and ``hdf5/h5``. Default: ``None``.
@@ -62,7 +62,7 @@ def dump(obj, name_or_file, format=None, overwrite=False, **kwargs):
     Args:
         obj (any): The object to be dumped.
         name_or_file (str or file object): Path to the file or a file object.
-        format (str, optional): Format of the file. If ``None``, the file
+        format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json``, ``yaml/yml``, ``pickle/pkl``
             and ``hdf5/h5``. Default: ``None``.
@@ -136,9 +136,9 @@ def list_from_file(filename, offset=0, separator=',', max_length=-1):
     Args:
         filename (str): Path to the file to be loaded.
         offset (int, optional): The offset of line numbers. Default: ``0``.
-        separator (str or None, optional): The separator to be used to parse
-            tuples. If ``None``, each line would be treated as a str. Default:
-            ``','``.
+        separator (str or None, optional): The separator to use for parsing
+            tuples. If not specified, each line would be treated as a str.
+            Default: ``','``.
         max_length (int, optional): The maximum number of lines to be loaded.
             ``-1`` means all the lines from the file will be loaded. Default:
             ``-1``.
@@ -171,8 +171,8 @@ def open(file=None, mode='r', format=None, **kwargs):
 
     Args:
         file (str or None, optional): Path to the file to be loaded.
-        mode (str, optional): The loading mode to be used. Default: ``'r'``.
-        format (str, optional): Format of the file. If ``None``, the file
+        mode (str, optional): The loading mode to use. Default: ``'r'``.
+        format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json``, ``yaml/yml``, ``pickle/pkl``
             and ``hdf5/h5``. Default: ``None``.

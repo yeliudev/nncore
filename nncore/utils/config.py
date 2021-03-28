@@ -148,13 +148,15 @@ class Config(object):
     """
 
     @staticmethod
-    def from_file(filename):
+    def from_file(filename, freeze=False):
         """
         Initialize a :obj:`Config` object from a file.
 
         Args:
             filename (str): Path to the config file. Currently supported
                 formats include ``py``, ``json`` and ``yaml/yml``.
+            freeze (bool, optional): Whether to freeze the config after
+                initialization.  Default: ``False``.
 
         Returns:
             :obj:`Config`: The constructed config object.
@@ -181,9 +183,9 @@ class Config(object):
         else:
             raise TypeError("unsupported format: '{}'".format(format))
 
-        return Config(cfg=cfg, filename=filename)
+        return Config(cfg=cfg, filename=filename, freeze=freeze)
 
-    def __init__(self, cfg=None, filename=None):
+    def __init__(self, cfg=None, filename=None, freeze=False):
         if isinstance(cfg, (type(self), dict)):
             _cfg = CfgNode(cfg)
         elif cfg is None:
@@ -193,6 +195,9 @@ class Config(object):
 
         super(Config, self).__setattr__('_cfg', _cfg)
         super(Config, self).__setattr__('_filename', filename)
+
+        if freeze:
+            self.freeze()
 
         if filename is not None:
             with open(filename, 'r') as f:
