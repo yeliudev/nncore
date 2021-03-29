@@ -43,6 +43,12 @@ Timer
 .. automodule:: nncore.utils.timer
    :members:
 
+Binder
+-------------------
+
+.. automodule:: nncore.utils.binder
+   :members:
+
 Misc
 -------------------
 

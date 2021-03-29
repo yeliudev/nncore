@@ -464,8 +464,16 @@ class Engine(object):
         self._call_hook('after_stage')
         self._stage += 1
 
-    def evaluate(self):
-        blob = self.buffer.pop('out')
+    def evaluate(self, key='out'):
+        """
+        Perform evaluation. This methods is expected to be called after
+        validation or testing.
+
+        Args:
+            key (str, optional): The buffer key of the values to be evaluated.
+                Default: ``'out'``.
+        """
+        blob = self.buffer.pop(key)
         blob = gather(blob)
 
         if is_main_process():
@@ -480,7 +488,7 @@ class Engine(object):
 
     def launch(self, eval_mode=False, **kwargs):
         """
-        Launch engine.
+        Launch the engine.
 
         Args:
             eval_mode (bool, optional): Whether to only run evaluation.

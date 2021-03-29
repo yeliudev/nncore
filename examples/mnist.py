@@ -30,7 +30,7 @@ class LeNet(nn.Module):
             nn.Linear(84, 10))
         # yapf:enable
 
-        self.criterion = nn.CrossEntropyLoss()
+        self.loss = nn.CrossEntropyLoss()
 
     def forward(self, data, **kwargs):
         x, y = data[0], data[1]
@@ -40,7 +40,7 @@ class LeNet(nn.Module):
 
         _, pred = torch.max(x, dim=1)
         acc = torch.eq(pred, y).sum().float() / y.numel()
-        loss = self.criterion(x, y)
+        loss = self.loss(x, y)
 
         return dict(_num_samples=y.numel(), acc=acc, loss=loss)
 

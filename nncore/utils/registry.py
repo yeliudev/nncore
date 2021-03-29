@@ -1,9 +1,12 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-from .misc import bind_getter
+from collections import defaultdict
+
+from .binder import bind_getter, bind_method
 
 
 @bind_getter('name', 'items')
+@bind_method('_items', ['__contains__', '__len__', 'get', 'pop'])
 class Registry(object):
     """
     A registry to map strings to objects.
@@ -31,12 +34,7 @@ class Registry(object):
     def __init__(self, name):
         self._name = name
         self._items = dict()
-
-    def __len__(self):
-        return len(self._items)
-
-    def __contains__(self, key):
-        return key in self._items
+        self._groups = defaultdict(list)
 
     def __getattr__(self, key):
         if key in self._items:
@@ -50,37 +48,38 @@ class Registry(object):
                                                 self._name,
                                                 list(self._items.keys()))
 
-    def _register(self, obj, name=None):
+    def _register(self, obj, name=None, group='default'):
         if name is None:
             name = obj.__name__
         if name in self._items:
             raise KeyError('{} is already registered in {}'.format(
                 name, self._name))
         self._items[name] = obj
+        self._groups[group].append(name)
         return obj
 
-    def register(self, obj=None, name=None):
+    def register(self, obj=None, name=None, group='default'):
         if isinstance(obj, (list, tuple)):
             assert name is None
             for o in obj:
-                self._register(o, name=name)
+                self._register(o, name=name, group=group)
             return
 
         if obj is not None:
-            self._register(obj, name=name)
+            self._register(obj, name=name, group=group)
             return
 
         def _wrapper(obj):
-            self._register(obj, name=name)
+            self._register(obj, name=name, group=group)
             return obj
 
         return _wrapper
 
-    def get(self, key, default=None):
-        return self._items.get(key, default)
+    def groups(self):
+        return self._groups.keys()
 
-    def pop(self, key):
-        return self._items.pop(key)
+    def group(self, name, default=None):
+        return self._groups.get(name, default)
 
 
 def build_object(cfg, parent, default=None, **kwargs):

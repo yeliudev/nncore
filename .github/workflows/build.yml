@@ -17,14 +17,14 @@ jobs:
       with:
         python-version: ${{ matrix.python }}
     - name: Install requirements
-      run: pip install --upgrade setuptools coverage coveralls isort yapf flake8
-    - name: Install nncore
-      run: pip install -e .
+      run: pip install --upgrade setuptools wheel isort yapf flake8 coverage coveralls
     - name: Check code style
       run: |
         isort --df nncore/ tests/ examples/ setup.py
         yapf -r -d nncore/ tests/ examples/ setup.py
         flake8 nncore/ tests/ examples/ setup.py
+    - name: Install NNCore
+      run: pip install -e .
     - name: Run tests
       run: coverage run --source=nncore setup.py test
     - name: Report coverage

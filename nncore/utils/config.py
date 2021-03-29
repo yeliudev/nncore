@@ -10,7 +10,7 @@ from shutil import copyfile
 from tempfile import TemporaryDirectory
 
 import nncore
-from .misc import bind_getter
+from .binder import bind_getter, bind_method
 
 
 class CfgNode(OrderedDict):
@@ -138,6 +138,10 @@ class CfgNode(OrderedDict):
 
 
 @bind_getter('filename')
+@bind_method('_cfg', [
+    '__getitem__', '__setitem__', '__len__', '__iter__', '__eq__', 'get',
+    'pop', 'freeze', 'unfreeze', 'setdefault', 'copy', 'to_dict'
+])
 class Config(object):
     """
     A facility for better :obj:`CfgNode` objects.
@@ -264,53 +268,17 @@ class Config(object):
 
         return text
 
-    def __len__(self):
-        return len(self._cfg)
-
     def __getattr__(self, key):
         return getattr(self._cfg, key)
 
-    def __getitem__(self, key):
-        return self._cfg.__getitem__(key)
-
     def __setattr__(self, key, value):
-        self._cfg.__setattr__(key, value)
-
-    def __setitem__(self, key, value):
-        self._cfg.__setitem__(key, value)
-
-    def __iter__(self):
-        return self._cfg.__iter__()
-
-    def __eq__(self, other):
-        return self._cfg.__eq__(other)
+        setattr(self._cfg, key, value)
 
     def __repr__(self):
         attrs = '' if self._filename is None else "(filename: '{}')".format(
             self._filename)
         return '{}{}: {}'.format(self.__class__.__name__, attrs, self._cfg)
 
-    def freeze(self):
-        self._cfg.freeze()
-
-    def unfreeze(self):
-        self._cfg.unfreeze()
-
     def update(self, *args, **kwargs):
         args = [arg._cfg if isinstance(arg, Config) else arg for arg in args]
         self._cfg.update(*args, **kwargs)
-
-    def get(self, key, default=None):
-        return self._cfg.get(key, default)
-
-    def setdefault(self, key, default):
-        return self._cfg.setdefault(key, default)
-
-    def copy(self):
-        return self._cfg.copy()
-
-    def pop(self, key, default):
-        return self._cfg.pop(key, default)
-
-    def to_dict(self, ordered=False):
-        return self._cfg.to_dict(ordered=ordered)

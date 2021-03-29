@@ -2,7 +2,7 @@
 
 import torch.nn as nn
 
-from .bricks import GATConv, build_act_layer, build_norm_layer
+from .bricks import NORM_LAYERS, GATConv, build_act_layer, build_norm_layer
 
 
 class GATModule(nn.Module):
@@ -47,10 +47,8 @@ class GATModule(nn.Module):
             **kwargs)
 
         if self.with_norm:
-            _norm_cfg = norm_cfg.copy()
-            if _norm_cfg['type'] not in ('GN', 'LN'):
-                _norm_cfg.setdefault('num_features', out_features * heads)
-            self.norm = build_norm_layer(_norm_cfg)
+            assert norm_cfg['type'] in NORM_LAYERS.group('1d')
+            self.norm = build_norm_layer(norm_cfg)
 
         if self.with_act:
             self.act = build_act_layer(act_cfg)

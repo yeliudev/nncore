@@ -2,7 +2,7 @@
 
 import torch.nn as nn
 
-from .bricks import build_act_layer, build_norm_layer
+from .bricks import NORM_LAYERS, build_act_layer, build_norm_layer
 
 
 class LinearModule(nn.Module):
@@ -20,9 +20,9 @@ class LinearModule(nn.Module):
             ``dict(type='BN1d')``.
         act_cfg (dict, optional): The config of activation layer. Default:
             ``dict(type='ReLU', inplace=True)``.
-        order (tuple[str], optional): The order of gat/norm/activation layers.
-            It is expected to be a sequence of ``'linear'``, ``'norm'`` and
-            ``'act'``. Default: ``('linear', 'norm', 'act')``.
+        order (tuple[str], optional): The order of linear/norm/activation
+            layers. It is expected to be a sequence of ``'linear'``, ``'norm'``
+            and ``'act'``. Default: ``('linear', 'norm', 'act')``.
     """
 
     def __init__(self,
@@ -43,10 +43,8 @@ class LinearModule(nn.Module):
             bias=bias if bias != 'auto' else not self.with_norm)
 
         if self.with_norm:
-            _norm_cfg = norm_cfg.copy()
-            if _norm_cfg['type'] not in ('GN', 'LN'):
-                _norm_cfg.setdefault('num_features', out_features)
-            self.norm = build_norm_layer(_norm_cfg)
+            assert norm_cfg['type'] in NORM_LAYERS.group('1d')
+            self.norm = build_norm_layer(norm_cfg)
 
         if self.with_act:
             self.act = build_act_layer(act_cfg)

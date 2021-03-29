@@ -8,6 +8,7 @@ import nncore
 
 
 @nncore.bind_getter('max_size')
+@nncore.bind_method('_data', ['get', 'pop', 'keys', 'values', 'items'])
 class Buffer(object):
     """
     A buffer that tracks a series of values and provide access to smoothed
@@ -25,38 +26,6 @@ class Buffer(object):
         self._max_size = max_size
         self._logger = logger
         self._data = OrderedDict()
-
-    def keys(self):
-        """
-        Return the keys in the buffer.
-        """
-        return self._data.keys()
-
-    def values(self):
-        """
-        Return the values in the buffer.
-        """
-        return self._data.values()
-
-    def items(self):
-        """
-        Return the keys and values in the buffer.
-        """
-        return self._data.items()
-
-    def get(self, key, default=None):
-        """
-        Return the values in the buffer according to the key.
-
-        Args:
-            key (str): The key of the values.
-            default (any, optional): The default return value when the key is
-                not in the buffer. Default: ``None``.
-
-        Returns:
-            list: The values in the buffer according to the key.
-        """
-        return self._data.get(key, default=default)
 
     def update(self, key, value, warning=False):
         """
@@ -84,20 +53,6 @@ class Buffer(object):
             self._data[key].pop(0)
 
         self._data[key].append(value)
-
-    def pop(self, key, default=None):
-        """
-        Return and remove the values in the buffer according to the key.
-
-        Args:
-            key (str): The key of the values.
-            default (any, optional): The default return value when the key is
-                not in the buffer. Default: ``None``.
-
-        Returns:
-            list: The values in the buffer according to the key.
-        """
-        return self._data.pop(key, default=default)
 
     def count(self, key):
         """

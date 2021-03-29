@@ -1,10 +1,33 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 from collections.abc import Iterable, Sequence
-from functools import partial
 from itertools import chain
 
 import numpy as np
+
+
+def swap_element(matrix, i, j):
+    """
+    Swap two elements of an array or a tensor.
+
+    Args:
+        matrix (:obj:`np.ndarray` or :obj:`torch.Tensor`): The array or tensor
+            to be swapped.
+        i (int): Index of the first element.
+        j (int): Index of the second element.
+
+    Returns:
+        :obj:`np.ndarray` or :obj:`torch.Tensor`: The swapped array or tensor.
+    """
+    if isinstance(matrix, np.ndarray):
+        tmp = matrix[i].copy()
+    else:
+        tmp = matrix[i].clone()
+
+    matrix[i] = matrix[j]
+    matrix[j] = tmp
+
+    return matrix
 
 
 def iter_cast(inputs, dst_type, return_type=None):
@@ -177,71 +200,3 @@ def to_list_of_dict(in_dict):
         out_list.append({k: v[i] for k, v in in_dict.items()})
 
     return out_list
-
-
-def swap_element(matrix, i, j):
-    """
-    Swap two elements of an array or a tensor.
-
-    Args:
-        matrix (:obj:`np.ndarray` or :obj:`torch.Tensor`): The array or tensor
-            to be swapped.
-        i (int): Index of the first element.
-        j (int): Index of the second element.
-
-    Returns:
-        :obj:`np.ndarray` or :obj:`torch.Tensor`: The swapped array or tensor.
-    """
-    if isinstance(matrix, np.ndarray):
-        tmp = matrix[i].copy()
-    else:
-        tmp = matrix[i].clone()
-
-    matrix[i] = matrix[j]
-    matrix[j] = tmp
-
-    return matrix
-
-
-def bind_getter(*vars):
-    """
-    A syntactic sugar for automatically binding getters for classes. This
-    method is expected to be used as a decorator.
-
-    Args:
-        *vars: strings indicating the member variables to be binded with
-            getters. The name of member variables are expected to start with an
-            underline (e.g. `_name` or `_epoch`).
-
-    Example:
-        >>> @bind_getter('name', 'depth')
-        >>> class Backbone:
-        ...
-        ...     _name = 'ResNet'
-        ...     _depth = 50
-        ...
-        >>> # Equals to:
-        >>> class Backbone:
-        ...
-        ...     _name = 'ResNet'
-        ...     _depth = 50
-        ...
-        ...     @property
-        ...     def name(self):
-        ...         return self._name
-        ...
-        ...     @property
-        ...     def depth(self):
-        ...         return self._depth
-    """
-
-    def _wrapper(cls):
-        for var in vars:
-            method = partial(
-                lambda self, key: getattr(self, key, None),
-                key='_{}'.format(var))
-            method.__doc__ = None
-            setattr(cls, var, property(method))
-        return cls
-
-    return _wrapper

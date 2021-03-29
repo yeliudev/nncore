@@ -11,8 +11,8 @@ class EvalHook(Hook):
     Args:
         interval (int, optional): The interval of performing evaluation.
             Default: ``1``.
-        run_test (bool, optional): Whether to run test before performing
-            evaluation. Default: ``False``.
+        run_test (bool, optional): Whether to run the model on the test split
+            before performing evaluation. Default: ``False``.
     """
 
     def __init__(self, interval=1, run_test=False):
@@ -21,7 +21,8 @@ class EvalHook(Hook):
         self._run_test = run_test
 
     def after_val_epoch(self, engine):
-        if not self.every_n_epochs(engine, self._interval):
+        if not self.every_n_epochs(engine, self._interval) or not hasattr(
+                engine.data_loaders['test'].dataset, 'evaluate'):
             return
 
         if self._run_test:
