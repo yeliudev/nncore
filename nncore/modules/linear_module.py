@@ -44,6 +44,9 @@ class LinearModule(nn.Module):
 
         if self.with_norm:
             assert norm_cfg['type'] in NORM_LAYERS.group('1d')
+            if 'Drop' not in norm_cfg['type']:
+                norm_cfg = norm_cfg.copy()
+                norm_cfg.setdefault('num_features', out_features)
             self.norm = build_norm_layer(norm_cfg)
 
         if self.with_act:

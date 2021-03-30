@@ -41,15 +41,3 @@ def test_slice_list():
 def test_concat_list():
     assert nncore.concat_list([[1, 2]]) == [1, 2]
     assert nncore.concat_list([[1, 2], [3, 4, 5], [6]]) == [1, 2, 3, 4, 5, 6]
-
-
-def test_bind_getter():
-
-    @nncore.bind_getter('name', 'depth')
-    class Backbone:
-        _name = 'ResNet'
-        _depth = 50
-
-    backbone = Backbone()
-    assert backbone.name == 'ResNet'
-    assert backbone.depth == 50
