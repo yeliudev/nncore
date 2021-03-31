@@ -10,4 +10,4 @@ try:
 except ModuleNotFoundError:
     warnings.warn("Please install opencv-python to enable 'nncore.image'")
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
