@@ -1,18 +1,30 @@
-<div align="center">
+<p align="center">
+  <img src="https://raw.githubusercontent.com/yeliudev/nncore/main/.github/nncore-logo.svg">
+</p>
 
-![Logo](https://raw.githubusercontent.com/yeliudev/nncore/main/.github/nncore-logo.svg)
+<h1 align="center">NNCore</h1>
 
-# NNCore
+<p align="center">
+  <strong>A lightweight PyTorch code wrapper for ML researchers.</strong>
+</p>
 
-**A lightweight PyTorch code wrapper for ML researchers.**
-
-[![PyPI](https://badgen.net/pypi/v/nncore?label=PyPI&icon=pypi&cache=600)](https://pypi.org/project/nncore)
-[![License](https://badgen.net/github/license/yeliudev/nncore?label=License&cache=600)](https://github.com/yeliudev/nncore/blob/main/LICENSE)
-[![Coveralls](https://badgen.net/coveralls/c/github/yeliudev/nncore/main?label=Coverage&cache=600)](https://coveralls.io/github/yeliudev/nncore?branch=main)
-[![Gitter](https://badgen.net/badge/Chat/on%20gitter/cyan?icon=gitter&cache=600)](https://gitter.im/nncore-dev/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
-[![Codacy](https://badgen.net/codacy/grade/2a8a24217cfe4263bb6b02298706a237?label=Code%20Quality&icon=codacy&cache=600)](https://www.codacy.com/gh/yeliudev/nncore/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yeliudev/nncore&amp;utm_campaign=Badge_Grade)
-
-</div>
+<p align="center">
+  <a href="https://pypi.org/project/nncore">
+    <img src="https://badgen.net/pypi/v/nncore?label=PyPI&icon=pypi&cache=600">
+  </a>
+  <a href="https://github.com/yeliudev/nncore/blob/main/LICENSE">
+    <img src="https://badgen.net/github/license/yeliudev/nncore?label=License&cache=600">
+  </a>
+  <a href="https://coveralls.io/github/yeliudev/nncore?branch=main">
+    <img src="https://badgen.net/coveralls/c/github/yeliudev/nncore/main?label=Coverage&cache=600">
+  </a>
+  <a href="https://gitter.im/nncore-dev/community?utm_source=share-link&utm_medium=link&utm_campaign=share-link">
+    <img src="https://badgen.net/badge/Chat/on%20gitter/cyan?icon=gitter&cache=600">
+  </a>
+  <a href="https://www.codacy.com/gh/yeliudev/nncore/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yeliudev/nncore&amp;utm_campaign=Badge_Grade">
+    <img src="https://badgen.net/codacy/grade/2a8a24217cfe4263bb6b02298706a237?label=Code%20Quality&icon=codacy&cache=600">
+  </a>
+</p>
 
 NNCore is a library that provides common functionalities for Machine Learning and Deep Learning researchers. This project aims at helping users focus more on science but not engineering during researches. The essential functionalities include but are not limited to:
 
