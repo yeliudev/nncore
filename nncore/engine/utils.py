@@ -215,7 +215,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
 
     meta.update(
         nncore_version=nncore.__version__, create_time=nncore.get_time_str())
-    nncore.mkdir(nncore.dir_name(filename))
+    nncore.mkdir(nncore.dir_name(nncore.abs_path(filename)))
 
     state_dict = OrderedDict({
         k: v.cpu()

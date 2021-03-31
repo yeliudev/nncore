@@ -56,3 +56,5 @@ venv.bak/
 # Temporary data
 /data
 /work_dirs
+.DS_Store
+._*

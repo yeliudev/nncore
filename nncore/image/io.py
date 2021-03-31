@@ -54,5 +54,5 @@ def imwrite(img, filename, params=None):
     Returns:
         bool: Successful or not.
     """
-    nncore.mkdir(nncore.dir_name(filename))
+    nncore.mkdir(nncore.dir_name(nncore.abs_path(filename)))
     return cv2.imwrite(filename, img, params)
