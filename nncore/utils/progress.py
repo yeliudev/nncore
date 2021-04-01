@@ -55,10 +55,9 @@ class ProgressBar(object):
             msg = self._wb.format(
                 self._completed, self._task_num, fps, ceil(elapsed), eta,
                 '\n' if self._task_num == self._completed else '')
-
             bar_width = self._get_bar_width(msg)
             mark_width = int(bar_width * percentage)
-            bar_chars = '>' * mark_width + ' ' * (bar_width - mark_width)
-            self._write(msg.format(bar_chars))
+            chars = '>' * mark_width + ' ' * (bar_width - mark_width)
+            self._write(msg.format(chars))
         else:
             self._write(self._ob.format(self._completed, ceil(elapsed), fps))

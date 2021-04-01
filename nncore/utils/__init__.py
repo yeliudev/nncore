@@ -9,7 +9,7 @@ from .misc import (concat_list, is_list_of, is_seq_of, is_tuple_of, iter_cast,
                    to_list_of_dict, tuple_cast)
 from .path import (abs_path, base_name, dir_exist, dir_name, file_exist, join,
                    mkdir, pure_ext, pure_name, remove, split_ext, symlink)
-from .progressbar import ProgressBar
+from .progress import ProgressBar
 from .registry import Registry, build_object
 from .timer import Timer
 

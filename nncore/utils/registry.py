@@ -86,6 +86,7 @@ class Registry(object):
         if isinstance(group, (list, tuple)):
             for g in group:
                 self.set_group(name, g)
+            return
 
         self._groups[group].append(name)
 

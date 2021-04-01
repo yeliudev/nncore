@@ -25,10 +25,10 @@ Path
 .. automodule:: nncore.utils.path
    :members:
 
-Progressbar
+Progress Bar
 -------------------
 
-.. automodule:: nncore.utils.progressbar
+.. automodule:: nncore.utils.progress
    :members:
 
 Registry
