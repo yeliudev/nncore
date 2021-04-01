@@ -43,7 +43,8 @@ class GATModule(nn.Module):
             in_features,
             out_features,
             heads,
-            bias=bias if bias != 'auto' else not self.with_norm,
+            bias=bias if bias != 'auto' else not self.with_norm
+            or norm_cfg['type'] in NORM_LAYERS.group('drop'),
             **kwargs)
 
         if self.with_norm:

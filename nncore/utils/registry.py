@@ -48,17 +48,20 @@ class Registry(object):
                                                 self._name,
                                                 list(self._items.keys()))
 
-    def _register(self, obj, name=None, group='default'):
+    def _register(self, obj, name=None, group=None):
         if name is None:
             name = obj.__name__
+
         if name in self._items:
             raise KeyError('{} is already registered in {}'.format(
                 name, self._name))
-        self._items[name] = obj
-        self._groups[group].append(name)
-        return obj
 
-    def register(self, obj=None, name=None, group='default'):
+        self._items[name] = obj
+
+        if group is not None:
+            self.set_group(name, group)
+
+    def register(self, obj=None, name=None, group=None):
         if isinstance(obj, (list, tuple)):
             assert name is None
             for o in obj:
@@ -74,6 +77,17 @@ class Registry(object):
             return obj
 
         return _wrapper
+
+    def set_group(self, name, group):
+        if name not in self._items:
+            raise KeyError('{} is not registered in {}'.format(
+                name, self._name))
+
+        if isinstance(group, (list, tuple)):
+            for g in group:
+                self.set_group(name, g)
+
+        self._groups[group].append(name)
 
     def groups(self):
         return self._groups.keys()

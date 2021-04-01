@@ -40,7 +40,8 @@ class LinearModule(nn.Module):
         self.linear = nn.Linear(
             in_features,
             out_features,
-            bias=bias if bias != 'auto' else not self.with_norm)
+            bias=bias if bias != 'auto' else not self.with_norm
+            or norm_cfg['type'] in NORM_LAYERS.group('drop'))
 
         if self.with_norm:
             assert norm_cfg['type'] in NORM_LAYERS.group('1d')

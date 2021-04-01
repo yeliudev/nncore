@@ -24,21 +24,40 @@ class _SwishImplementation(torch.autograd.Function):
 
 
 @ACTIVATION_LAYERS.register()
-class Swish(nn.Module):
-
-    def forward(self, x):
-        return x * torch.sigmoid(x)
-
-
-@ACTIVATION_LAYERS.register()
 class EffSwish(nn.Module):
+    """
+    An efficient implementation of Swish activation layer introduced in [1].
+
+    References:
+        1. Ramachandran et al. (https://arxiv.org/abs/1710.05941)
+    """
 
     def forward(self, x):
         return _SwishImplementation.apply(x)
 
 
 @ACTIVATION_LAYERS.register()
+class Swish(nn.Module):
+    """
+    Swish activation layer introduced in [1].
+
+    References:
+        1. Ramachandran et al. (https://arxiv.org/abs/1710.05941)
+    """
+
+    def forward(self, x):
+        return x * torch.sigmoid(x)
+
+
+@ACTIVATION_LAYERS.register()
 class Clamp(nn.Module):
+    """
+    Clamp activation layer.
+
+    Args:
+        min (float, optional): The lower-bound of the range. Default: ``-1``.
+        max (float, optional): The upper-bound of the range. Default: ``1``.
+    """
 
     def __init__(self, min=-1, max=1):
         super(Clamp, self).__init__()
