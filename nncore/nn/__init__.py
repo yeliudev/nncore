@@ -1,6 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-from .bricks import (ACTIVATIONS, GAT, MASSAGE_PASSINGS, NORMS, Clamp,
+from .bricks import (ACTIVATIONS, GAT, MESSAGE_PASSINGS, NORMS, Clamp,
                      EffSwish, Swish, build_act_layer, build_msg_layer,
                      build_norm_layer)
 from .linear_module import LinearModule, build_mlp
@@ -12,7 +12,7 @@ from .weight_init import (constant_init_, kaiming_init_, normal_init_,
                           uniform_init_, xavier_init_)
 
 __all__ = [
-    'ACTIVATIONS', 'MASSAGE_PASSINGS', 'NORMS', 'Clamp', 'EffSwish', 'GAT',
+    'ACTIVATIONS', 'MESSAGE_PASSINGS', 'NORMS', 'Clamp', 'EffSwish', 'GAT',
     'Swish', 'build_act_layer', 'build_msg_layer', 'build_norm_layer',
     'LinearModule', 'build_mlp', 'FocalLoss', 'FocalLossStar', 'GHMCLoss',
     'sigmoid_focal_loss', 'sigmoid_focal_loss_star', 'MsgPassModule',

@@ -18,9 +18,9 @@ class LinearModule(nn.Module):
             linear layer. If ``bias='auto'``, the module will decide it
             automatically base on whether it has a normalization layer.
             Default: ``'auto'``.
-        norm_cfg (dict, optional): The config of normalization layer. Default:
-            ``dict(type='BN1d')``.
-        act_cfg (dict, optional): The config of activation layer. Default:
+        norm_cfg (dict, optional): The config of the normalization layer.
+            Default: ``dict(type='BN1d')``.
+        act_cfg (dict, optional): The config of the activation layer. Default:
             ``dict(type='ReLU', inplace=True)``.
         order (tuple[str], optional): The order of layers. It is expected to
             be a sequence of ``'linear'``, ``'norm'`` and ``'act'``. Default:

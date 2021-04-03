@@ -6,10 +6,10 @@ import torch.nn.functional as F
 
 import nncore
 
-MASSAGE_PASSINGS = nncore.Registry('massage passing')
+MESSAGE_PASSINGS = nncore.Registry('message passing')
 
 
-@MASSAGE_PASSINGS.register()
+@MESSAGE_PASSINGS.register()
 @nncore.bind_getter('in_features', 'out_features')
 class GCN(nn.Module):
     """
@@ -40,7 +40,7 @@ class GCN(nn.Module):
     def _compute_norm(self, graph):
         graph = graph.t()
 
-        deg = torch.Tensor([graph[i].sum() for i in range(graph.size(0))])
+        deg = graph.new_tensor([graph[i].sum() for i in range(graph.size(0))])
         deg_inv_sqrt = deg.pow(-0.5).diag()
 
         norm = torch.mm(deg_inv_sqrt, graph)
@@ -78,7 +78,7 @@ class GCN(nn.Module):
         return y
 
 
-@MASSAGE_PASSINGS.register()
+@MESSAGE_PASSINGS.register()
 @nncore.bind_getter('in_features', 'out_features', 'k')
 class SGC(GCN):
     """
@@ -99,12 +99,9 @@ class SGC(GCN):
         self._k = k
 
     def _compute_norm(self, graph):
-        _norm = super(SGC, self)._compute_norm(graph)
-
-        norm = _norm
+        norm = _norm = super(SGC, self)._compute_norm(graph)
         for _ in range(self._k - 1):
             norm = torch.mm(norm, _norm)
-
         return norm
 
     def extra_repr(self):
@@ -112,7 +109,7 @@ class SGC(GCN):
             self._in_features, self._out_features, self._k, self._with_bias)
 
 
-@MASSAGE_PASSINGS.register()
+@MESSAGE_PASSINGS.register()
 @nncore.bind_getter('in_features', 'out_features', 'heads', 'p',
                     'negative_slope', 'concat', 'residual')
 class GAT(nn.Module):
@@ -154,8 +151,8 @@ class GAT(nn.Module):
         self._negative_slope = negative_slope
         self._concat = concat
         self._residual = residual
-        self._head_features = out_features / heads
-        self._map_residual = in_features == self._head_features
+        self._head_features = int(out_features / (heads if concat else 1))
+        self._map_residual = in_features != self._head_features
         self._with_bias = bias
 
         self.weight = nn.Parameter(
@@ -167,15 +164,23 @@ class GAT(nn.Module):
 
         if self._map_residual:
             self.weight_r = nn.Parameter(
-                torch.Tensor(in_features, out_features))
+                torch.Tensor(in_features, self._head_features * heads))
 
         if self._with_bias:
             self.bias = nn.Parameter(torch.Tensor(out_features))
 
-        self.dropout = nn.Dropout(p=p)
+        self.dropout = nn.Dropout(p=p, inplace=True)
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
 
         self.reset_parameters()
+
+    def __repr__(self):
+        return ('{}(in_features={}, out_features={}, heads={}, p={}, '
+                'negative_slope={}, concat={}, residual={}, bias={})'.format(
+                    self.__class__.__name__, self._in_features,
+                    self._out_features, self._heads, self._p,
+                    self._negative_slope, self._concat, self._residual,
+                    self._with_bias))
 
     def reset_parameters(self):
         for weight in (self.weight, self.weight_i, self.weight_j):
@@ -184,13 +189,6 @@ class GAT(nn.Module):
             nn.init.xavier_uniform_(self.weight_r)
         if self._with_bias:
             nn.init.constant_(self.bias, 0)
-
-    def extra_repr(self):
-        return ('in_features={}, out_features={}, heads={}, p={}, '
-                'negative_slope={}, concat={}, residual={}, bias={}'.format(
-                    self._in_features, self._out_features, self._heads,
-                    self._p, self._negative_slope, self._concat,
-                    self._residual, self._with_bias))
 
     def forward(self, x, graph):
         """
@@ -209,7 +207,7 @@ class GAT(nn.Module):
         coe_j = torch.bmm(h, self.weight_j).transpose(1, 2)
         coe = self.leaky_relu(coe_i + coe_j)
 
-        graph = torch.where(graph > 0, 0, float('-inf')).t()
+        graph = torch.where(graph > 0, .0, float('-inf')).t()
         att = self.dropout(F.softmax(coe + graph, dim=-1))
 
         y = torch.bmm(att, h).transpose(0, 1).contiguous()
@@ -232,10 +230,10 @@ class GAT(nn.Module):
         return y
 
 
-def build_msg_layer(cfg, **kwargs):
+def build_msg_pass_layer(cfg, **kwargs):
     """
-    Build a massage passing layer from a dict. This method searches for layers
-    in :obj:`MASSAGE_PASSINGS` first, and then fall back to :obj:`torch.nn`.
+    Build a message passing layer from a dict. This method searches for layers
+    in :obj:`MESSAGE_PASSINGS` first, and then fall back to :obj:`torch.nn`.
 
     Args:
         cfg (dict or str): The config or name of the layer.
@@ -243,4 +241,4 @@ def build_msg_layer(cfg, **kwargs):
     Returns:
         :obj:`nn.Module`: The constructed layer.
     """
-    return nncore.build_object(cfg, [MASSAGE_PASSINGS, nn], **kwargs)
+    return nncore.build_object(cfg, [MESSAGE_PASSINGS, nn], **kwargs)

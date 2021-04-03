@@ -3,26 +3,27 @@
 import torch.nn as nn
 
 import nncore
-from .bricks import NORMS, build_act_layer, build_msg_layer, build_norm_layer
+from .bricks import (NORMS, build_act_layer, build_msg_pass_layer,
+                     build_norm_layer)
 
 
 @nncore.bind_getter('order')
 class MsgPassModule(nn.Module):
     """
-    A module that bundles massage passing, normalization and activation layers.
+    A module that bundles message passing, normalization and activation layers.
 
     Args:
         in_features (int): Number of input features.
         out_features (int): Number of output features.
         bias (str or bool, optional): Whether to add the bias term in the
-            massage passing layer. If ``bias='auto'``, the module will decide
+            message passing layer. If ``bias='auto'``, the module will decide
             it automatically base on whether it has a normalization layer.
             Default: ``'auto'``.
-        msg_pass_cfg (dict, optional): The config of massage passing layer.
-            Default: ``dict(type='GCN')``
-        norm_cfg (dict, optional): The config of normalization layer. Default:
-            ``dict(type='BN1d')``.
-        act_cfg (dict, optional): The config of activation layer. Default:
+        msg_pass_cfg (dict, optional): The config of the message passing layer.
+            Default: ``dict(type='GCN')``.
+        norm_cfg (dict, optional): The config of the normalization layer.
+            Default: ``dict(type='BN1d')``.
+        act_cfg (dict, optional): The config of the activation layer. Default:
             ``dict(type='ReLU', inplace=True)``.
         order (tuple[str], optional): The order of layers. It is expected to
             be a sequence of ``'msg_pass'``, ``'norm'`` and ``'act'``. Default:
@@ -43,7 +44,7 @@ class MsgPassModule(nn.Module):
         _order = []
         for layer in order:
             if layer == 'msg_pass':
-                self.msg_pass = build_msg_layer(
+                self.msg_pass = build_msg_pass_layer(
                     msg_pass_cfg,
                     in_features=in_features,
                     out_features=out_features,
@@ -88,24 +89,25 @@ class MsgPassModule(nn.Module):
 
 def build_msg_pass_modules(dims, with_last_act=False, **kwargs):
     """
-    Build a module list containing massage passing, normalization and
+    Build a module list containing message passing, normalization and
     activation layers.
 
     Args:
         dims (list[int]): The sequence of numbers of dimensions of features.
         with_last_act (bool, optional): Whether to add an activation layer
-            after the last massage passing layer. Default: ``False``.
+            after the last message passing layer. Default: ``False``.
 
     Returns:
         :obj:`nn.ModuleList`: The constructed module list.
     """
-    cfg, layers = dict(), []
+    cfg, layers = [], []
     _kwargs = kwargs.copy()
 
     for key, value in _kwargs.items():
         if isinstance(value, list):
             assert len(value) == len(dims) - 1
-            cfg[key] = _kwargs.pop(key)
+            cfg.append(key)
+    cfg = {k: _kwargs.pop(k) for k in cfg}
 
     for i in range(len(dims) - 1):
         if i == len(dims) - 2:

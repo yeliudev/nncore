@@ -86,3 +86,12 @@ class Hook(object):
 
     def last_iter_in_epoch(self, engine):
         return engine.iter_in_epoch + 1 == len(engine.data_loaders['train'])
+
+    def last_stage(self, engine):
+        return engine.stage + 1 == engine.max_stages
+
+    def last_epoch(self, engine):
+        return engine.epoch + 1 == engine.max_epochs
+
+    def last_iter(self, engine):
+        return engine.iter + 1 == engine.max_iters

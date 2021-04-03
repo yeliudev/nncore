@@ -10,7 +10,8 @@ from .builder import HOOKS
 @HOOKS.register()
 class CheckpointHook(Hook):
     """
-    Save checkpoints every specified epoch during training.
+    Save checkpoints every specified epoch during training. Checkpoint of the
+    last epoch will always be saved regardless of ``interval``.
 
     Args:
         interval (int, optional): The interval of saving checkpoints. Default:
@@ -44,7 +45,8 @@ class CheckpointHook(Hook):
 
     @master_only
     def after_train_epoch(self, engine):
-        if not self.every_n_epochs(engine, self._interval):
+        if not self.last_epoch(engine) and not self.every_n_epochs(
+                engine, self._interval):
             return
 
         filename = 'epoch_{}.pth'.format(engine.epoch + 1)

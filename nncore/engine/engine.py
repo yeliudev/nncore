@@ -208,8 +208,9 @@ class Engine(object):
 
     def reset_states(self):
         self.buffer.clear()
-        self._max_stages = len(self.stages)
-        self._max_epochs = sum(stage['epochs'] for stage in self.stages)
+        self._max_stages = 0 if self.stages is None else len(self.stages)
+        self._max_epochs = 0 if self.stages is None else sum(
+            stage['epochs'] for stage in self.stages)
         self._max_iters = (len(self.data_loaders['train']) if 'train'
                            in self.data_loaders else 0) * self._max_epochs
         self._start_iter = self._stage = self._epoch = self._iter = 0
