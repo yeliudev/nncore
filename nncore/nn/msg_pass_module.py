@@ -18,8 +18,8 @@ class MsgPassModule(nn.Module):
             massage passing layer. If ``bias='auto'``, the module will decide
             it automatically base on whether it has a normalization layer.
             Default: ``'auto'``.
-        msg_cfg (dict, optional): The config of massage passing layer. Default:
-            ``dict(type='GCN')``
+        msg_pass_cfg (dict, optional): The config of massage passing layer.
+            Default: ``dict(type='GCN')``
         norm_cfg (dict, optional): The config of normalization layer. Default:
             ``dict(type='BN1d')``.
         act_cfg (dict, optional): The config of activation layer. Default:
@@ -33,7 +33,7 @@ class MsgPassModule(nn.Module):
                  in_features,
                  out_features,
                  bias='auto',
-                 msg_cfg=dict(type='GCN'),
+                 msg_pass_cfg=dict(type='GCN'),
                  norm_cfg=dict(type='BN1d'),
                  act_cfg=dict(type='ReLU', inplace=True),
                  order=('msg_pass', 'norm', 'act'),
@@ -44,7 +44,7 @@ class MsgPassModule(nn.Module):
         for layer in order:
             if layer == 'msg_pass':
                 self.msg_pass = build_msg_layer(
-                    msg_cfg,
+                    msg_pass_cfg,
                     in_features=in_features,
                     out_features=out_features,
                     bias=bias if bias != 'auto' else 'norm' not in order
@@ -109,8 +109,8 @@ def build_msg_pass_modules(dims, with_last_act=False, **kwargs):
 
     for i in range(len(dims) - 1):
         if i == len(dims) - 2:
-            msg_cfg = _kwargs.get('msg_cfg')
-            if msg_cfg is not None and msg_cfg['type'] == 'GAT':
+            _cfg = _kwargs.get('msg_pass_cfg')
+            if _cfg is not None and _cfg['type'] == 'GAT':
                 _kwargs['concat'] = False
             if not with_last_act:
                 _kwargs['order'] = ('msg_pass', )
