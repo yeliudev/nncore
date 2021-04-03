@@ -8,7 +8,7 @@ import torch
 import nncore
 from .buffer import Buffer
 from .comm import gather, is_main_process, synchronize
-from .hooks import HOOKS, Hook
+from .hooks import Hook, build_hook
 from .utils import get_checkpoint, load_checkpoint
 
 _DEFAULT_STAGES = dict(
@@ -24,8 +24,8 @@ _DEFAULT_HOOKS = [
 ]
 
 
-@nncore.bind_getter('mode', 'model_cfg', 'hooks', 'max_stages', 'max_epochs',
-                    'max_iters', 'start_iter', 'stage', 'epoch', 'iter')
+@nncore.bind_getter('mode', 'max_stages', 'max_epochs', 'max_iters',
+                    'start_iter', 'stage', 'epoch', 'iter')
 class Engine(object):
     """
     An engine that can take over the whole training, validation and testing
@@ -160,9 +160,11 @@ class Engine(object):
 
         if isinstance(stages, dict):
             stages.update(kwargs)
-        self.stages = stages if isinstance(stages, (list, tuple)) else [stages]
+            self.stages = [stages]
+        else:
+            self.stages = stages
 
-        self._hooks = OrderedDict()
+        self.hooks = OrderedDict()
         if hooks is not None:
             self.register_hook(hooks)
 
@@ -201,7 +203,7 @@ class Engine(object):
         return self._iter - len(self.data_loaders['train']) * self._epoch
 
     def _call_hook(self, name):
-        for hook in self._hooks.values():
+        for hook in self.hooks.values():
             getattr(hook, name)(self)
 
     def reset_states(self):
@@ -218,7 +220,7 @@ class Engine(object):
 
         Args:
             hook (list or :obj:`Hook` or dict or str): The hook or list of
-                hooks to be registered. Each hook could be represented as a
+                hooks to be registered. Each hook should be represented as a
                 :obj:`Hook`, a dict or a str.
             before (str, optional): Name of the hook to be inserted before. If
                 not specified, the new hook will be added to the end of hook
@@ -231,30 +233,29 @@ class Engine(object):
                 self.register_hook(
                     h, before=before, overwrite=overwrite, **kwargs)
             return
-        elif isinstance(hook, dict):
-            hook = nncore.build_object(hook, HOOKS, **kwargs)
-        elif isinstance(hook, str):
-            hook = HOOKS.get(hook)(**kwargs)
+        elif isinstance(hook, (dict, str)):
+            hook = build_hook(hook, **kwargs)
         elif not isinstance(hook, Hook):
-            raise TypeError("hook must be a Hook or dict, but got '{}'".format(
-                type(hook)))
+            raise TypeError(
+                "hook must be a Hook, a dict or a string, but got '{}'".format(
+                    type(hook)))
 
-        if hook.name in self._hooks:
+        if hook.name in self.hooks:
             if overwrite:
-                self._hooks.pop(hook.name)
+                self.hooks.pop(hook.name)
             else:
                 raise KeyError("hook '{}' exists".format(hook.name))
 
-        self._hooks[hook.name] = hook
+        self.hooks[hook.name] = hook
 
         if before is not None:
-            if before not in self._hooks:
+            if before not in self.hooks:
                 raise ValueError("hook '{}' not found".format(before))
 
-            keys = list(self._hooks.keys())
+            keys = list(self.hooks.keys())
             idx = keys.index(before)
             for key in keys[idx:-1]:
-                self._hooks.move_to_end(key)
+                self.hooks.move_to_end(key)
 
     def build_optimizer(self, optimizer):
         """
@@ -343,9 +344,9 @@ class Engine(object):
 
         if callable(self.batch_processor):
             output = self.batch_processor(
-                self.model, data, mode=self._mode, **self._model_cfg)
+                self.model, data, mode=self._mode, **self._kwargs)
         else:
-            output = self.model(data, mode=self._mode, **self._model_cfg)
+            output = self.model(data, mode=self._mode, **self._kwargs)
 
         self.losses = {k: v for k, v in output.items() if 'loss' in k}
         if 'loss' not in output:
@@ -366,10 +367,10 @@ class Engine(object):
 
         if callable(self.batch_processor):
             output = self.batch_processor(
-                self.model, data, mode=self._mode, **self._model_cfg)
+                self.model, data, mode=self._mode, **self._kwargs)
         else:
             with torch.no_grad():
-                output = self.model(data, mode=self._mode, **self._model_cfg)
+                output = self.model(data, mode=self._mode, **self._kwargs)
 
         if any('loss' in key for key in output) and 'loss' not in output:
             output['loss'] = sum(v for k, v in output.items() if 'loss' in k)
@@ -385,10 +386,10 @@ class Engine(object):
     def test_iter(self, data):
         if callable(self.batch_processor):
             output = self.batch_processor(
-                self.model, data, mode=self._mode, **self._model_cfg)
+                self.model, data, mode=self._mode, **self._kwargs)
         else:
             with torch.no_grad():
-                output = self.model(data, mode=self._mode, **self._model_cfg)
+                output = self.model(data, mode=self._mode, **self._kwargs)
 
         for key, value in output.items():
             self.buffer.update(
@@ -494,7 +495,7 @@ class Engine(object):
             eval_mode (bool, optional): Whether to only run evaluation.
                 Default: ``False``.
         """
-        self._model_cfg = kwargs
+        self._kwargs = kwargs
 
         if eval_mode:
             self.test_epoch()

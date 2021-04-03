@@ -4,7 +4,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import nncore
 
+
+@nncore.bind_getter('bins', 'momentum', 'loss_weight')
 class GHMCLoss(nn.Module):
     """
     Gradient Harmonized Classification Loss introduced in [1].
@@ -22,7 +25,6 @@ class GHMCLoss(nn.Module):
 
     def __init__(self, bins=10, momentum=0, loss_weight=1):
         super(GHMCLoss, self).__init__()
-
         self._bins = bins
         self._momentum = momentum
         self._loss_weight = loss_weight
@@ -33,6 +35,10 @@ class GHMCLoss(nn.Module):
         if momentum > 0:
             acc_sum = torch.zeros(bins)
             self.register_buffer('acc_sum', acc_sum)
+
+    def extra_repr(self):
+        return 'bins={}, momentum={}, loss_weight={}'.format(
+            self._bins, self._momentum, self._loss_weight)
 
     def forward(self, pred, target):
         weights = torch.zeros_like(pred)

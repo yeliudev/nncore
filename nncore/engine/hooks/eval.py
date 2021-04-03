@@ -1,6 +1,7 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-from .base import HOOKS, Hook
+from .base import Hook
+from .builder import HOOKS
 
 
 @HOOKS.register()

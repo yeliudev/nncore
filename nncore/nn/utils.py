@@ -8,18 +8,6 @@ import torch
 import torch.nn as nn
 
 
-def _fuse_conv_bn(conv, bn):
-    conv_w = conv.weight
-    conv_b = conv.bias if conv.bias is not None else torch.zeros_like(
-        bn.running_mean)
-
-    factor = bn.weight / torch.sqrt(bn.running_var + bn.eps)
-    conv.weight = nn.Parameter(conv_w *
-                               factor.reshape([conv.out_channels, 1, 1, 1]))
-    conv.bias = nn.Parameter((conv_b - bn.running_mean) * factor + bn.bias)
-    return conv
-
-
 def fuse_conv_bn(model):
     """
     During inference, the functionary of batch norm layers is turned off but
@@ -35,27 +23,31 @@ def fuse_conv_bn(model):
         :obj:`nn.Module`: The module whose ``Conv-BN`` structure has been \
             fused.
     """
-    last_conv = None
-    last_conv_name = None
+    last_conv_name = last_conv = None
 
     for name, child in model.named_children():
         if isinstance(child, (nn.BatchNorm2d, nn.SyncBatchNorm)):
             if last_conv is None:
                 continue
-            fused_conv = _fuse_conv_bn(last_conv, child)
-            model._modules[last_conv_name] = fused_conv
+            conv_w = last_conv.weight
+            conv_b = last_conv.bias or torch.zeros_like(child.running_mean)
+            factor = child.weight / torch.sqrt(child.running_var + child.eps)
+            last_conv.weight = nn.Parameter(
+                conv_w * factor.reshape([last_conv.out_channels, 1, 1, 1]))
+            last_conv.bias = nn.Parameter((conv_b - child.running_mean) *
+                                          factor + child.bias)
+            model._modules[last_conv_name] = last_conv
             model._modules[name] = nn.Identity()
             last_conv = None
         elif isinstance(child, nn.Conv2d):
-            last_conv = child
             last_conv_name = name
+            last_conv = child
         else:
             fuse_conv_bn(child)
 
     return model
 
 
-@torch.no_grad()
 def update_bn_stats(model, data_loader, num_iters=200):
     """
     Recompute and update the batch norm stats to make them more precise. During
@@ -68,13 +60,13 @@ def update_bn_stats(model, data_loader, num_iters=200):
     average of per-batch mean/variance instead of the running average.
 
     Args:
-        model (:obj:`nn.Module`): The model whose bn stats will be recomputed.
+        model (:obj:`nn.Module`): The model whose BN stats will be recomputed.
 
             Note that:
 
             1. This function will not alter the training mode of the given
                model. Users are responsible for setting the layers that needs
-               precise-bn to training mode, prior to calling this function.
+               Precise-BN to training mode, prior to calling this function.
 
             2. Be careful if your models contain other stateful layers in
                addition to BN, i.e. layers whose state can change in forward

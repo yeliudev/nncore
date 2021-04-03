@@ -4,7 +4,8 @@ from types import MethodType
 
 import torch
 
-from .base import HOOK_NAMES, HOOKS, Hook
+from .base import HOOK_NAMES, Hook
+from .builder import HOOKS
 
 
 @HOOKS.register()

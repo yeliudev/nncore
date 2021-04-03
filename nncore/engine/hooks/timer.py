@@ -4,7 +4,8 @@ from datetime import timedelta
 
 import nncore
 from ..comm import master_only
-from .base import HOOKS, Hook
+from .base import Hook
+from .builder import HOOKS
 
 
 @HOOKS.register()

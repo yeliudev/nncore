@@ -1,6 +1,7 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-from .base import HOOKS, Hook
+from .base import Hook
+from .builder import HOOKS, build_hook
 from .checkpoint import CheckpointHook
 from .closure import ClosureHook
 from .eval import EvalHook
@@ -13,7 +14,7 @@ from .sampler_seed import SamplerSeedHook
 from .timer import TimerHook
 
 __all__ = [
-    'HOOKS', 'Hook', 'CheckpointHook', 'ClosureHook', 'EvalHook',
+    'Hook', 'HOOKS', 'build_hook', 'CheckpointHook', 'ClosureHook', 'EvalHook',
     'CommandLineWriter', 'EventWriterHook', 'JSONWriter', 'TensorboardWriter',
     'LrUpdaterHook', 'EmptyCacheHook', 'OptimizerHook', 'SamplerSeedHook',
     'TimerHook'

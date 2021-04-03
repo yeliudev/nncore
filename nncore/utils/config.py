@@ -154,7 +154,7 @@ class Config(object):
     @staticmethod
     def from_file(filename, freeze=False):
         """
-        Initialize a :obj:`Config` object from a file.
+        Build a :obj:`Config` object from a file.
 
         Args:
             filename (str): Path to the config file. Currently supported
@@ -275,9 +275,9 @@ class Config(object):
         setattr(self._cfg, key, value)
 
     def __repr__(self):
-        attrs = '' if self._filename is None else "(filename: '{}')".format(
-            self._filename)
-        return '{}{}: {}'.format(self.__class__.__name__, attrs, self._cfg)
+        return '{}{}: {}'.format(
+            self.__class__.__name__, '' if self._filename is None else
+            "(filename: '{}')".format(self._filename), self._cfg)
 
     def update(self, *args, **kwargs):
         args = [arg._cfg if isinstance(arg, Config) else arg for arg in args]

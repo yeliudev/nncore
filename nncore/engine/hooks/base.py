@@ -4,8 +4,6 @@ from types import MethodType
 
 import nncore
 
-HOOKS = nncore.Registry('hook')
-
 HOOK_NAMES = [
     'before_launch', 'after_launch', 'before_stage', 'after_stage',
     'before_epoch', 'after_epoch', 'before_iter', 'after_iter',

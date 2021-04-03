@@ -4,13 +4,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import nncore
 
-def sigmoid_focal_loss(pred,
-                       target,
-                       alpha=-1,
-                       gamma=2,
-                       reduction='mean',
-                       loss_weight=1):
+
+def sigmoid_focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
     """
     Focal Loss introduced in [1].
 
@@ -26,7 +23,6 @@ def sigmoid_focal_loss(pred,
         reduction (str, optional): Reduction method. Currently supported
             methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
             ``'mean'``.
-        loss_weight (float, optional): Weight of the loss. Default: ``1``.
 
     Returns:
         :obj:`torch.Tensor`: The loss tensor with reduction option applied.
@@ -49,16 +45,10 @@ def sigmoid_focal_loss(pred,
     elif reduction == 'sum':
         loss = loss.sum()
 
-    loss *= loss_weight
     return loss
 
 
-def sigmoid_focal_loss_star(pred,
-                            target,
-                            alpha=-1,
-                            gamma=1,
-                            reduction='mean',
-                            loss_weight=1):
+def sigmoid_focal_loss_star(pred, target, alpha=-1, gamma=1, reduction='mean'):
     """
     Focal Loss* introduced in [1].
 
@@ -74,7 +64,6 @@ def sigmoid_focal_loss_star(pred,
         reduction (str, optional): Reduction method. Currently supported
             methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
             ``'mean'``.
-        loss_weight (float, optional): Weight of the loss. Default: ``1``.
 
     Returns:
         :obj:`torch.Tensor`: The loss tensor with reduction option applied.
@@ -94,10 +83,10 @@ def sigmoid_focal_loss_star(pred,
     elif reduction == 'sum':
         loss = loss.sum()
 
-    loss *= loss_weight
     return loss
 
 
+@nncore.bind_getter('alpha', 'gamma', 'reduction', 'loss_weight')
 class FocalLoss(nn.Module):
     """
     Focal Loss introduced in [1].
@@ -124,17 +113,21 @@ class FocalLoss(nn.Module):
         self._reduction = reduction
         self._loss_weight = loss_weight
 
+    def extra_repr(self):
+        return 'alpha={}, gamma={}, reduction={}, loss_weight={}'.format(
+            self._alpha, self._gamma, self._reduction, self._loss_weight)
+
     def forward(self, pred, target):
         return sigmoid_focal_loss(
             pred,
             target,
             alpha=self._alpha,
             gamma=self._gamma,
-            reduction=self._reduction,
-            loss_weight=self._loss_weight)
+            reduction=self._reduction) * self._loss_weight
 
 
-class FocalLossStar(nn.Module):
+@nncore.bind_getter('alpha', 'gamma', 'reduction', 'loss_weight')
+class FocalLossStar(FocalLoss):
     """
     Focal Loss* introduced in [1].
 
@@ -154,11 +147,11 @@ class FocalLossStar(nn.Module):
     """
 
     def __init__(self, alpha=-1, gamma=1, reduction='mean', loss_weight=1):
-        super(FocalLossStar, self).__init__()
-        self._alpha = alpha
-        self._gamma = gamma
-        self._reduction = reduction
-        self._loss_weight = loss_weight
+        super(FocalLossStar, self).__init__(
+            alpha=alpha,
+            gamma=gamma,
+            reduction=reduction,
+            loss_weight=loss_weight)
 
     def forward(self, pred, target):
         return sigmoid_focal_loss_star(
@@ -166,5 +159,4 @@ class FocalLossStar(nn.Module):
             target,
             alpha=self._alpha,
             gamma=self._gamma,
-            reduction=self._reduction,
-            loss_weight=self._loss_weight)
+            reduction=self._reduction) * self._loss_weight

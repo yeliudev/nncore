@@ -5,8 +5,8 @@ from collections import defaultdict
 from .binder import bind_getter, bind_method
 
 
-@bind_getter('name', 'items')
-@bind_method('_items', ['__contains__', '__len__', 'get', 'pop'])
+@bind_getter('name')
+@bind_method('_items', ['__contains__', '__len__', 'get', 'pop', 'items'])
 class Registry(object):
     """
     A registry to map strings to objects.
@@ -62,14 +62,12 @@ class Registry(object):
             self.set_group(name, group)
 
     def register(self, obj=None, name=None, group=None):
-        if isinstance(obj, (list, tuple)):
-            assert name is None
-            for o in obj:
-                self._register(o, name=name, group=group)
-            return
-
         if obj is not None:
-            self._register(obj, name=name, group=group)
+            if isinstance(name, (list, tuple)):
+                for n in name:
+                    self._register(obj, name=n, group=group)
+            else:
+                self._register(obj, name=name, group=group)
             return
 
         def _wrapper(obj):
@@ -99,14 +97,14 @@ class Registry(object):
 
 def build_object(cfg, parent, default=None, **kwargs):
     """
-    Initialize an object from a dict.
+    Build an object from a dict.
 
     The dict must contain a key ``type``, which is a indicating the object
     type. Remaining fields are treated as the arguments for constructing the
     object.
 
     Args:
-        cfg (any): The object or object configs.
+        cfg (any): The object, object config or object name.
         parent (any): The module or a list of modules which may contain the
             expected object.
         default (any, optional): The default value when the object is not
@@ -115,13 +113,15 @@ def build_object(cfg, parent, default=None, **kwargs):
     Returns:
         any: The constructed object.
     """
-    if not hasattr(cfg, 'copy'):
+    if isinstance(cfg, str):
+        cfg = dict(type=cfg)
+    elif not isinstance(cfg, dict):
         return cfg
 
     if isinstance(parent, (list, tuple)):
         for p in parent:
             obj = build_object(cfg, p, **kwargs)
-            if obj != default:
+            if obj is not None:
                 return obj
         return default
 

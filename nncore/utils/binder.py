@@ -1,5 +1,7 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+from copy import deepcopy
+
 
 def bind_getter(*vars):
     """
@@ -35,8 +37,8 @@ def bind_getter(*vars):
 
     def _wrapper(cls):
         for var in vars:
-            meth = property(
-                lambda self, key='_{}'.format(var): getattr(self, key, None))
+            meth = property(lambda self, key='_{}'.format(var): deepcopy(
+                getattr(self, key, None)))
             setattr(cls, var, meth)
         return cls
 

@@ -10,7 +10,8 @@ from torch.utils.data import DataLoader
 
 import nncore
 from ..comm import get_world_size, master_only
-from .base import HOOKS, Hook
+from .base import Hook
+from .builder import HOOKS
 
 WRITERS = nncore.Registry('writer')
 

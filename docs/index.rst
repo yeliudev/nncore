@@ -21,8 +21,7 @@ NNCore is a library that provides common functionalities for Machine Learning an
    nncore.engine
    nncore.image
    nncore.io
-   nncore.losses
-   nncore.modules
+   nncore.nn
    nncore.ops
    nncore.parallel
    nncore.utils

@@ -8,7 +8,8 @@ from torch._utils import (_flatten_dense_tensors, _take_tensors,
 from torch.nn.utils import clip_grad
 
 from ..comm import is_distributed
-from .base import HOOKS, Hook
+from .base import Hook
+from .builder import HOOKS
 
 
 @HOOKS.register()

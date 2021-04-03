@@ -5,7 +5,7 @@ import torch.nn as nn
 
 import nncore
 
-ACTIVATION_LAYERS = nncore.Registry('activation layer')
+ACTIVATIONS = nncore.Registry('activation')
 
 
 class _SwishImplementation(torch.autograd.Function):
@@ -23,7 +23,7 @@ class _SwishImplementation(torch.autograd.Function):
         return grad_output * (sigmoid_i * (1 + i * (1 - sigmoid_i)))
 
 
-@ACTIVATION_LAYERS.register()
+@ACTIVATIONS.register()
 class EffSwish(nn.Module):
     """
     An efficient implementation of Swish activation layer introduced in [1].
@@ -36,7 +36,7 @@ class EffSwish(nn.Module):
         return _SwishImplementation.apply(x)
 
 
-@ACTIVATION_LAYERS.register()
+@ACTIVATIONS.register()
 class Swish(nn.Module):
     """
     Swish activation layer introduced in [1].
@@ -49,7 +49,7 @@ class Swish(nn.Module):
         return x * torch.sigmoid(x)
 
 
-@ACTIVATION_LAYERS.register()
+@ACTIVATIONS.register()
 class Clamp(nn.Module):
     """
     Clamp activation layer.
@@ -69,4 +69,14 @@ class Clamp(nn.Module):
 
 
 def build_act_layer(cfg, **kwargs):
-    return nncore.build_object(cfg, [ACTIVATION_LAYERS, nn], **kwargs)
+    """
+    Build an activation layer from a dict. This method searches for layers in
+    :obj:`ACTIVATIONS` first, and then fall back to :obj:`torch.nn`.
+
+    Args:
+        cfg (dict or str): The config or name of the layer.
+
+    Returns:
+        :obj:`nn.Module`: The constructed layer.
+    """
+    return nncore.build_object(cfg, [ACTIVATIONS, nn], **kwargs)

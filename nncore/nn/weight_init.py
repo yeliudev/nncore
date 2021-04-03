@@ -77,7 +77,7 @@ def xavier_init_(module, gain=1, bias=0, distribution='normal'):
 
 def kaiming_init_(module,
                   a=0,
-                  mode='fan_in',
+                  mode='fan_out',
                   nonlinearity='relu',
                   bias=0,
                   distribution='normal'):
@@ -98,6 +98,7 @@ def kaiming_init_(module,
     References:
         1. He et al. (https://arxiv.org/abs/1502.01852)
     """
+    assert distribution in ('normal', 'uniform')
     if distribution == 'normal':
         nn.init.kaiming_normal_(
             module.weight, a=a, mode=mode, nonlinearity=nonlinearity)

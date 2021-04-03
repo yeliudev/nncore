@@ -2,27 +2,29 @@
 
 import torch.nn as nn
 
-from .bricks import NORM_LAYERS, build_act_layer, build_norm_layer
+import nncore
+from .bricks import NORMS, build_act_layer, build_norm_layer
 
 
+@nncore.bind_getter('order')
 class LinearModule(nn.Module):
     """
-    A module that bundles linear-norm-activation layers.
+    A module that bundles linear, normalization and activation layers.
 
     Args:
         in_features (int): Number of input features.
         out_features (int): Number of output features.
         bias (str or bool, optional): Whether to add the bias term in the
             linear layer. If ``bias='auto'``, the module will decide it
-            automatically base on whether it has a norm layer. Default:
-            ``'auto'``.
-        norm_cfg (dict, optional): The config of norm layer. Default:
+            automatically base on whether it has a normalization layer.
+            Default: ``'auto'``.
+        norm_cfg (dict, optional): The config of normalization layer. Default:
             ``dict(type='BN1d')``.
         act_cfg (dict, optional): The config of activation layer. Default:
             ``dict(type='ReLU', inplace=True)``.
-        order (tuple[str], optional): The order of linear/norm/activation
-            layers. It is expected to be a sequence of ``'linear'``, ``'norm'``
-            and ``'act'``. Default: ``('linear', 'norm', 'act')``.
+        order (tuple[str], optional): The order of layers. It is expected to
+            be a sequence of ``'linear'``, ``'norm'`` and ``'act'``. Default:
+            ``('linear', 'norm', 'act')``.
     """
 
     def __init__(self,
@@ -33,33 +35,39 @@ class LinearModule(nn.Module):
                  act_cfg=dict(type='ReLU', inplace=True),
                  order=('linear', 'norm', 'act')):
         super(LinearModule, self).__init__()
-        self.with_norm = 'norm' in order and norm_cfg is not None
-        self.with_act = 'act' in order and act_cfg is not None
-        self.order = order
 
-        self.linear = nn.Linear(
-            in_features,
-            out_features,
-            bias=bias if bias != 'auto' else not self.with_norm
-            or norm_cfg['type'] in NORM_LAYERS.group('drop'))
+        _order = []
+        for layer in order:
+            if layer == 'linear':
+                self.linear = nn.Linear(
+                    in_features,
+                    out_features,
+                    bias=bias if bias != 'auto' else 'norm' not in order
+                    or norm_cfg is None
+                    or norm_cfg['type'] in NORMS.group('drop'))
+            elif layer == 'norm' and norm_cfg is not None:
+                assert norm_cfg['type'] in NORMS.group('1d')
+                if 'Drop' not in norm_cfg['type']:
+                    _norm_cfg = norm_cfg.copy()
+                    _norm_cfg.setdefault('num_features', out_features)
+                self.norm = build_norm_layer(_norm_cfg)
+            elif layer == 'act' and act_cfg is not None:
+                self.act = build_act_layer(act_cfg)
+            else:
+                raise KeyError(
+                    "layer types in order must be 'linear', 'norm' or 'act', "
+                    "but got '{}'".format(layer))
+            _order.append(layer)
 
-        if self.with_norm:
-            assert norm_cfg['type'] in NORM_LAYERS.group('1d')
-            if 'Drop' not in norm_cfg['type']:
-                norm_cfg = norm_cfg.copy()
-                norm_cfg.setdefault('num_features', out_features)
-            self.norm = build_norm_layer(norm_cfg)
-
-        if self.with_act:
-            self.act = build_act_layer(act_cfg)
+        self._order = tuple(_order)
 
     def forward(self, x):
-        for layer in self.order:
+        for layer in self._order:
             if layer == 'linear':
                 x = self.linear(x)
-            elif layer == 'norm' and self.with_norm:
+            elif layer == 'norm':
                 x = self.norm(x)
-            elif layer == 'act' and self.with_act:
+            else:
                 x = self.act(x)
         return x
 
