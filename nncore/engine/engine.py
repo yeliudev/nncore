@@ -93,13 +93,6 @@ class Engine(object):
         hooks (list[:obj:`Hook`] or list[dict] or list[str], optional): The
             list of hooks to be registered. Each hook could be represented as a
             :obj:`Hook`, a dict or a str. Default: ``_DEFAULT_HOOKS``.
-        batch_processor (callable, optional): A customized callable method
-            that processes a data batch. It should be follow the prototype of
-            ``batch_processor(model, data, mode, **kwargs) -> dict`` where
-            ``mode`` could be ``'train'``, ``'val'`` or ``'test'`` and the
-            output dict should be in the same format with ``model``. If not
-            specified, the default batch processors will be used. Default:
-            ``None``.
         buffer_size (int, optional): Maximum size of the buffer. Default:
             ``100000``.
         logger (:obj:`logging.Logger` or str or None, optional): The logger or
@@ -145,24 +138,24 @@ class Engine(object):
                  data_loaders,
                  stages=_DEFAULT_STAGES,
                  hooks=_DEFAULT_HOOKS,
-                 batch_processor=None,
                  buffer_size=100000,
                  logger=None,
                  work_dir=None,
                  **kwargs):
         self.model = model
-        self.batch_processor = batch_processor
 
         for a, b in permutations(('val', 'test')):
             if a in data_loaders and b not in data_loaders:
                 data_loaders[b] = data_loaders[a]
         self.data_loaders = data_loaders
 
-        if isinstance(stages, dict):
+        if isinstance(stages, (list, tuple)):
+            for stage in stages:
+                stage.update(kwargs)
+            self.stages = stages
+        else:
             stages.update(kwargs)
             self.stages = [stages]
-        else:
-            self.stages = stages
 
         self.hooks = OrderedDict()
         if hooks is not None:
@@ -266,13 +259,15 @@ class Engine(object):
             optimizer (:obj:`optim.Optimizer` or dict): The optimizer or an
                 optimizer config used for constructing the optimizer.
         """
-        if isinstance(optimizer, dict):
+        if isinstance(optimizer, torch.optim.Optimizer):
+            self.optimizer = optimizer
+        elif isinstance(optimizer, dict):
             self.optimizer = nncore.build_object(
                 optimizer, torch.optim, params=self.model.parameters())
-        elif isinstance(optimizer, torch.optim.Optimizer):
-            self.optimizer = optimizer
         else:
-            raise TypeError("invalid optimizer: '{}'".format(optimizer))
+            raise TypeError(
+                "optimizer should be an optim.Optimizer object or a dict, but "
+                "got: '{}'".format(optimizer))
 
     def load_checkpoint(self, checkpoint, strict=False):
         """
@@ -303,9 +298,8 @@ class Engine(object):
         Resume from a checkpoint file.
 
         Args:
-            checkpoint (dict or str): A `dict`, filename, URL or
-                ``torchvision://<model_name>`` string indicating the
-                checkpoint.
+            checkpoint (dict or str): A dict, a filename or an URL indicating
+                the checkpoint.
             strict (bool, optional): Whether to allow different params for the
                 model and checkpoint. If ``True``, raise an error when the
                 params do not match exactly. Default: ``False``.
@@ -343,16 +337,12 @@ class Engine(object):
     def train_iter(self, data):
         self._call_hook('before_train_iter')
 
-        if callable(self.batch_processor):
-            output = self.batch_processor(
-                self.model, data, mode=self._mode, **self._kwargs)
-        else:
-            output = self.model(data, mode=self._mode, **self._kwargs)
+        output = self.model(data, mode=self._mode, **self._kwargs)
 
         self.losses = {k: v for k, v in output.items() if 'loss' in k}
         if 'loss' not in output:
             self.losses['loss'] = output['loss'] = sum(
-                value for value in self.losses.values())
+                v for v in self.losses.values())
 
         for key, value in output.items():
             self.buffer.update(
@@ -366,12 +356,8 @@ class Engine(object):
     def val_iter(self, data):
         self._call_hook('before_val_iter')
 
-        if callable(self.batch_processor):
-            output = self.batch_processor(
-                self.model, data, mode=self._mode, **self._kwargs)
-        else:
-            with torch.no_grad():
-                output = self.model(data, mode=self._mode, **self._kwargs)
+        with torch.no_grad():
+            output = self.model(data, mode=self._mode, **self._kwargs)
 
         if any('loss' in key for key in output) and 'loss' not in output:
             output['loss'] = sum(v for k, v in output.items() if 'loss' in k)
@@ -385,12 +371,8 @@ class Engine(object):
         self._call_hook('after_val_iter')
 
     def test_iter(self, data):
-        if callable(self.batch_processor):
-            output = self.batch_processor(
-                self.model, data, mode=self._mode, **self._kwargs)
-        else:
-            with torch.no_grad():
-                output = self.model(data, mode=self._mode, **self._kwargs)
+        with torch.no_grad():
+            output = self.model(data, mode=self._mode, **self._kwargs)
 
         for key, value in output.items():
             self.buffer.update(
@@ -455,13 +437,12 @@ class Engine(object):
 
         while self.epoch_in_stage < self.cur_stage['epochs']:
             self.train_epoch()
-            if 'val' in self.data_loaders or 'test' in self.data_loaders:
-                cfg = self.cur_stage.get('validation')
-                if cfg is not None:
-                    itr, off = cfg.get('interval', 0), cfg.get('offset', 0)
-                    epoch = self.epoch_in_stage
-                    if itr > 0 and epoch > off and epoch % itr == 0:
-                        self.val_epoch()
+            cfg = self.cur_stage.get('validation')
+            if cfg is not None and 'val' in self.data_loaders:
+                interval, offset = cfg.get('interval', 0), cfg.get('offset', 0)
+                epoch = self.epoch_in_stage
+                if interval > 0 and epoch > offset and epoch % interval == 0:
+                    self.val_epoch()
 
         self._call_hook('after_stage')
         self._stage += 1
@@ -493,7 +474,7 @@ class Engine(object):
         Launch the engine.
 
         Args:
-            eval_mode (bool, optional): Whether to only run evaluation.
+            eval_mode (bool, optional): Whether to run evaluation only.
                 Default: ``False``.
         """
         self._kwargs = kwargs
