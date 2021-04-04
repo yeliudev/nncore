@@ -39,8 +39,8 @@ class Engine(object):
             a ``_num_samples`` field indicating the number of samples in the
             current batch, and optionally an ``out`` field denoting the model
             outputs to be collected and evaluated.
-        data_loaders (dict): The data loaders for training, validating and
-            testing. It should be in the format of
+        data_loaders (dict): The potential data loaders for training,
+            validation and testing. It should be in the format of
             ``dict(train=train_loader, val=val_loader, test=test_loader)``.
         stages (list[dict], dict, optional): The stage config or list of stage
             configs to be scheduled. Each stage config should be a dict

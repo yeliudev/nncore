@@ -224,6 +224,10 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
 
     checkpoint = dict(state_dict=state_dict, meta=meta)
     if optimizer is not None:
-        checkpoint['optimizer'] = optimizer.state_dict()
+        checkpoint['optimizer'] = {
+            k: {s: t.cpu()
+                for s, t in v.items()} if k == 'state' else v
+            for k, v in optimizer.state_dict().items()
+        }
 
     torch.save(checkpoint, filename)

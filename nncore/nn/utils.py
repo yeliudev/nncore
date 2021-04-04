@@ -121,7 +121,8 @@ def publish_model(in_file,
 
     Args:
         in_file (str): Path to the input checkpoint file.
-        out_file (str): Path to the output checkpoint file.
+        out_file (str): Path to the output checkpoint file. It is expected to
+            end with ``'.pth'``.
         keys_to_remove (list[str], optional): The list of keys to be removed
             from the checkpoint. Default: ``['optimizer']``.
         hash_type (str, optional): Type of the hash algorithm. Currently
@@ -131,15 +132,19 @@ def publish_model(in_file,
             ``'sha3_512'``, ``'shake_128'`` and ``'shake_256'``. Default:
             ``'sha256'``.
     """
+    assert out_file.endswith('.pth')
+    nncore.file_exist(in_file, raise_error=True)
     checkpoint = torch.load(in_file, map_location='cpu')
+
     for key in keys_to_remove:
         if key in checkpoint:
             del checkpoint[key]
+
     torch.save(checkpoint, out_file)
 
-    with open(in_file, 'rb') as f:
+    with open(out_file, 'rb') as f:
         hasher = hashlib.new(hash_type, data=f.read())
         hash_value = hasher.hexdigest()
 
-    final_file = '{}-{}.pth'.format(out_file.rstrip('.pth'), hash_value[:8])
-    nncore.rename(out_file, final_file)
+    hashed_file = '{}-{}.pth'.format(out_file[:-4], hash_value[:8])
+    nncore.rename(out_file, hashed_file)
