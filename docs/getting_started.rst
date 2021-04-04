@@ -1,5 +1,5 @@
 Installation
--------------------------
+--------------------
 
 You may install nncore directly from PyPI
 
@@ -16,7 +16,7 @@ or manually from source
    pip install -e .
 
 Usage
--------------------------
+--------------------
 
 You can easily import nncore in your own projects using the following command.
 

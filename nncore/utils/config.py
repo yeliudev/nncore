@@ -140,7 +140,7 @@ class CfgNode(OrderedDict):
 @bind_getter('filename')
 @bind_method('_cfg', [
     '__getitem__', '__setitem__', '__len__', '__iter__', '__eq__', 'get',
-    'pop', 'freeze', 'unfreeze', 'setdefault', 'copy', 'to_dict'
+    'pop', 'freeze', 'unfreeze', 'setdefault', 'to_dict'
 ])
 class Config(object):
     """
@@ -282,3 +282,6 @@ class Config(object):
     def update(self, *args, **kwargs):
         args = [arg._cfg if isinstance(arg, Config) else arg for arg in args]
         self._cfg.update(*args, **kwargs)
+
+    def copy(self):
+        return deepcopy(self)
