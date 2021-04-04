@@ -169,7 +169,7 @@ class GAT(nn.Module):
         if self._with_bias:
             self.bias = nn.Parameter(torch.Tensor(out_features))
 
-        self.dropout = nn.Dropout(p=p, inplace=True)
+        self.dropout = nn.Dropout(p=p)
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
 
         self.reset_parameters()
