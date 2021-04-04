@@ -97,6 +97,17 @@ def pure_ext(path):
     return osp.splitext(osp.basename(path))[1]
 
 
+def rename(old_path, new_path):
+    """
+    Rename a file or a directory.
+
+    Args:
+        old_path (str): Old path to the file or directory.
+        new_path (str): New path to the file or directory.
+    """
+    os.rename(old_path, new_path)
+
+
 def dir_exist(path, raise_error=False):
     """
     Check whether a directory exists.
@@ -154,7 +165,7 @@ def mkdir(dir_name, raise_error=False, keep_empty=False):
 
 def remove(path, raise_error=False):
     """
-    Remove a file or directory.
+    Remove a file or a directory.
 
     Args:
         path (str): Path to the file or directory.

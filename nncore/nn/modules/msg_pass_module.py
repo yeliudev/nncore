@@ -3,8 +3,8 @@
 import torch.nn as nn
 
 import nncore
-from .bricks import (NORMS, build_act_layer, build_msg_pass_layer,
-                     build_norm_layer)
+from ..bricks import (NORMS, build_act_layer, build_msg_pass_layer,
+                      build_norm_layer)
 
 
 @nncore.bind_getter('in_features', 'out_features', 'bias', 'order')

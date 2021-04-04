@@ -1,11 +1,12 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import hashlib
-import os
 from itertools import islice
 
 import torch
 import torch.nn as nn
+
+import nncore
 
 
 def fuse_conv_bn(model):
@@ -141,4 +142,4 @@ def publish_model(in_file,
         hash_value = hasher.hexdigest()
 
     final_file = '{}-{}.pth'.format(out_file.rstrip('.pth'), hash_value[:8])
-    os.rename(out_file, final_file)
+    nncore.rename(out_file, final_file)
