@@ -70,5 +70,7 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=get_install_requires(),
-    extras_require={'docs': ['torch>=1.8', 'torchvision>=0.9']},
+    # TODO: Delete me when https://github.com/sphinx-doc/sphinx/pull/9053 be
+    # merged and released.
+    extras_require={'docs': ['docutils>=0.16,<0.17']},
     packages=find_packages(exclude=('.github', 'docs', 'examples', 'tests')))

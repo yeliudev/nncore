@@ -13,16 +13,10 @@ Losses
 .. automodule:: nncore.nn.losses
    :members:
 
-Linear Module
+Modules
 -------------------------
 
-.. automodule:: nncore.nn.linear_module
-   :members:
-
-Massage Passing Module
--------------------------
-
-.. automodule:: nncore.nn.msg_pass_module
+.. automodule:: nncore.nn.modules
    :members:
 
 Weight Init
