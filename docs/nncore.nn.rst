@@ -28,7 +28,7 @@ Massage Passing Module
 Weight Init
 -------------------------
 
-.. automodule:: nncore.nn.weight_init
+.. automodule:: nncore.nn.init
    :members:
 
 Utils

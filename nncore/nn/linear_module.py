@@ -6,7 +6,7 @@ import nncore
 from .bricks import NORMS, build_act_layer, build_norm_layer
 
 
-@nncore.bind_getter('order')
+@nncore.bind_getter('in_features', 'out_features', 'bias', 'order')
 class LinearModule(nn.Module):
     """
     A module that bundles linear, normalization and activation layers.
@@ -35,16 +35,16 @@ class LinearModule(nn.Module):
                  act_cfg=dict(type='ReLU', inplace=True),
                  order=('linear', 'norm', 'act')):
         super(LinearModule, self).__init__()
+        self._in_features = in_features
+        self._out_features = out_features
+        self._bias = bias if bias != 'auto' else norm_cfg is None or norm_cfg[
+            'type'] in NORMS.group('drop') or 'norm' not in order
 
         _order = []
         for layer in order:
             if layer == 'linear':
                 self.linear = nn.Linear(
-                    in_features,
-                    out_features,
-                    bias=bias if bias != 'auto' else 'norm' not in order
-                    or norm_cfg is None
-                    or norm_cfg['type'] in NORMS.group('drop'))
+                    in_features, out_features, bias=self._bias)
             elif layer == 'norm' and norm_cfg is not None:
                 assert norm_cfg['type'] in NORMS.group('1d')
                 if 'Drop' not in norm_cfg['type']:

@@ -7,7 +7,7 @@ from .bricks import (NORMS, build_act_layer, build_msg_pass_layer,
                      build_norm_layer)
 
 
-@nncore.bind_getter('order')
+@nncore.bind_getter('in_features', 'out_features', 'bias', 'order')
 class MsgPassModule(nn.Module):
     """
     A module that bundles message passing, normalization and activation layers.
@@ -40,6 +40,10 @@ class MsgPassModule(nn.Module):
                  order=('msg_pass', 'norm', 'act'),
                  **kwargs):
         super(MsgPassModule, self).__init__()
+        self._in_features = in_features
+        self._out_features = out_features
+        self._bias = bias if bias != 'auto' else norm_cfg is None or norm_cfg[
+            'type'] in NORMS.group('drop') or 'norm' not in order
 
         _order = []
         for layer in order:
@@ -48,9 +52,7 @@ class MsgPassModule(nn.Module):
                     msg_pass_cfg,
                     in_features=in_features,
                     out_features=out_features,
-                    bias=bias if bias != 'auto' else 'norm' not in order
-                    or norm_cfg is None
-                    or norm_cfg['type'] in NORMS.group('drop'),
+                    bias=self._bias,
                     **kwargs)
             elif layer == 'norm' and norm_cfg is not None:
                 assert norm_cfg['type'] in NORMS.group('1d')
