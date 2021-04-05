@@ -86,8 +86,8 @@ def init_dist(launcher='pytorch', backend='gloo', **kwargs):
             ``'pytorch'``.
         backend (:obj:`dist.Backend` or str, optional): The distribution
             backend to use. This field should be given as a :obj:`dist.Backend`
-            object or a string (e.g. ``'gloo'``) which can also be accessed
-            via :obj:`dist.Backend` attributes. Depending on build-time
+            object or a str (e.g. ``'gloo'``) which can also be accessed via
+            :obj:`dist.Backend` attributes. Depending on build-time
             configurations, valid values include ``'gloo'`` and ``'nccl'``. If
             using multiple processes per machine with ``nccl`` backend, each
             process must have exclusive access to every GPU it uses, as

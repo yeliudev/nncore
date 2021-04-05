@@ -37,7 +37,7 @@ class Engine(object):
         model (:obj:`nn.Module`): The model to be trained or tested. The
             :obj:`forward` method of the model should return a dict containing
             a ``_num_samples`` field indicating the number of samples in the
-            current batch, and optionally an ``_out`` field denoting the model
+            current batch, and optionally a ``_out`` field denoting the model
             outputs to be collected and evaluated.
         data_loaders (dict): The potential data loaders for training,
             validation and testing. It should be in the format of
@@ -210,7 +210,7 @@ class Engine(object):
 
     def register_hook(self, hook, before=None, overwrite=True, **kwargs):
         """
-        Register a hook into the engine.
+        Register a hook or a list of hooks into the engine.
 
         Args:
             hook (list or :obj:`Hook` or dict or str): The hook or list of
@@ -231,7 +231,7 @@ class Engine(object):
             hook = build_hook(hook, **kwargs)
         elif not isinstance(hook, Hook):
             raise TypeError(
-                "hook must be a Hook, a dict or a string, but got '{}'".format(
+                "hook must be a Hook, a dict or a str, but got '{}'".format(
                     type(hook)))
 
         if hook.name in self.hooks:
@@ -252,6 +252,24 @@ class Engine(object):
             keys = list(self.hooks.keys())
             for key in keys[keys.index(before):-1]:
                 self.hooks.move_to_end(key)
+
+    def unregister_hook(self, hook):
+        """
+        Unregister a hook or a list of hooks from the engine.
+
+        Args:
+            hook (list or :obj:`Hook` or str): The hook or list of hooks to be
+                unregistered. Each hook should be represented as a :obj:`Hook`
+                or a str.
+        """
+        if isinstance(hook, (list, tuple)):
+            for h in hook:
+                self.unregister_hook(h)
+            return
+
+        if isinstance(hook, Hook):
+            hook = hook.name
+        self.hooks.pop(hook)
 
     def build_optimizer(self, optimizer):
         """
@@ -277,8 +295,7 @@ class Engine(object):
 
         Args:
             checkpoint (dict or str): A dict, a filename, an URL or a
-                ``torchvision://<model_name>`` string indicating the
-                checkpoint.
+                ``torchvision://<model_name>`` str indicating the checkpoint.
             strict (bool, optional): Whether to allow different params for the
                 model and checkpoint. If ``True``, raise an error when the
                 params do not match exactly. Default: ``False``.
@@ -355,11 +372,11 @@ class Engine(object):
         self._call_hook('after_train_iter')
         self._iter += 1
 
-    @torch.no_grad()
     def val_iter(self, data):
         self._call_hook('before_val_iter')
 
-        output = self.model(data, mode=self._mode, **self._kwargs)
+        with torch.no_grad():
+            output = self.model(data, mode=self._mode, **self._kwargs)
 
         if any('loss' in key for key in output) and 'loss' not in output:
             output['loss'] = sum(v for k, v in output.items() if 'loss' in k)
@@ -372,9 +389,9 @@ class Engine(object):
 
         self._call_hook('after_val_iter')
 
-    @torch.no_grad()
     def test_iter(self, data):
-        output = self.model(data, mode=self._mode, **self._kwargs)
+        with torch.no_grad():
+            output = self.model(data, mode=self._mode, **self._kwargs)
 
         for key, value in output.items():
             self.buffer.update(

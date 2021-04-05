@@ -129,8 +129,8 @@ def collect_env_info(modules=['nncore', 'numpy', 'PIL', 'cv2']):
     Collect information about the environment.
 
     This method will try and collect all the information about the entire
-    environment, including platform, python version, cuda version, pytorch
-    version, etc., and return a string describing the environment.
+    environment, including platform, Python version, CUDA version, PyTorch
+    version, etc., and return a str describing the environment.
 
     Args:
         modules (list[str], optional): The list of module names to be checked.

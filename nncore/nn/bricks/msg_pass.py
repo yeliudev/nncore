@@ -195,7 +195,7 @@ class GAT(nn.Module):
         Args:
             x (:obj:`torch.Tensor[N, M]`): The input node features.
             graph (:obj:`torch.Tensor[N, N]`): The graph structure where
-                ``graph[i, j] == n (n > 0)`` means there is an link from node
+                ``graph[i, j] == n (n > 0)`` means there is a link from node
                 ``i`` to node ``j`` while ``graph[i, j] == 0`` means not.
         """
         assert x.size(0) == graph.size(0) == graph.size(1)

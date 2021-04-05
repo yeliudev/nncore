@@ -144,7 +144,7 @@ def list_from_file(filename, offset=0, separator=',', max_length=-1):
             ``-1``.
 
     Returns:
-        list[str]: The loaded string list.
+        list[str]: The loaded str list.
     """
     out_list, count = [], 0
     with _open(filename, 'r') as f:

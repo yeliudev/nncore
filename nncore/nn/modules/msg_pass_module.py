@@ -75,9 +75,9 @@ class MsgPassModule(nn.Module):
         Args:
             x (:obj:`torch.Tensor[N, M]`): The input node features.
             graph (:obj:`torch.Tensor[N, N]`): The graph structure where
-                ``graph[i, j] == n (n > 0)`` means there is an link with
-                weight ``n`` from node ``i`` to node ``j`` while
-                ``graph[i, j] == 0`` means not.
+                ``graph[i, j] == n (n > 0)`` means there is a link with weight
+                ``n`` from node ``i`` to node ``j`` while ``graph[i, j] == 0``
+                means not.
         """
         for layer in self._order:
             if layer == 'msg_pass':

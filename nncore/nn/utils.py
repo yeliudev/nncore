@@ -128,7 +128,7 @@ def load_checkpoint(model,
     Args:
         model (:obj:`nn.Module`): The module to load checkpoint.
         checkpoint (dict or str): A dict, a filename, an URL or a
-            ``torchvision://<model_name>`` string indicating the checkpoint.
+            ``torchvision://<model_name>`` str indicating the checkpoint.
         map_location (str or None, optional): Same as the :obj:`torch.load`
             interface.
         strict (bool, optional): Whether to allow different params for the
@@ -260,32 +260,28 @@ def fuse_bn_(model):
             fuse_bn_(layer)
 
 
-@torch.no_grad()
 def update_bn_stats_(model, data_loader, num_iters=200, **kwargs):
     """
-    Recompute and update the batch norm stats to make them more precise. During
-    training both BN stats and the weight are changing after every iteration,
+    Recompute and update the BN stats to make them more precise. During
+    training, both BN stats and the weight are changing after every iteration,
     so the running average can not precisely reflect the actual stats of the
-    current model.
-
-    In this function, the BN stats are recomputed with fixed weights, to make
-    the running average more precise. Specifically, it computes the true
-    average of per-batch mean/variance instead of the running average.
+    current model. In this function, the BN stats are recomputed with fixed
+    weights to make the running average more precise. Specifically, it
+    computes the true average of per-batch mean/variance instead of the
+    running average.
 
     Args:
         model (:obj:`nn.Module`): The model whose BN stats will be recomputed.
-
             Note that:
 
             1. This function will not alter the training mode of the given
                model. Users are responsible for setting the layers that needs
                Precise-BN to training mode, prior to calling this function.
-
             2. Be careful if your models contain other stateful layers in
                addition to BN, i.e. layers whose state can change in forward
-               iterations.  This function will alter their state. If you wish
+               iterations. This function will alter their state. If you wish
                them unchanged, you need to either pass in a submodule without
-               those layers, or backup the states.
+               those layers or backup the states.
 
         data_loader (iterator): The data loader to use.
         num_iters (int, optional): Number of iterations to compute the stats.
@@ -310,10 +306,13 @@ def update_bn_stats_(model, data_loader, num_iters=200, **kwargs):
 
     prog_bar = nncore.ProgressBar(num_tasks=num_iters)
     for ind, inputs in enumerate(islice(data_loader, num_iters)):
-        model(inputs, **kwargs)
+        with torch.no_grad():
+            model(inputs, **kwargs)
+
         for i, bn in enumerate(bn_layers):
             bn_rm[i] += (bn.running_mean - bn_rm[i]) / (ind + 1)
             bn_rv[i] += (bn.running_var - bn_rv[i]) / (ind + 1)
+
         prog_bar.update()
 
     for i, bn in enumerate(bn_layers):
