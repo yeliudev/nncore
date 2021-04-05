@@ -1,8 +1,8 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import nncore
+from nncore.nn import save_checkpoint
 from ..comm import master_only
-from ..utils import save_checkpoint
 from .base import Hook
 from .builder import HOOKS
 
@@ -10,12 +10,12 @@ from .builder import HOOKS
 @HOOKS.register()
 class CheckpointHook(Hook):
     """
-    Save checkpoints every specified epoch during training. Checkpoint of the
-    last epoch will always be saved regardless of ``interval``.
+    Save checkpoints periodically during training. Checkpoint of the last
+    epoch will always be saved regardless of ``interval``.
 
     Args:
-        interval (int, optional): The interval of saving checkpoints. Default:
-            ``1``.
+        interval (int, optional): The interval of epochs to save checkpoints.
+            Default: ``1``.
         save_optimizer (bool, optional): Whether to incorperate optimizer
             statuses into checkpoints. Default: ``True``.
         create_symlink (bool, optional): Whether to create a symlink to the

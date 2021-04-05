@@ -10,12 +10,13 @@ from .events import (CommandLineWriter, EventWriterHook, JSONWriter,
 from .lr_updater import LrUpdaterHook
 from .memory import EmptyCacheHook
 from .optimizer import OptimizerHook
+from .precise_bn import PreciseBNHook
 from .sampler_seed import SamplerSeedHook
 from .timer import TimerHook
 
 __all__ = [
     'Hook', 'HOOKS', 'build_hook', 'CheckpointHook', 'ClosureHook', 'EvalHook',
     'CommandLineWriter', 'EventWriterHook', 'JSONWriter', 'TensorboardWriter',
-    'LrUpdaterHook', 'EmptyCacheHook', 'OptimizerHook', 'SamplerSeedHook',
-    'TimerHook'
+    'LrUpdaterHook', 'EmptyCacheHook', 'OptimizerHook', 'PreciseBNHook',
+    'SamplerSeedHook', 'TimerHook'
 ]

@@ -11,7 +11,7 @@ from .builder import HOOKS
 @HOOKS.register()
 class EmptyCacheHook(Hook):
     """
-    Empty cache every epoch during training.
+    Empty cache periodically during training.
 
     Args:
         names (list[str]): The list of hook names to empty cache. Expected

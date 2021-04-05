@@ -232,14 +232,14 @@ class TensorboardWriter(Writer):
 @HOOKS.register()
 class EventWriterHook(Hook):
     """
-    Write logs every specified step during training. This hook relies on
+    Write logs periodically during training. This hook relies on
     :obj:`TimerHook` and it works with several :obj:`Writer` objects to log
     metrics, images, videos, audios, etc. In distributed training, only the
     main process will write the logs.
 
     Args:
-        interval (int, optional): The interval of writing logs. Default:
-            ``50``.
+        interval (int, optional): The interval of iterations to write logs.
+            Default: ``50``.
         writers (list[:obj:`Writer`] or list[str], optional): The list of
             writers or name of writers to use. Currently supported writers
             include :obj:`CommandLineWriter`, :obj:`JSONWriter` and

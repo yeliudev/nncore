@@ -15,13 +15,12 @@ from .builder import HOOKS
 @HOOKS.register()
 class OptimizerHook(Hook):
     """
-    Perform back propagation and update parameters of the model every
-    specified step. This hook supports CPU, single GPU and distributed
-    training.
+    Perform back propagation and update parameters of the model periodically.
+    This hook supports CPU, single GPU and distributed training.
 
     Args:
-        interval (int, optional): The interval of updating parameters. Default:
-            ``1``.
+        interval (int, optional): The interval of iterations to update
+            parameters. Default: ``1``.
         coalesce (bool, optional): Whether to coalesce the weights in
             distributed training. Default: ``True``.
         bucket_size_mb (int, optional): Size of the bucket. ``-1`` means not

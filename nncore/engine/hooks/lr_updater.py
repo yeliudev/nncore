@@ -46,16 +46,21 @@ def _inv(base_lr, progress, gamma, power=1, **kwargs):
 @HOOKS.register()
 class LrUpdaterHook(Hook):
     """
-    Update learning rate every specified epoch or step. Currently supported
+    Update learning rate periodically during training. Currently supported
     learning rate policies include ``step``, ``cosine``, ``exp``, ``poly`` and
-    ``inv``.
+    ``inv``. The policies for warmup are ``linear``, ``exp`` and ``constant``.
 
-    Policy configs:
+    Learning rate policy configs:
         - `step`: step (list[int]), gamma (float, Default: ``0.1``)
         - `cosine`: target_lr (float, Default: ``0``)
         - `exp`: gamma (float)
         - `poly`: power (float, Default: ``1``), min_lr (float, Default: ``0``)
         - `inv`: gamma (float), power (float, Default: ``1``)
+
+    Warmup policy configs:
+        - `linear`: ratio (float)
+        - `exp`: ratio (float)
+        - `constant`: ratio (float)
     """
 
     def _base_lr(self, engine):

@@ -6,10 +6,10 @@ from itertools import permutations
 import torch
 
 import nncore
+from nncore.nn import get_checkpoint, load_checkpoint
 from .buffer import Buffer
 from .comm import gather, is_main_process, synchronize
 from .hooks import Hook, build_hook
-from .utils import get_checkpoint, load_checkpoint
 
 _DEFAULT_STAGES = dict(
     epochs=5,
@@ -19,8 +19,8 @@ _DEFAULT_STAGES = dict(
     validation=dict(interval=1))
 
 _DEFAULT_HOOKS = [
-    'TimerHook', 'LrUpdaterHook', 'OptimizerHook', 'CheckpointHook',
-    'EvalHook', 'EventWriterHook'
+    'TimerHook', 'LrUpdaterHook', 'OptimizerHook', 'PreciseBNHook',
+    'CheckpointHook', 'EvalHook', 'EventWriterHook'
 ]
 
 
@@ -353,11 +353,11 @@ class Engine(object):
         self._call_hook('after_train_iter')
         self._iter += 1
 
+    @torch.no_grad()
     def val_iter(self, data):
         self._call_hook('before_val_iter')
 
-        with torch.no_grad():
-            output = self.model(data, mode=self._mode, **self._kwargs)
+        output = self.model(data, mode=self._mode, **self._kwargs)
 
         if any('loss' in key for key in output) and 'loss' not in output:
             output['loss'] = sum(v for k, v in output.items() if 'loss' in k)
@@ -370,9 +370,9 @@ class Engine(object):
 
         self._call_hook('after_val_iter')
 
+    @torch.no_grad()
     def test_iter(self, data):
-        with torch.no_grad():
-            output = self.model(data, mode=self._mode, **self._kwargs)
+        output = self.model(data, mode=self._mode, **self._kwargs)
 
         for key, value in output.items():
             self.buffer.update(

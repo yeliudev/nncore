@@ -7,10 +7,10 @@ from .builder import HOOKS
 @HOOKS.register()
 class EvalHook(Hook):
     """
-    Perform evaluation every specified epoch during training.
+    Perform evaluation periodically during training.
 
     Args:
-        interval (int, optional): The interval of performing evaluation.
+        interval (int, optional): The interval of epochs to perform evaluation.
             Default: ``1``.
         run_test (bool, optional): Whether to run the model on the test split
             before performing evaluation. Default: ``False``.
