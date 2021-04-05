@@ -19,8 +19,8 @@ _DEFAULT_STAGES = dict(
     validation=dict(interval=1))
 
 _DEFAULT_HOOKS = [
-    'TimerHook', 'LrUpdaterHook', 'OptimizerHook', 'PreciseBNHook',
-    'CheckpointHook', 'EvalHook', 'EventWriterHook'
+    'TimerHook', 'LrUpdaterHook', 'OptimizerHook', 'CheckpointHook',
+    'EvalHook', 'EventWriterHook'
 ]
 
 
