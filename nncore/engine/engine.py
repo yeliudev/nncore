@@ -236,6 +236,9 @@ class Engine(object):
 
         if hook.name in self.hooks:
             if overwrite:
+                keys = list(self.hooks.keys())
+                if before is None and keys[-1] != hook.name:
+                    before = keys[keys.index(hook.name) + 1]
                 self.hooks.pop(hook.name)
             else:
                 raise KeyError("hook '{}' exists".format(hook.name))
@@ -247,8 +250,7 @@ class Engine(object):
                 raise ValueError("hook '{}' not found".format(before))
 
             keys = list(self.hooks.keys())
-            idx = keys.index(before)
-            for key in keys[idx:-1]:
+            for key in keys[keys.index(before):-1]:
                 self.hooks.move_to_end(key)
 
     def build_optimizer(self, optimizer):
