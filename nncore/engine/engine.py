@@ -6,10 +6,10 @@ from itertools import permutations
 import torch
 
 import nncore
-from nncore.nn import get_checkpoint, load_checkpoint
 from .buffer import Buffer
 from .comm import gather, is_main_process, synchronize
 from .hooks import Hook, build_hook
+from .utils import get_checkpoint, load_checkpoint
 
 _DEFAULT_STAGES = dict(
     epochs=5,

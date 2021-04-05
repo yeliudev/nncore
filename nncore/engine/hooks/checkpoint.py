@@ -1,8 +1,8 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import nncore
-from nncore.nn import save_checkpoint
 from ..comm import master_only
+from ..utils import save_checkpoint
 from .base import Hook
 from .builder import HOOKS
 
