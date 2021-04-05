@@ -9,8 +9,8 @@ from .losses import (FocalLoss, FocalLossStar, GHMCLoss, sigmoid_focal_loss,
                      sigmoid_focal_loss_star)
 from .modules import (LinearModule, MsgPassModule, build_mlp,
                       build_msg_pass_modules)
-from .utils import (fuse_bn_, get_checkpoint, load_checkpoint, publish_model,
-                    save_checkpoint, update_bn_stats_)
+from .utils import (fuse_bn_, get_checkpoint, load_checkpoint, move_to_device,
+                    publish_model, save_checkpoint, update_bn_stats_)
 
 __all__ = [
     'ACTIVATIONS', 'CONVS', 'GAT', 'MESSAGE_PASSINGS', 'NORMS', 'Clamp',
@@ -20,5 +20,5 @@ __all__ = [
     'FocalLoss', 'FocalLossStar', 'GHMCLoss', 'sigmoid_focal_loss',
     'sigmoid_focal_loss_star', 'LinearModule', 'MsgPassModule', 'build_mlp',
     'build_msg_pass_modules', 'fuse_bn_', 'get_checkpoint', 'load_checkpoint',
-    'publish_model', 'save_checkpoint', 'update_bn_stats_'
+    'move_to_device', 'publish_model', 'save_checkpoint', 'update_bn_stats_'
 ]

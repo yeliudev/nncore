@@ -61,6 +61,30 @@ def _load_state_dict(module, state_dict, strict=False, logger=None):
         nncore.log_or_print(err_msg, logger, log_level='WARNING')
 
 
+def move_to_device(data, device):
+    """
+    Recursively move a tensor or a collection of tensors to the specific
+    device.
+
+    Args:
+        data (dict or list or :obj:`torch.Tensor`): The tensor or collection
+            of tensors to move.
+        device (:obj:`torch.device` or str): The destination device.
+
+    Returns:
+        dict or list or :obj:`torch.Tensor`: The move tensor or \
+            collection of tensors.
+    """
+    if isinstance(data, dict):
+        return {k: move_to_device(v, device) for k, v in data.items()}
+    elif isinstance(data, (list, tuple)):
+        return type(data)([move_to_device(d, device) for d in data])
+    elif isinstance(data, torch.Tensor):
+        return data.to(device)
+    else:
+        return data
+
+
 def get_checkpoint(file_or_url, map_location=None, **kwargs):
     """
     Get checkpoint from a file or an URL.
@@ -171,11 +195,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
 
     checkpoint = dict(state_dict=state_dict, meta=meta)
     if optimizer is not None:
-        checkpoint['optimizer'] = {
-            k: {s: t.cpu()
-                for s, t in v.items()} if k == 'state' else v
-            for k, v in optimizer.state_dict().items()
-        }
+        checkpoint['optimizer'] = move_to_device(optimizer, 'cpu')
 
     torch.save(checkpoint, filename)
 
