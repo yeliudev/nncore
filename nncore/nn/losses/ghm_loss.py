@@ -48,14 +48,14 @@ class GHMCLoss(nn.Module):
         n = 0
         for i in range(self._bins):
             inds = (g >= self.edges[i]) & (g < self.edges[i + 1])
-            num_in_bin = inds.sum().item()
-            if num_in_bin > 0:
+            num_in_bins = inds.sum().item()
+            if num_in_bins > 0:
                 if self._momentum > 0:
                     self.acc_sum[i] = self._momentum * self.acc_sum[i] + (
-                        1 - self._momentum) * num_in_bin
+                        1 - self._momentum) * num_in_bins
                     weights[inds] = tot / self.acc_sum[i]
                 else:
-                    weights[inds] = tot / num_in_bin
+                    weights[inds] = tot / num_in_bins
                 n += 1
         if n > 0:
             weights = weights / n

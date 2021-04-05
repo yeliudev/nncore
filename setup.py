@@ -70,7 +70,10 @@ setup(
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=get_install_requires(),
-    # TODO: Delete me when https://github.com/sphinx-doc/sphinx/pull/9053 be
+    # TODO: Delete me when https://github.com/sphinx-doc/sphinx/pull/9053 is
     # merged and released.
+    # Sphinx 4.0 schedule:
+    #     Apr. 10th for beta release
+    #     Apr. 24th for final release
     extras_require={'docs': ['docutils>=0.16,<0.17']},
     packages=find_packages(exclude=('.github', 'docs', 'examples', 'tests')))

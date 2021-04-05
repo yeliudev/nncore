@@ -118,40 +118,41 @@ def is_tuple_of(seq, expected_type):
     return is_seq_of(seq, expected_type, seq_type=tuple)
 
 
-def slice_list(in_list, lens):
+def slice_list(in_list, length):
     """
     Slice a list into several sub lists by a list of given length.
 
     Args:
         in_list (list): The list to be sliced.
-        lens (list or int): The expected length of each out list.
+        length (list[int] or int): The expected length or list of lengths of
+            output lists.
 
     Returns:
-        list: The sliced lists.
+        list[list]: The sliced lists.
     """
-    if isinstance(lens, int):
-        assert len(in_list) % lens == 0
-        lens = [lens] * int(len(in_list) / lens)
-    if not isinstance(lens, list):
+    if isinstance(length, int):
+        assert len(in_list) % length == 0
+        length = [length] * int(len(in_list) / length)
+    if not isinstance(length, list):
         raise TypeError("'indices' must be an integer or a list of integers")
-    elif sum(lens) != len(in_list):
+    elif sum(length) != len(in_list):
         raise ValueError(
-            'sum of lens and list length does not match: {} != {}'.format(
-                sum(lens), len(in_list)))
+            'sum of length and list length does not match: {} != {}'.format(
+                sum(length), len(in_list)))
     out_list = []
     idx = 0
-    for i in range(len(lens)):
-        out_list.append(in_list[idx:idx + lens[i]])
-        idx += lens[i]
+    for i in range(len(length)):
+        out_list.append(in_list[idx:idx + length[i]])
+        idx += length[i]
     return out_list
 
 
 def concat_list(in_list):
     """
-    Concatenate a list of list into a single list.
+    Concatenate a list of lists into a single list.
 
     Args:
-        in_list (list): The list of list to be merged.
+        in_list (list): The list of lists to be merged.
 
     Returns:
         list: The concatenated flat list.
@@ -161,13 +162,13 @@ def concat_list(in_list):
 
 def to_dict_of_list(in_list):
     """
-    Convert a list of dict to a dict of list.
+    Convert a list of dicts to a dict of lists.
 
     Args:
-        in_list (list): The list of dict to be converted.
+        in_list (list): The list of dicts to be converted.
 
     Returns:
-        dict: The converted dict of list.
+        dict: The converted dict of lists.
     """
     for i in range(len(in_list) - 1):
         if in_list[i].keys() != in_list[i + 1].keys():
@@ -182,13 +183,13 @@ def to_dict_of_list(in_list):
 
 def to_list_of_dict(in_dict):
     """
-    Convert a dict of list to a list of dict.
+    Convert a dict of lists to a list of dicts.
 
     Args:
-        in_dict (dict): the dict of list to be converted.
+        in_dict (dict): the dict of lists to be converted.
 
     Returns:
-        list: The converted list of dict.
+        list: The converted list of dicts.
     """
     values = in_dict.values()
     for i in range(len(in_dict) - 1):

@@ -1,6 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-import torch.nn as nn
+from torch.nn.modules.batchnorm import _BatchNorm
 
 from nncore.nn import update_bn_stats_
 from .base import Hook
@@ -31,9 +31,13 @@ class PreciseBNHook(Hook):
                 engine, self._interval) and not self.last_epoch(engine):
             return
 
-        if any(m for m in engine.model.modules() if
-               isinstance(m, nn.modules.batchnorm._BatchNorm) and m.training):
-            engine.logger.info('Computing Precise BN')
+        if any(m for m in engine.model.modules()
+               if isinstance(m, _BatchNorm) and m.training):
+            engine.logger.info('Computing Precise BN...')
             num_iters = min(self._num_iters, len(engine.data_loader))
             update_bn_stats_(
-                engine.model, engine.data_loader, num_iters=num_iters)
+                engine.model,
+                engine.data_loader,
+                num_iters=num_iters,
+                mode=engine.mode,
+                **engine.kwargs)

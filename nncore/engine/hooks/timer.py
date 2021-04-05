@@ -44,13 +44,13 @@ class TimerHook(Hook):
         val_time = self._val_timer.seconds()
 
         hook_time = total_time - train_time - val_time
-        num_iter = engine.iter - engine.start_iter
+        num_iters = engine.iter - engine.start_iter
 
-        if num_iter > 0 and train_time > 0:
+        if num_iters > 0 and train_time > 0:
             engine.logger.info(
                 'Overall training speed: {} iterations in {} ({:.4f} s / it)'.
-                format(num_iter, timedelta(seconds=int(train_time)),
-                       train_time / num_iter))
+                format(num_iters, timedelta(seconds=int(train_time)),
+                       train_time / num_iters))
 
         engine.logger.info('Done running in {} ({} on hooks)'.format(
             timedelta(seconds=int(total_time)),

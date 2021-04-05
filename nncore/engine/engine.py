@@ -25,7 +25,7 @@ _DEFAULT_HOOKS = [
 
 
 @nncore.bind_getter('mode', 'max_stages', 'max_epochs', 'max_iters',
-                    'start_iter', 'stage', 'epoch', 'iter')
+                    'start_iter', 'stage', 'epoch', 'iter', 'kwargs')
 class Engine(object):
     """
     An engine that can take over the whole training, validation and testing
@@ -37,7 +37,7 @@ class Engine(object):
         model (:obj:`nn.Module`): The model to be trained or tested. The
             :obj:`forward` method of the model should return a dict containing
             a ``_num_samples`` field indicating the number of samples in the
-            current batch, and optionally an ``out`` field denoting the model
+            current batch, and optionally an ``_out`` field denoting the model
             outputs to be collected and evaluated.
         data_loaders (dict): The potential data loaders for training,
             validation and testing. It should be in the format of
@@ -447,14 +447,14 @@ class Engine(object):
         self._call_hook('after_stage')
         self._stage += 1
 
-    def evaluate(self, key='out'):
+    def evaluate(self, key='_out'):
         """
         Perform evaluation. This methods is expected to be called after
         validation or testing.
 
         Args:
             key (str, optional): The buffer key of the values to be evaluated.
-                Default: ``'out'``.
+                Default: ``'_out'``.
         """
         blob = self.buffer.pop(key)
         blob = gather(blob)

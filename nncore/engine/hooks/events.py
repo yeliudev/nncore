@@ -79,10 +79,11 @@ class CommandLineWriter(Writer):
 
             if '_total_time' in engine.buffer.keys():
                 total_time = engine.buffer.latest('_total_time')
-                num_iter_passed = engine.iter + 1 - engine.start_iter
-                num_iter_left = engine.max_iters - engine.iter - 1
+                num_iters_passed = engine.iter + 1 - engine.start_iter
+                num_iters_left = engine.max_iters - engine.iter - 1
                 eta = timedelta(
-                    seconds=int(num_iter_left * total_time / num_iter_passed))
+                    seconds=int(num_iters_left * total_time /
+                                num_iters_passed))
                 log += 'eta: {}, '.format(eta)
 
             for key in ['time', 'data_time']:

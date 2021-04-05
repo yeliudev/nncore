@@ -241,7 +241,7 @@ def fuse_bn_(model):
 
 
 @torch.no_grad()
-def update_bn_stats_(model, data_loader, num_iters=200):
+def update_bn_stats_(model, data_loader, num_iters=200, **kwargs):
     """
     Recompute and update the batch norm stats to make them more precise. During
     training both BN stats and the weight are changing after every iteration,
@@ -288,9 +288,9 @@ def update_bn_stats_(model, data_loader, num_iters=200):
     bn_rm = [torch.zeros_like(bn.running_mean) for bn in bn_layers]
     bn_rv = [torch.zeros_like(bn.running_var) for bn in bn_layers]
 
-    prog_bar = nncore.ProgressBar(num_task=num_iters)
+    prog_bar = nncore.ProgressBar(num_tasks=num_iters)
     for ind, inputs in enumerate(islice(data_loader, num_iters)):
-        model(inputs)
+        model(inputs, **kwargs)
         for i, bn in enumerate(bn_layers):
             bn_rm[i] += (bn.running_mean - bn_rm[i]) / (ind + 1)
             bn_rv[i] += (bn.running_var - bn_rv[i]) / (ind + 1)
