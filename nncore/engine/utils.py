@@ -222,7 +222,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         meta=meta, state_dict=getattr(model, 'module', model).state_dict())
 
     if optimizer is not None:
-        checkpoint['optimizer'] = optimizer
+        checkpoint['optimizer'] = optimizer.state_dict()
 
     checkpoint = move_to_device(checkpoint, 'cpu')
     torch.save(checkpoint, filename)

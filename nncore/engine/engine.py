@@ -67,16 +67,16 @@ class Engine(object):
                     ``target_lr=0``. Please refer to :obj:`LrUpdaterHook` for \
                     full configs.
 
-            - `warmup` (dict, optional): The warmup policy config containing \
+            - `warmup` (dict, optional): The warm-up policy config containing \
                 the following fields:
 
-                - `type` (str): Type of the warmup schedule. Expected values \
+                - `type` (str): Type of the warm-up schedule. Expected values \
                     include ``'epoch'`` and ``'iter'``, indicating warming up \
                     for ``step`` epochs for iterations.
-                - `policy` (str): The warmup policy to use. Currently \
+                - `policy` (str): The warm-up policy to use. Currently \
                     supported policies include ``linear``, ``exp`` and \
                     ``constant``.
-                - `step` (int): Number of steps to warmup.
+                - `step` (int): Number of iterations to warm-up.
                 - `ratio` (float): The ratio of learning rate to start with. \
                     Expected values are in the range of ``0 ~ 1``.
 
@@ -112,7 +112,7 @@ class Engine(object):
         ...
         >>> # Configure stages:
         >>> # [Stage 1] Train the model for 5 epochs using Adam optimizer with
-        >>> # a fixed learning rate (1e-3) and a linear warmup policy.
+        >>> # a fixed learning rate (1e-3) and a linear warm-up policy.
         >>> # [Stage 2] Train the model for another 3 epochs using SGD with
         >>> # momentum optimizer and a iter-based cosine learning rate
         >>> # schedule. Perform validation after every training epoch.

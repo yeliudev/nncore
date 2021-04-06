@@ -47,7 +47,7 @@ def _inv(base_lr, progress, gamma, power=1, **kwargs):
 class LrUpdaterHook(Hook):
     """
     Update learning rate periodically during training. Currently supported
-    learning rate and warmup policies are ``step``, ``cosine``, ``exp``,
+    learning rate and warm-up policies are ``step``, ``cosine``, ``exp``,
     ``poly``, ``inv`` and ``linear``, ``exp``, ``constant`` respectively.
 
     Learning rate policy configs:
@@ -57,7 +57,7 @@ class LrUpdaterHook(Hook):
         - `poly`: power (float, Default: ``1``), min_lr (float, Default: ``0``)
         - `inv`: gamma (float), power (float, Default: ``1``)
 
-    Warmup policy configs:
+    Warm-up policy configs:
         - `linear`: ratio (float)
         - `exp`: ratio (float)
         - `constant`: ratio (float)
@@ -84,7 +84,7 @@ class LrUpdaterHook(Hook):
         elif self._warm_cfg['policy'] == 'constant':
             scale = self._warm_cfg['ratio']
         else:
-            raise TypeError("invalid warmup policy: '{}'".format(
+            raise TypeError("invalid warm-up policy: '{}'".format(
                 self._warm_cfg['policy']))
         return [lr * scale for lr in lr_groups]
 
