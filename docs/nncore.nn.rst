@@ -19,7 +19,7 @@ Modules
 .. automodule:: nncore.nn.modules
    :members:
 
-Weight Init
+Init
 --------------------
 
 .. automodule:: nncore.nn.init
