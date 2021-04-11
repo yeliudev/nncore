@@ -1,10 +1,22 @@
 nncore.utils
 ====================
 
+Binder
+--------------------
+
+.. automodule:: nncore.utils.binder
+   :members:
+
 Config
 --------------------
 
 .. automodule:: nncore.utils.config
+   :members:
+
+Data
+--------------------
+
+.. automodule:: nncore.utils.data
    :members:
 
 Env
@@ -41,16 +53,4 @@ Timer
 --------------------
 
 .. automodule:: nncore.utils.timer
-   :members:
-
-Binder
---------------------
-
-.. automodule:: nncore.utils.binder
-   :members:
-
-Misc
---------------------
-
-.. automodule:: nncore.utils.misc
    :members:

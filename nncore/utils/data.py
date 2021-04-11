@@ -13,8 +13,8 @@ def swap_element(matrix, i, j):
     Args:
         matrix (:obj:`np.ndarray` or :obj:`torch.Tensor`): The array or tensor
             to be swapped.
-        i (int): Index of the first element.
-        j (int): Index of the second element.
+        i (int or tuple): Index of the first element.
+        j (int or tuple): Index of the second element.
 
     Returns:
         :obj:`np.ndarray` or :obj:`torch.Tensor`: The swapped array or tensor.
@@ -75,28 +75,26 @@ def tuple_cast(inputs, dst_type):
     return iter_cast(inputs, dst_type, return_type=tuple)
 
 
-def is_seq_of(seq, expected_type, seq_type=None):
+def is_seq_of(seq, expected_type, seq_type=Sequence):
     """
     Check whether it is a sequence of some type.
 
     Args:
         seq (Sequence): The sequence to be checked.
         expected_type (type): Expected type of sequence items.
-        seq_type (type, optional): Expected sequence type. Default: ``None``.
+        seq_type (type, optional): Expected sequence type. Default:
+            ``Sequence``.
 
     Returns:
         bool: Whether the sequence is valid.
     """
-    if seq_type is None:
-        exp_seq_type = Sequence
-    else:
-        assert isinstance(seq_type, type)
-        exp_seq_type = seq_type
-    if not isinstance(seq, exp_seq_type):
+    if not isinstance(seq, seq_type):
         return False
+
     for item in seq:
         if not isinstance(item, expected_type):
             return False
+
     return True
 
 
@@ -133,17 +131,16 @@ def slice_list(in_list, length):
     if isinstance(length, int):
         assert len(in_list) % length == 0
         length = [length] * int(len(in_list) / length)
-    if not isinstance(length, list):
-        raise TypeError("'indices' must be an integer or a list of integers")
+    elif not isinstance(length, list):
+        raise TypeError("'length' must be an integer or a list of integers")
     elif sum(length) != len(in_list):
-        raise ValueError(
-            'sum of length and list length does not match: {} != {}'.format(
-                sum(length), len(in_list)))
-    out_list = []
-    idx = 0
+        raise ValueError('sum of the length and the list length are mismatch')
+
+    out_list, idx = [], 0
     for i in range(len(length)):
         out_list.append(in_list[idx:idx + length[i]])
         idx += length[i]
+
     return out_list
 
 
