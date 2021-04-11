@@ -1,16 +1,18 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+import inspect
 from functools import wraps
 
 
-def recursive(key=0, type='list'):
+def recursive(key=None, type='list'):
     """
     A syntactic sugar to make a function recursive. This method is expected to
     be used as a decorator.
 
     Args:
-        key (int or str, optional): The index or name of the argument to
-            consider. Default: ``0``.
+        key (str or None, optional): The name of the argument to iterate. If
+            not specified, the first argument of the function will be used.
+            Default: ``None``.
         type (str, optional): The type of returned object. Expected values
             include ``'list'``, ``'tuple'`` and ``'dict'``. Default:
             ``'list'``.
@@ -28,11 +30,11 @@ def recursive(key=0, type='list'):
         ...         return num + 1
         ...
         >>> @recursive(key='name', type='dict')
-        >>> def func(value, name=['a', 'b']):
+        >>> def func(value, name):
         ...     return dict(name=value)
         ...
         >>> # Equals to:
-        >>> def func(value, name=['a', 'b']):
+        >>> def func(value, name):
         ...     if isinstance(name, (list, tuple)):
         ...         out_dict = dict()
         ...         for n in name:
@@ -41,22 +43,29 @@ def recursive(key=0, type='list'):
         ...     else:
         ...         return dict(name=value)
     """
-    assert isinstance(key, (int, str))
     assert type in ('list', 'tuple', 'dict')
 
     def _decorator(func):
+        nonlocal key
+        params = inspect.signature(func).parameters
+        if key is None:
+            key = next(iter(params))
 
         @wraps(func)
         def _wrapper(*args, **kwargs):
-            arg = args[key] if isinstance(key, int) else kwargs[key]
+            if key in kwargs:
+                arg = kwargs[key]
+            else:
+                idx = list(params).index(key)
+                arg = args[idx] if idx < len(args) else params[key].default
 
             if isinstance(arg, (list, tuple)):
-                out = []
+                args, out = list(args), []
                 for a in arg:
-                    if isinstance(key, int):
-                        args[key] = a
-                    else:
+                    if key in kwargs or idx >= len(args):
                         kwargs[key] = a
+                    else:
+                        args[idx] = a
 
                     func_out = func(*args, **kwargs)
                     out.append(func_out)

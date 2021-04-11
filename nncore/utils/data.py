@@ -25,12 +25,9 @@ def swap_element(matrix, i, j, dim=0):
     i_inds = inds + [i]
     j_inds = inds + [j]
 
-    if isinstance(matrix, np.ndarray):
-        m_i = matrix[i_inds].copy()
-        m_j = matrix[j_inds].copy()
-    else:
-        m_i = matrix[i_inds].clone()
-        m_j = matrix[j_inds].clone()
+    meth = 'copy' if isinstance(matrix, np.ndarray) else 'clone'
+    m_i = getattr(matrix[i_inds], meth)()
+    m_j = getattr(matrix[j_inds], meth)()
 
     matrix[i_inds] = m_j
     matrix[j_inds] = m_i
