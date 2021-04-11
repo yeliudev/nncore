@@ -1,6 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from itertools import chain
 
 import numpy as np
@@ -36,51 +36,6 @@ def swap_element(matrix, i, j, dim=0):
     matrix[j_inds] = m_i
 
     return matrix
-
-
-def iter_cast(inputs, dst_type, return_type=None):
-    """
-    Cast elements of an iterable object into some type.
-
-    Args:
-        inputs (Iterable): The input iterable object.
-        dst_type (type): Destination type.
-        return_type (type, optional): The type of returned object. If
-            specified, the output object will be converted to this type,
-            otherwise an iterator. Default: ``None``.
-
-    Returns:
-        iterator or specified type: The converted object.
-    """
-    if not isinstance(inputs, Iterable):
-        raise TypeError('inputs must be an iterable object')
-    if not isinstance(dst_type, type):
-        raise TypeError("'dst_type' must be a valid type")
-
-    out_iter = map(dst_type, inputs)
-
-    if return_type is not None:
-        out_iter = return_type(out_iter)
-
-    return out_iter
-
-
-def list_cast(inputs, dst_type):
-    """
-    Cast elements of an iterable object into a list of some type.
-
-    A partial method of :obj:`iter_cast`.
-    """
-    return iter_cast(inputs, dst_type, return_type=list)
-
-
-def tuple_cast(inputs, dst_type):
-    """
-    Cast elements of an iterable object into a tuple of some type.
-
-    A partial method of :obj:`iter_cast`.
-    """
-    return iter_cast(inputs, dst_type, return_type=tuple)
 
 
 def is_seq_of(seq, expected_type, seq_type=Sequence):

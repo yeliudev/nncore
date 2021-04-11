@@ -5,18 +5,6 @@ import pytest
 import nncore
 
 
-def test_iter_cast():
-    assert nncore.list_cast([1, 2, 3], int) == [1, 2, 3]
-    assert nncore.list_cast(['1.1', 2, '3'], float) == [1.1, 2.0, 3.0]
-    assert nncore.list_cast([1, 2, 3], str) == ['1', '2', '3']
-    assert nncore.tuple_cast((1, 2, 3), str) == ('1', '2', '3')
-    assert next(nncore.iter_cast([1, 2, 3], str)) == '1'
-    with pytest.raises(TypeError):
-        nncore.iter_cast([1, 2, 3], '')
-    with pytest.raises(TypeError):
-        nncore.iter_cast(1, str)
-
-
 def test_is_seq_of():
     assert nncore.is_seq_of([1.0, 2.0, 3.0], float)
     assert nncore.is_seq_of([(1, ), (2, ), (3, )], tuple)
