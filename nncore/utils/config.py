@@ -19,8 +19,8 @@ class CfgNode(OrderedDict):
 
     This class is an extension of the built-in type :obj:`OrderedDict`. The
     interface is the same as a dict object and also allows access config values
-    as attributes. The input to the init method could be either a single dict
-    or several named parameters.
+    as attributes. The input to the init method can be either a single dict or
+    several named parameters.
     """
 
     @staticmethod

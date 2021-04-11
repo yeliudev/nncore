@@ -161,7 +161,7 @@ def list_from_file(filename, offset=0, separator=',', max_length=-1):
     return out_list
 
 
-def open(file=None, mode='r', format=None, as_decorator=None, **kwargs):
+def open(file=None, mode='r', format=None, as_decorator=None, **_kwargs):
     """
     Open a file and return a file object. This method can be used as a function
     or a decorator. When used as a decorator, the function to be decorated
@@ -178,7 +178,7 @@ def open(file=None, mode='r', format=None, as_decorator=None, **kwargs):
             and ``hdf5/h5``. Default: ``None``.
         as_decorator (bool or None, optional): Whether this method is used as
             a decorator. Please explicitly assign a bool value to this
-            argument when using this method in a Python shell. If not
+            argument when using this method in a Python Shell. If not
             specified, the method will try to determine it automatically.
 
     Returns:
@@ -198,7 +198,7 @@ def open(file=None, mode='r', format=None, as_decorator=None, **kwargs):
 
     if not as_decorator:
         nncore.mkdir(nncore.dir_name(nncore.abs_path(file)))
-        return handler(file, mode, **kwargs)
+        return handler(file, mode, **_kwargs)
 
     def _decorator(func):
         vars = func.__code__.co_varnames
@@ -208,10 +208,10 @@ def open(file=None, mode='r', format=None, as_decorator=None, **kwargs):
             )
 
         @wraps(func)
-        def _wrapper(*_args, file=file, mode=mode, **_kwargs):
+        def _wrapper(*args, file=file, mode=mode, **kwargs):
             nncore.mkdir(nncore.dir_name(nncore.abs_path(file)))
-            with handler(file, mode, **kwargs) as f:
-                func(*_args, **_kwargs, f=f)
+            with handler(file, mode, **_kwargs) as f:
+                func(*args, **kwargs, f=f)
 
         return _wrapper
 

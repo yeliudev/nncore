@@ -54,3 +54,9 @@ Timer
 
 .. automodule:: nncore.utils.timer
    :members:
+
+Misc
+--------------------
+
+.. automodule:: nncore.utils.misc
+   :members:

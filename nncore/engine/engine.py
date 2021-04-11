@@ -50,8 +50,8 @@ class Engine(object):
             - `optimizer` (:obj:`optim.Optimizer` or dict): The optimizer or \
                 an optimizer config containing the following fields:
 
-                - `type` (str): Type of the optimizer, which could be \
-                    accessed via :obj:`torch.optim` attributes, e.g. ``'SGD'``.
+                - `type` (str): Type of the optimizer, which can be accessed \
+                    via :obj:`torch.optim` attributes, e.g. ``'SGD'``.
                 - `configs for the optimizer, e.g.` ``lr=0.01, momentum=0.9``.
 
             - `lr_schedule` (dict, optional): The learning rate schedule \
@@ -91,7 +91,7 @@ class Engine(object):
 
             Default: ``_DEFAULT_STAGES``.
         hooks (list[:obj:`Hook`] or list[dict] or list[str], optional): The
-            list of hooks to be registered. Each hook could be represented as a
+            list of hooks to be registered. Each hook can be represented as a
             :obj:`Hook`, a dict or a str. Default: ``_DEFAULT_HOOKS``.
         buffer_size (int, optional): Maximum size of the buffer. Default:
             ``100000``.

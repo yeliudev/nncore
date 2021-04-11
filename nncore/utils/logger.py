@@ -46,7 +46,7 @@ def get_logger(logger_or_name=None,
         logger_or_name (:obj:`logging.Logger` or str or None, optional): The
             logger or name of the logger. Default: ``None``.
         fmt (str, optional): Logging format of the logger. The format must end
-            with ``%(message)s`` to make sure that the colors could be rendered
+            with ``'%(message)s'`` to make sure that the colors can be rendered
             properly. Default: ``'[%(asctime)s %(levelname)s]: %(message)s'``.
         datefmt (str, optional): Date format of the logger. Default:
             ``'%Y-%m-%d %H:%M:%S'``.

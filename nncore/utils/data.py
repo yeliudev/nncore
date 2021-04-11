@@ -6,7 +6,7 @@ from itertools import chain
 import numpy as np
 
 
-def swap_element(matrix, i, j):
+def swap_element(matrix, i, j, dim=0):
     """
     Swap two elements of an array or a tensor.
 
@@ -15,17 +15,25 @@ def swap_element(matrix, i, j):
             to be swapped.
         i (int or tuple): Index of the first element.
         j (int or tuple): Index of the second element.
+        dim (int, optional): The dimension to swap. Default: ``0``.
 
     Returns:
         :obj:`np.ndarray` or :obj:`torch.Tensor`: The swapped array or tensor.
     """
-    if isinstance(matrix, np.ndarray):
-        tmp = matrix[i].copy()
-    else:
-        tmp = matrix[i].clone()
+    inds = [slice(0, matrix.shape[d]) for d in range(dim)]
 
-    matrix[i] = matrix[j]
-    matrix[j] = tmp
+    i_inds = inds + [i]
+    j_inds = inds + [j]
+
+    if isinstance(matrix, np.ndarray):
+        m_i = matrix[i_inds].copy()
+        m_j = matrix[j_inds].copy()
+    else:
+        m_i = matrix[i_inds].clone()
+        m_j = matrix[j_inds].clone()
+
+    matrix[i_inds] = m_j
+    matrix[j_inds] = m_i
 
     return matrix
 
@@ -118,7 +126,7 @@ def is_tuple_of(seq, expected_type):
 
 def slice_list(in_list, length):
     """
-    Slice a list into several sub lists by a list of given length.
+    Slice a list into several sub lists by length.
 
     Args:
         in_list (list): The list to be sliced.
