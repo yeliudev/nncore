@@ -73,9 +73,9 @@ def test_setattr():
     cfg.item1 = [1, 2]
     cfg.item2 = {'a': 0}
     cfg['item5'] = {'a': {'b': None}}
-    assert cfg._cfg['item1'] == [1, 2]
+    assert cfg['item1'] == [1, 2]
     assert cfg.item1 == [1, 2]
-    assert cfg._cfg['item2'] == {'a': 0}
+    assert cfg['item2'] == {'a': 0}
     assert cfg.item2.a == 0
-    assert cfg._cfg['item5'] == {'a': {'b': None}}
+    assert cfg['item5'] == {'a': {'b': None}}
     assert cfg.item5.a.b is None

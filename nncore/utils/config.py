@@ -8,7 +8,7 @@ from importlib import import_module
 from tempfile import TemporaryDirectory
 
 import nncore
-from .binder import bind_getter, bind_method
+from .binder import bind_getter
 
 
 class CfgNode(OrderedDict):
@@ -36,7 +36,7 @@ class CfgNode(OrderedDict):
             raise TypeError('too many arguments')
 
         if len(args) == 1:
-            if isinstance(args[0], (Config, dict)):
+            if isinstance(args[0], dict):
                 kwargs.update(args[0])
             else:
                 raise TypeError("unsupported type '{}'".format(type(args[0])))
@@ -136,15 +136,11 @@ class CfgNode(OrderedDict):
 
 
 @bind_getter('filename')
-@bind_method('_cfg', [
-    '__getitem__', '__setitem__', '__len__', '__iter__', '__eq__', 'get',
-    'pop', 'freeze', 'unfreeze', 'setdefault', 'to_dict'
-])
-class Config(object):
+class Config(CfgNode):
     """
     A facility for better :obj:`CfgNode` objects.
 
-    This class is a wrapper for :obj:`CfgNode` which can be initialized from a
+    This class inherits from :obj:`CfgNode` and it can be initialized from a
     config file. Users can use the static method :obj:`Config.from_file` to
     create a :obj:`Config` object.
     """
@@ -168,11 +164,10 @@ class Config(object):
 
         format = nncore.pure_ext(filename)
         if format == 'py':
-            with TemporaryDirectory() as tmp_dir:
+            with TemporaryDirectory() as tmp:
                 mod_name = str(int.from_bytes(os.urandom(2), 'big'))
-                nncore.cp(filename,
-                          nncore.join(tmp_dir, '{}.py'.format(mod_name)))
-                sys.path.insert(0, tmp_dir)
+                nncore.cp(filename, nncore.join(tmp, '{}.py'.format(mod_name)))
+                sys.path.insert(0, tmp)
                 mod = import_module(mod_name)
                 sys.path.pop(0)
                 cfg = {
@@ -185,101 +180,81 @@ class Config(object):
         else:
             raise TypeError("unsupported format: '{}'".format(format))
 
-        return Config(cfg=cfg, filename=filename, freeze=freeze)
+        return Config(cfg, filename=filename, freeze=freeze)
 
-    def __init__(self, cfg=None, filename=None, freeze=False):
-        if isinstance(cfg, (type(self), dict)):
-            _cfg = CfgNode(cfg)
-        elif cfg is None:
-            _cfg = CfgNode()
-        else:
-            raise TypeError("unsupported type: '{}'".format(type(cfg)))
-
-        super(Config, self).__setattr__('_cfg', _cfg)
-        super(Config, self).__setattr__('_filename', filename)
+    def __init__(self, *args, filename=None, freeze=False, **kwargs):
+        super(Config, self).__init__(*args, **kwargs)
+        super(CfgNode, self).__setattr__('_filename', filename)
 
         if freeze:
             self.freeze()
 
-        if filename is not None:
-            with open(filename, 'r') as f:
-                super(Config, self).__setattr__('_text', f.read())
-        else:
-            super(Config, self).__setattr__('_text', None)
-
     @property
     def text(self):
-        text = '' if self._filename is None else '{}\n'.format(self._filename)
 
-        if self._text is not None:
-            return text + self._text
-
-        def _indent(attr_str):
-            tokens = attr_str.split('\n')
+        def _indent(a_str):
+            tokens = a_str.split('\n')
             if len(tokens) == 1:
-                return attr_str
+                return a_str
             first = tokens.pop(0)
             tokens = [' ' * 4 + line for line in tokens]
             return '{}\n{}'.format(first, '\n'.join(tokens))
 
-        def _basic(key, value):
+        def _basic(key, value, blank=True):
+            base_str = '{} = {}' if blank else '{}={}'
             if isinstance(value, dict):
                 v_str = _dict(value)
             elif isinstance(value, str):
                 v_str = "'{}'".format(value)
             else:
                 v_str = str(value)
-            attr_str = v_str if key is None else '{} = {}'.format(key, v_str)
-            return _indent(attr_str)
+            a_str = v_str if key is None else base_str.format(key, v_str)
+            return _indent(a_str)
 
-        def _iterable(key, value):
-            tokens = []
+        def _iterable(key, value, blank=True):
+            base_str, tokens = '{} = {}' if blank else '{}={}', []
+            expand = any(isinstance(v, (dict, list, tuple)) for v in value)
             for v in value:
                 if isinstance(v, dict):
-                    tokens.append('dict({})'.format(_indent('\n' + _dict(v))))
+                    if len(v) > 1:
+                        a_str = '\ndict({})'.format(_indent('\n' + _dict(v)))
+                    else:
+                        a_str = '\ndict({})'.format(_dict(v))
+                    tokens.append(_indent(a_str))
                 elif isinstance(v, (list, tuple)):
-                    tokens.append(_iterable(None, v))
+                    tokens.append(_indent('\n' + _iterable(None, v)))
                 else:
-                    tokens.append(_basic(None, v))
+                    a_str = _basic(None, v)
+                    tokens.append(_indent('\n' + a_str) if expand else a_str)
             left, right = ('[', ']') if isinstance(value, list) else ('(', ')')
             v_str = '{}{}{}'.format(left, ', '.join(tokens), right)
-            return v_str if key is None else '{} = {}'.format(key, v_str)
+            return v_str if key is None else base_str.format(key, v_str)
 
         def _dict(value, parent=False):
-            tokens = []
-            for idx, (k, v) in enumerate(value.items()):
-                is_last = idx >= len(value) - 1
-                end = '' if parent or is_last else ','
+            base_str, tokens = '{} = dict({})' if parent else '{}=dict({})', []
+            for i, (k, v) in enumerate(value.items()):
+                end = '' if parent or i >= len(value) - 1 else ','
                 if isinstance(v, dict):
-                    v_str = '\n' + _dict(v)
-                    attr_str = '{} = dict({}'.format(str(k), v_str)
-                    attr_str = _indent(attr_str) + ')' + end
+                    if len(v) > 1:
+                        a_str = base_str.format(str(k), '\n' + _dict(v))
+                        a_str = _indent(a_str) + end
+                    else:
+                        a_str = base_str.format(str(k), _dict(v)) + end
                 elif isinstance(v, (list, tuple)):
-                    attr_str = _iterable(k, v) + end
+                    a_str = _iterable(k, v, blank=parent) + end
                 else:
-                    attr_str = _basic(k, v) + end
-                tokens.append(attr_str)
+                    a_str = _basic(k, v, blank=parent) + end
+                tokens.append(a_str)
             return '\n'.join(tokens)
 
-        cfg_dict = self._cfg.to_dict()
-        text += _dict(cfg_dict, parent=True)
+        text = _dict(self.to_dict(), parent=True)
+        if self._filename is not None:
+            text = '{}\n'.format(self._filename) + text
 
         return text
 
-    def __getattr__(self, key):
-        return getattr(self._cfg, key)
-
-    def __setattr__(self, key, value):
-        setattr(self._cfg, key, value)
-
     def __repr__(self):
-        return '{}{}: {}'.format(
+        return '{}({}frozen={}): {}'.format(
             self.__class__.__name__, '' if self._filename is None else
-            "(filename: '{}')".format(self._filename), self._cfg)
-
-    def update(self, *args, **kwargs):
-        args = [arg._cfg if isinstance(arg, Config) else arg for arg in args]
-        self._cfg.update(*args, **kwargs)
-
-    def copy(self):
-        return deepcopy(self)
+            "filename='{}', ".format(self._filename), self._frozen,
+            super(Config, self).__repr__())
