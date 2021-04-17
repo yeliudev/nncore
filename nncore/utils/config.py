@@ -113,11 +113,18 @@ class CfgNode(OrderedDict):
             raise TypeError('too many arguments')
         other.update(kwargs)
         for k, v in other.items():
-            if ((k not in self) or (not isinstance(self[k], dict))
-                    or (not isinstance(v, dict))):
+            if k not in self or not isinstance(
+                    self[k], dict) or not isinstance(v, dict):
                 self[k] = self._parse_value(v)
             else:
                 self[k].update(v)
+
+    def merge_from(self, other):
+        for k, v in other.items():
+            if k in self and isinstance(v, dict) and not v.pop('_delete_', 0):
+                self[k].merge_from(v)
+            else:
+                self[k] = v
 
     def to_dict(self, ordered=False):
         base = OrderedDict() if ordered else dict()
@@ -180,7 +187,23 @@ class Config(CfgNode):
         else:
             raise TypeError("unsupported format: '{}'".format(format))
 
-        return Config(cfg, filename=filename, freeze=freeze)
+        cfg = Config(cfg, filename=filename, freeze=freeze)
+
+        if '_base_' in cfg:
+            base = cfg.pop('_base_')
+            if isinstance(base, str):
+                base = [base]
+
+            _cfg, dir_name = Config(
+                filename=filename), nncore.dir_name(filename)
+            for filename in base:
+                path = nncore.join(dir_name, filename)
+                _cfg.update(Config.from_file(path))
+
+            _cfg.merge_from(cfg)
+            cfg = _cfg
+
+        return cfg
 
     def __init__(self, *args, filename=None, freeze=False, **kwargs):
         super(Config, self).__init__(*args, **kwargs)
@@ -188,6 +211,12 @@ class Config(CfgNode):
 
         if freeze:
             self.freeze()
+
+    def __repr__(self):
+        return '{}({}frozen={}): {}'.format(
+            self.__class__.__name__, '' if self._filename is None else
+            "filename='{}', ".format(self._filename), self._frozen,
+            super(Config, self).__repr__())
 
     @property
     def text(self):
@@ -213,21 +242,23 @@ class Config(CfgNode):
 
         def _iterable(key, value, blank=True):
             base_str, tokens = '{} = {}' if blank else '{}={}', []
+            prefix = '\n' if len(value) > 1 else ''
             expand = any(isinstance(v, (dict, list, tuple)) for v in value)
             for v in value:
                 if isinstance(v, dict):
                     if len(v) > 1:
-                        a_str = '\ndict({})'.format(_indent('\n' + _dict(v)))
+                        a_str = _indent('\n' + _dict(v))
                     else:
-                        a_str = '\ndict({})'.format(_dict(v))
-                    tokens.append(_indent(a_str))
+                        a_str = _dict(v)
+                    tokens.append(_indent(prefix + 'dict({})'.format(a_str)))
                 elif isinstance(v, (list, tuple)):
-                    tokens.append(_indent('\n' + _iterable(None, v)))
+                    tokens.append(_indent(prefix + _iterable(None, v)))
                 else:
                     a_str = _basic(None, v)
-                    tokens.append(_indent('\n' + a_str) if expand else a_str)
+                    tokens.append(_indent(prefix + a_str) if expand else a_str)
             left, right = ('[', ']') if isinstance(value, list) else ('(', ')')
-            v_str = '{}{}{}'.format(left, ', '.join(tokens), right)
+            sep = ',' if expand else ', '
+            v_str = '{}{}{}'.format(left, sep.join(tokens), right)
             return v_str if key is None else base_str.format(key, v_str)
 
         def _dict(value, parent=False):
@@ -252,9 +283,3 @@ class Config(CfgNode):
             text = '{}\n'.format(self._filename) + text
 
         return text
-
-    def __repr__(self):
-        return '{}({}frozen={}): {}'.format(
-            self.__class__.__name__, '' if self._filename is None else
-            "filename='{}', ".format(self._filename), self._frozen,
-            super(Config, self).__repr__())
