@@ -42,8 +42,8 @@ class CfgNode(OrderedDict):
                 raise TypeError("unsupported type '{}'".format(type(args[0])))
 
         super(CfgNode, self).__setattr__('_frozen', False)
-        for k, v in kwargs.items():
-            self[k] = v
+        for key, value in kwargs.items():
+            self[key] = value
 
     def __setitem__(self, key, value):
         self._check_freeze_state()
@@ -62,10 +62,22 @@ class CfgNode(OrderedDict):
         self._set_freeze_state(self, state['_frozen'])
 
     def __deepcopy__(self, memo):
+
+        def _copy(obj, memo):
+            try:
+                return deepcopy(obj, memo)
+            except TypeError:
+                return obj
+
         other = self.__class__()
         memo[id(self)] = other
-        for k, v in self.items():
-            other[deepcopy(k, memo)] = deepcopy(v, memo)
+        for key, value in self.items():
+            key = _copy(key, memo)
+            if isinstance(value, (list, tuple)):
+                value = type(value)(_copy(v, memo) for v in value)
+            else:
+                value = _copy(value, memo)
+            other[key] = value
         return other
 
     def __eq__(self, other):
@@ -88,8 +100,6 @@ class CfgNode(OrderedDict):
             value = self.__class__(**value)
         elif isinstance(value, (list, tuple)):
             value = type(value)(self._parse_value(v) for v in value)
-        elif isinstance(value, range):
-            value = list(self._parse_value(v) for v in value)
         return value
 
     def _check_freeze_state(self):
@@ -112,30 +122,32 @@ class CfgNode(OrderedDict):
         elif len(args) > 1:
             raise TypeError('too many arguments')
         other.update(kwargs)
-        for k, v in other.items():
-            if k not in self or not isinstance(
-                    self[k], dict) or not isinstance(v, dict):
-                self[k] = self._parse_value(v)
+        for key, value in other.items():
+            if key not in self or not isinstance(
+                    self[key], dict) or not isinstance(value, dict):
+                self[key] = self._parse_value(value)
             else:
-                self[k].update(v)
+                self[key].update(value)
 
     def merge_from(self, other):
-        for k, v in other.items():
-            if k in self and isinstance(v, dict) and not v.pop('_delete_', 0):
-                self[k].merge_from(v)
+        for key, value in other.items():
+            if key in self and isinstance(
+                    value, dict) and not value.pop('_delete_', 0):
+                self[key].merge_from(value)
             else:
-                self[k] = v
+                self[key] = value
 
     def to_dict(self, ordered=False):
         base = OrderedDict() if ordered else dict()
-        for k, v in self.items():
-            if isinstance(v, type(self)):
-                base[k] = v.to_dict()
-            elif isinstance(v, (list, tuple)):
-                base[k] = type(v)(
-                    o.to_dict() if isinstance(o, type(self)) else o for o in v)
+        for key, value in self.items():
+            if isinstance(value, self.__class__):
+                base[key] = value.to_dict()
+            elif isinstance(value, (list, tuple)):
+                base[key] = type(value)(
+                    o.to_dict() if isinstance(o, self.__class__) else o
+                    for o in value)
             else:
-                base[k] = v
+                base[key] = value
         return base
 
     def to_json(self):
@@ -187,23 +199,20 @@ class Config(CfgNode):
         else:
             raise TypeError("unsupported format: '{}'".format(format))
 
-        cfg = Config(cfg, filename=filename, freeze=freeze)
-
         if '_base_' in cfg:
             base = cfg.pop('_base_')
             if isinstance(base, str):
                 base = [base]
 
-            _cfg, dir_name = Config(
-                filename=filename), nncore.dir_name(filename)
-            for filename in base:
-                path = nncore.join(dir_name, filename)
-                _cfg.update(Config.from_file(path))
+            _cfg = CfgNode()
+            for name in base:
+                path = nncore.join(nncore.dir_name(filename), name)
+                _cfg.merge_from(Config.from_file(path))
 
             _cfg.merge_from(cfg)
             cfg = _cfg
 
-        return cfg
+        return Config(cfg, filename=filename, freeze=freeze)
 
     def __init__(self, *args, filename=None, freeze=False, **kwargs):
         super(Config, self).__init__(*args, **kwargs)

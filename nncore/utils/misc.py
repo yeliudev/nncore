@@ -24,7 +24,7 @@ def recursive(key=None, type='list'):
         ...
         >>> # Equals to:
         >>> def func(num):
-        ...     if isinstance(num, (list, tuple)):
+        ...     if isinstance(num, (list, tuple, range)):
         ...         return [func(n) for n in num]
         ...     else:
         ...         return num + 1
@@ -35,7 +35,7 @@ def recursive(key=None, type='list'):
         ...
         >>> # Equals to:
         >>> def func(value, name):
-        ...     if isinstance(name, (list, tuple)):
+        ...     if isinstance(name, (list, tuple, range)):
         ...         out_dict = dict()
         ...         for n in name:
         ...             out_dict.update(func(value, n))
@@ -59,7 +59,7 @@ def recursive(key=None, type='list'):
                 idx = list(params).index(key)
                 arg = args[idx] if idx < len(args) else params[key].default
 
-            if isinstance(arg, (list, tuple)):
+            if isinstance(arg, (list, tuple, range)):
                 args, out = list(args), []
                 for a in arg:
                     if key in kwargs or idx >= len(args):
