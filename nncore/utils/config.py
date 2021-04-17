@@ -1,12 +1,10 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import os
-import os.path as osp
 import sys
 from collections import OrderedDict
 from copy import deepcopy
 from importlib import import_module
-from shutil import copyfile
 from tempfile import TemporaryDirectory
 
 import nncore
@@ -165,15 +163,15 @@ class Config(object):
         Returns:
             :obj:`Config`: The constructed config object.
         """
-        filename = nncore.abs_path(osp.expanduser(filename))
-        nncore.file_exist(filename, raise_error=True)
+        filename = nncore.abs_path(filename)
+        nncore.is_file(filename, raise_error=True)
 
-        format = filename.split('.')[-1]
+        format = nncore.pure_ext(filename)
         if format == 'py':
             with TemporaryDirectory() as tmp_dir:
                 mod_name = str(int.from_bytes(os.urandom(2), 'big'))
-                copyfile(filename,
-                         nncore.join(tmp_dir, '{}.py'.format(mod_name)))
+                nncore.cp(filename,
+                          nncore.join(tmp_dir, '{}.py'.format(mod_name)))
                 sys.path.insert(0, tmp_dir)
                 mod = import_module(mod_name)
                 sys.path.pop(0)

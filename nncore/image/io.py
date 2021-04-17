@@ -30,7 +30,7 @@ def imread(filename, flag='color', to_rgb=True):
         raise TypeError(
             "filename must be a str, but got '{}'".format(filename))
 
-    nncore.file_exist(filename, raise_error=True)
+    nncore.is_file(filename, raise_error=True)
 
     flag = _COLOR_SPACES[flag] if isinstance(flag, str) else flag
     img = cv2.imread(filename, flag)

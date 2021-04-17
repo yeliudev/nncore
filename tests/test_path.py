@@ -7,15 +7,15 @@ import pytest
 import nncore
 
 
-def test_dir_exist():
-    nncore.dir_exist(osp.dirname(__file__))
-    assert not nncore.dir_exist('no_such_dir')
+def test_is_dir():
+    nncore.is_dir(osp.dirname(__file__))
+    assert not nncore.is_dir('no_such_dir')
     with pytest.raises(NotADirectoryError):
-        nncore.dir_exist('no_such_dir', raise_error=True)
+        nncore.is_dir('no_such_dir', raise_error=True)
 
 
-def test_file_exist():
-    assert nncore.file_exist(__file__)
-    assert not nncore.file_exist('no_such_file.txt')
+def test_is_file():
+    assert nncore.is_file(__file__)
+    assert not nncore.is_file('no_such_file.txt')
     with pytest.raises(FileNotFoundError):
-        nncore.file_exist('no_such_file.txt', raise_error=True)
+        nncore.is_file('no_such_file.txt', raise_error=True)

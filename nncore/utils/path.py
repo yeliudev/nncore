@@ -3,7 +3,23 @@
 import os
 import os.path as osp
 from platform import system
-from shutil import rmtree
+from shutil import copy2, copytree, move, rmtree
+
+
+def expand_user(*args):
+    """
+    Expand users in paths.
+
+    Args:
+        *args (str): The paths to be expanded.
+
+    Returns:
+        list[str] or str: The expanded path or list of paths.
+    """
+    if len(args) == 1:
+        return osp.expanduser(args[0])
+    else:
+        return [osp.expanduser(p) for p in args]
 
 
 def abs_path(path):
@@ -16,7 +32,20 @@ def abs_path(path):
     Returns:
         str: The absolute path.
     """
-    return osp.abspath(path)
+    return osp.abspath(expand_user(path))
+
+
+def dir_name(path):
+    """
+    Parse the directory name from a path.
+
+    Args:
+        path (str): Path to the file or directory.
+
+    Returns:
+        str: The parsed directory name.
+    """
+    return osp.dirname(expand_user(path))
 
 
 def base_name(path):
@@ -32,25 +61,12 @@ def base_name(path):
     return osp.basename(path)
 
 
-def dir_name(path):
-    """
-    Parse the directory name from a path.
-
-    Args:
-        path (str): Path to the file or directory.
-
-    Returns:
-        str: The parsed directory name.
-    """
-    return osp.dirname(path)
-
-
 def join(*args):
     """
     Combine strings into a path.
 
     Args:
-        *args: The strings to be combined.
+        *args (str): The strings to be combined.
 
     Returns:
         str: The combined path.
@@ -68,7 +84,7 @@ def split_ext(path):
     Returns:
         tuple[str]: The splitted name and extension.
     """
-    return osp.splitext(path)
+    return osp.splitext(base_name(path))
 
 
 def pure_name(path):
@@ -81,7 +97,7 @@ def pure_name(path):
     Returns:
         str: The parsed filename.
     """
-    return osp.splitext(osp.basename(path))[0]
+    return split_ext(path)[0]
 
 
 def pure_ext(path):
@@ -94,7 +110,7 @@ def pure_ext(path):
     Returns:
         str: The parsed extension.
     """
-    return osp.splitext(osp.basename(path))[1]
+    return split_ext(path)[1][1:]
 
 
 def rename(old_path, new_path):
@@ -108,7 +124,38 @@ def rename(old_path, new_path):
     os.rename(old_path, new_path)
 
 
-def dir_exist(path, raise_error=False):
+def cp(src, dst, symlink=True):
+    """
+    Copy files on the disk.
+
+    Args:
+        src (str): Path to the source file or directory.
+        dst (str): Path to the destination file or directory.
+        symlink (bool, optional): Whether to create a new symlink instead of
+            copying the file it points to. Default: ``True``.
+    """
+    src, dst = expand_user(src, dst)
+    if is_dir(src):
+        if is_dir(dst):
+            dst = join(dst, base_name(src))
+        copytree(src, dst, symlinks=symlink)
+    else:
+        copy2(src, dst, follow_symlinks=symlink)
+
+
+def mv(src, dst):
+    """
+    Move files on the disk.
+
+    Args:
+        src (str): Path to the source file or directory.
+        dst (str): Path to the destination file or directory.
+    """
+    src, dst = expand_user(src, dst)
+    move(src, dst)
+
+
+def is_dir(path, raise_error=False):
     """
     Check whether a directory exists.
 
@@ -120,13 +167,13 @@ def dir_exist(path, raise_error=False):
     Returns:
         bool: Whether the directory exists.
     """
-    is_dir = osp.isdir(path)
+    is_dir = osp.isdir(expand_user(path))
     if not is_dir and raise_error:
         raise NotADirectoryError("directory '{}' not found".format(path))
     return is_dir
 
 
-def file_exist(path, raise_error=False):
+def is_file(path, raise_error=False):
     """
     Check whether a file exists.
 
@@ -138,7 +185,7 @@ def file_exist(path, raise_error=False):
     Returns:
         bool: Whether the file exists.
     """
-    is_file = osp.isfile(path)
+    is_file = osp.isfile(expand_user(path))
     if not is_file and raise_error:
         raise FileNotFoundError("file '{}' not found".format(path))
     return is_file
@@ -156,7 +203,7 @@ def mkdir(dir_name, raise_error=False, keep_empty=False):
             Default: ``False``.
     """
     assert isinstance(dir_name, str) and dir_name != ''
-    dir_name = osp.expanduser(dir_name)
+    dir_name = expand_user(dir_name)
     os.makedirs(dir_name, exist_ok=not raise_error)
     if keep_empty:
         for f in os.listdir(dir_name):
@@ -172,9 +219,9 @@ def remove(path, raise_error=False):
         raise_error (bool, optional): Whether to raise an error if the file is
             not found. Default: ``False``.
     """
-    if file_exist(path):
+    if is_file(path):
         os.remove(path)
-    elif dir_exist(path):
+    elif is_dir(path):
         rmtree(path)
     elif raise_error:
         raise FileNotFoundError(

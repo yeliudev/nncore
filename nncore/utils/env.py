@@ -33,7 +33,7 @@ def _collect_cuda_env():
         import torch
         from torch.utils.cpp_extension import CUDA_HOME
         cuda_arch_list = os.environ.get('TORCH_CUDA_ARCH_LIST')
-        if CUDA_HOME is not None and nncore.dir_exist(CUDA_HOME):
+        if CUDA_HOME is not None and nncore.is_dir(CUDA_HOME):
             try:
                 nvcc = nncore.join(CUDA_HOME, 'bin', 'nvcc')
                 nvcc = subprocess.check_output(

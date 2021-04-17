@@ -176,7 +176,7 @@ def publish_model(in_file,
             ``'sha256'``.
     """
     assert out_file.endswith('.pth')
-    nncore.file_exist(in_file, raise_error=True)
+    nncore.is_file(in_file, raise_error=True)
 
     checkpoint = torch.load(in_file, map_location='cpu')
     for key in keys_to_remove:

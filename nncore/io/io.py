@@ -42,7 +42,7 @@ def load(name_or_file, format=None, **kwargs):
     Returns:
         any: The loaded data.
     """
-    format = format or name_or_file.split('.')[-1]
+    format = format or nncore.pure_ext(name_or_file)
     handler = _get_handler(format)
 
     if isinstance(name_or_file, str):
@@ -69,7 +69,7 @@ def dump(obj, name_or_file, format=None, overwrite=False, **kwargs):
         overwrite (bool, optional): Whether to overwrite it if the file exists.
             Default: ``False``.
     """
-    format = format or name_or_file.split('.')[-1]
+    format = format or nncore.pure_ext(name_or_file)
     if format in ('hdf5', 'h5') and not isinstance(obj, np.ndarray):
         raise TypeError(
             "obj must be an np.ndarray for hdf5 files, but got '{}'".format(
@@ -78,7 +78,7 @@ def dump(obj, name_or_file, format=None, overwrite=False, **kwargs):
     handler = _get_handler(format)
 
     if isinstance(name_or_file, str):
-        if nncore.file_exist(name_or_file):
+        if nncore.is_file(name_or_file):
             if overwrite:
                 nncore.remove(name_or_file)
             else:
@@ -185,7 +185,7 @@ def open(file=None, mode='r', format=None, as_decorator=None, **_kwargs):
         file-like object: The opened file object.
     """
     assert file is not None or format is not None
-    format = format or file.split('.')[-1]
+    format = format or nncore.pure_ext(file)
 
     if format in ('hdf5', 'h5'):
         handler = h5py.File
