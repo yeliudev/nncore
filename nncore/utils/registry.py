@@ -3,6 +3,7 @@
 from collections import defaultdict
 
 from .binder import bind_getter, bind_method
+from .misc import recursive
 
 
 @bind_getter('name')
@@ -95,6 +96,7 @@ class Registry(object):
         return self._groups.get(name, default)
 
 
+@recursive()
 def build_object(cfg, parent, default=None, **kwargs):
     """
     Build an object from a dict.
