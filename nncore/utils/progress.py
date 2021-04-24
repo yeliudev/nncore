@@ -12,7 +12,7 @@ class ProgressBar(object):
     effect in the main process.
     """
 
-    _wb = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}s, ETA: {}s{}'
+    _wb = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}s, eta: {}s{}'
     _ob = '\rcompleted: {}, elapsed: {}s, {:.1f} tasks/s'
 
     def __init__(self, num_tasks=None):
