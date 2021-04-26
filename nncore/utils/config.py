@@ -130,10 +130,27 @@ class CfgNode(OrderedDict):
                 self[key].update(value)
 
     def merge_from(self, other):
+        assert isinstance(other, dict)
+        other = self.__class__(**other)
+
         for key, value in other.items():
-            if key in self and isinstance(
-                    value, dict) and not value.pop('_delete_', 0):
-                self[key].merge_from(value)
+            if isinstance(value, dict):
+                delete = value.pop('_delete_', 0)
+                append = value.pop('_append_', 0)
+                assert not delete or not append
+
+                if key in self and isinstance(
+                        self[key], dict) and not delete and not append:
+                    self[key].merge_from(value)
+                elif key in self and append:
+                    if isinstance(self[key], list):
+                        self[key].append(value)
+                    elif isinstance(self[key], tuple):
+                        self[key] = tuple(list(self[key]) + [value])
+                    else:
+                        self[key] = [self[key]] + [value]
+                else:
+                    self[key] = value
             else:
                 self[key] = value
 
