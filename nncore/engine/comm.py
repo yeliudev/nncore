@@ -4,7 +4,6 @@ import os
 from functools import wraps
 from subprocess import getoutput
 
-import pynvml
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
@@ -22,58 +21,37 @@ def _init_dist_pytorch(backend, **kwargs):
 
 def _init_dist_slurm(backend, port=29500, **kwargs):
     proc_id = int(os.environ['SLURM_PROCID'])
-    ntasks = int(os.environ['SLURM_NTASKS'])
+    ntasks = os.environ['SLURM_NTASKS']
     node_list = os.environ['SLURM_NODELIST']
-    num_gpus = torch.cuda.device_count()
-    torch.cuda.set_device(proc_id % num_gpus)
     addr = getoutput('scontrol show hostname {} | head -n1'.format(node_list))
-    os.environ['MASTER_PORT'] = str(port)
     os.environ['MASTER_ADDR'] = addr
-    os.environ['WORLD_SIZE'] = str(ntasks)
+    os.environ['MASTER_PORT'] = str(port)
+    os.environ['WORLD_SIZE'] = ntasks
     os.environ['RANK'] = str(proc_id)
+    torch.cuda.set_device(proc_id % torch.cuda.device_count())
     dist.init_process_group(backend=backend, **kwargs)
 
 
-def _serialize_to_tensor(data, group):
+def _get_default_device(group=None):
     backend = dist.get_backend(group)
-    assert backend in ['nccl', 'gloo']
     device = torch.device('cuda' if backend == 'nccl' else 'cpu')
+    return device
 
-    if backend == 'nccl':
-        world_size = get_world_size()
-        total_size = len(bytearray(nncore.dumps(data))) * world_size
 
-        pynvml.nvmlInit()
-        for i in range(world_size):
-            handle = pynvml.nvmlDeviceGetHandleByIndex(i)
-            meminfo = pynvml.nvmlDeviceGetMemoryInfo(handle)
-            if meminfo.free < total_size:
-                group = dist.new_group(backend='gloo')
-                device = 'cpu'
-                break
-
+def _serialize_to_tensor(data, device):
     buffer = nncore.dumps(data)
     storage = torch.ByteStorage.from_buffer(buffer)
-    tensor = torch.ByteTensor(storage).to(device=device)
+    data_tensor = torch.ByteTensor(storage, device=device)
+    size_tensor = torch.LongTensor([data_tensor.numel()], device=device)
+    return data_tensor, size_tensor
 
-    return tensor, group
 
-
-def _pad_tensors(tensor, group):
-    world_size = get_world_size(group=group)
-    local_size = torch.LongTensor([tensor.numel()], device=tensor.device)
-    size_list = [local_size.clone() for _ in range(world_size)]
-    dist.all_gather(size_list, local_size, group=group)
-
-    size_list = [int(size.item()) for size in size_list]
-    max_size = max(size_list)
-
-    if local_size != max_size:
-        padding = torch.ByteTensor([max_size - local_size],
-                                   device=tensor.device)
-        tensor = torch.cat((tensor, padding))
-
-    return size_list, tensor
+def _pad_tensor(data_tensor, pad_size):
+    data_size = data_tensor.numel()
+    if data_size < pad_size:
+        padding = data_tensor.new_empty(pad_size - data_size)
+        data_tensor = torch.cat((data_tensor, padding))
+    return data_tensor
 
 
 def init_dist(launcher='pytorch', backend='gloo', **kwargs):
@@ -94,6 +72,8 @@ def init_dist(launcher='pytorch', backend='gloo', **kwargs):
             sharing GPUs between processes can result in deadlocks. Default:
             ``'gloo'``.
     """
+    assert backend in ('gloo', 'nccl')
+
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method('spawn')
 
@@ -181,13 +161,50 @@ def synchronize(group=None):
     """
     Synchronize all processes in a process group.
     """
-    if not dist.is_available():
-        return
-    if not dist.is_initialized():
-        return
-    if get_world_size(group=group) == 1:
+    if not dist.is_available() or not dist.is_initialized() or get_world_size(
+            group=group) == 1:
         return
     dist.barrier(group=group)
+
+
+def broadcast(data=None, src=0, group=None):
+    """
+    Perform :obj:`dist.broadcast` on arbitrary serializable data.
+
+    Args:
+        data (any, optional): Any serializable object.
+        src (int, optional): The source rank. Default: ``0``.
+        group (:obj:`dist.ProcessGroup` or None, optional): The process group
+            to use. If not specified, the default process group will be used.
+            Default: ``None``.
+
+    Returns:
+        any: The data broadcasted from the source rank.
+    """
+    rank, world_size = get_dist_info(group=group)
+    if world_size == 1:
+        return data
+
+    device = _get_default_device(group=group)
+
+    if rank == src:
+        data_tensor, size_tensor = _serialize_to_tensor(data, device)
+    else:
+        size_tensor = torch.empty(1, dtype=torch.long, device=device)
+
+    dist.broadcast(size_tensor, src=src, group=group)
+    pad_size = size_tensor.item()
+
+    if rank == src:
+        data_tensor = _pad_tensor(data_tensor, pad_size)
+    else:
+        data_tensor = torch.empty(pad_size, dtype=torch.uint8, device=device)
+
+    dist.broadcast(data_tensor, src=src, group=group)
+    buffer = data_tensor.cpu().numpy().tobytes()[:pad_size]
+    broadcasted = nncore.loads(buffer)
+
+    return broadcasted
 
 
 def all_gather(data, group=None):
@@ -203,20 +220,24 @@ def all_gather(data, group=None):
     Returns:
         list: The list of data gathered from each rank.
     """
-    if get_world_size(group=group) == 1:
+    world_size = get_world_size(group=group)
+    if world_size == 1:
         return [data]
 
-    group = group or dist.group.WORLD
-    tensor, group = _serialize_to_tensor(data, group)
-    size_list, tensor = _pad_tensors(tensor, group)
-    max_size = max(size_list)
+    device = _get_default_device(group=group)
+    data_tensor, size_tensor = _serialize_to_tensor(data, device)
+    size_list = [torch.empty_like(size_tensor) for _ in range(world_size)]
+    dist.all_gather(size_list, size_tensor, group=group)
 
-    tensor_list = [tensor.new_empty([max_size]) for _ in size_list]
-    dist.all_gather(tensor_list, tensor, group=group)
+    pad_size = max(size_tensor.item() for size_tensor in size_list)
+    data_tensor = _pad_tensor(data_tensor, pad_size)
+
+    tensor_list = [data_tensor.new_empty(pad_size) for _ in range(world_size)]
+    dist.all_gather(tensor_list, data_tensor, group=group)
 
     gathered = []
-    for size, tensor in zip(size_list, tensor_list):
-        buffer = tensor.cpu().numpy().tobytes()[:size]
+    for data_tensor, size_tensor in zip(tensor_list, size_list):
+        buffer = data_tensor.cpu().numpy().tobytes()[:size_tensor.item()]
         gathered.append(nncore.loads(buffer))
 
     return gathered
@@ -241,21 +262,26 @@ def gather(data, dst=0, group=None):
     if world_size == 1:
         return [data]
 
-    group = group or dist.group.WORLD
-    tensor, group = _serialize_to_tensor(data, group)
-    size_list, tensor = _pad_tensors(tensor, group)
+    device = _get_default_device(group=group)
+    data_tensor, size_tensor = _serialize_to_tensor(data, device)
+    size_list = [torch.empty_like(size_tensor) for _ in range(world_size)]
+    dist.all_gather(size_list, size_tensor, group=group)
+
+    pad_size = max(size_tensor.item() for size_tensor in size_list)
+    data_tensor = _pad_tensor(data_tensor, pad_size)
 
     if rank == dst:
-        max_size = max(size_list)
-        tensor_list = [tensor.new_empty([max_size]) for _ in size_list]
-        dist.gather(tensor, tensor_list, dst=dst, group=group)
+        tensor_list = [
+            data_tensor.new_empty(pad_size) for _ in range(world_size)
+        ]
+        dist.gather(data_tensor, gather_list=tensor_list, dst=dst, group=group)
 
         gathered = []
-        for size, tensor in zip(size_list, tensor_list):
-            buffer = tensor.cpu().numpy().tobytes()[:size]
+        for data_tensor, size_tensor in zip(tensor_list, size_list):
+            buffer = data_tensor.cpu().numpy().tobytes()[:size_tensor.item()]
             gathered.append(nncore.loads(buffer))
     else:
-        dist.gather(tensor, dst=dst, group=group)
+        dist.gather(data_tensor, dst=dst, group=group)
         gathered = None
 
     return gathered

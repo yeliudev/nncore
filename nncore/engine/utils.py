@@ -74,10 +74,7 @@ def generate_random_seed(length=8):
     Returns:
         int: The generated random seed.
     """
-    if length < 8:
-        raise ValueError(
-            'the number of digits must equal or be larger than 8, but got {}'.
-            format(length))
+    assert length >= 8
     seed = os.getpid() + int(datetime.now().strftime('%S%f')) + int.from_bytes(
         os.urandom(length - 6), 'big')
     return seed
