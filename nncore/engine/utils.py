@@ -13,7 +13,7 @@ import torchvision
 
 import nncore
 from nncore.nn import move_to_device
-from .comm import is_main_process, synchronize
+from .comm import broadcast, is_main_process, synchronize
 
 
 def _load_url_dist(url, **kwargs):
@@ -63,24 +63,34 @@ def _load_state_dict(module, state_dict, strict=False, logger=None):
         nncore.log_or_print(err_msg, logger, log_level='WARNING')
 
 
-def generate_random_seed(length=8):
+def generate_random_seed(sync=False, src=0, group=None):
     """
     Generate a random seed.
 
     Args:
-        length (int, optional): The expected number of digits of the random
-            seed. The number must equal or be larger than 8. Default: ``8``.
+        sync (bool, optional): Whether to synchronize the random seed among the
+            processes in the group in distributed settings. Default: ``False``.
+        src (int, optional): The source rank of the process in distributed
+            settings. This argument is valid only when ``sync==True``. Default:
+            ``0``.
+        group (:obj:`dist.ProcessGroup` or None, optional): The process group
+            to use in distributed settings. This argument is valid only when
+            ``sync==True``. If not specified, the default process group will
+            be used. Default: ``None``.
 
     Returns:
         int: The generated random seed.
     """
-    assert length >= 8
-    seed = os.getpid() + int(datetime.now().strftime('%S%f')) + int.from_bytes(
-        os.urandom(length - 6), 'big')
+    seed = 0
+    while len(str(seed)) != 8:
+        seed = os.getpid() + int.from_bytes(os.urandom(2), 'big') + int(
+            datetime.now().strftime('%S%f'))
+    if sync:
+        seed = broadcast(data=seed, src=src, group=group)
     return seed
 
 
-def set_random_seed(seed=None, deterministic=False, benchmark=False):
+def set_random_seed(seed=None, benchmark=False, deterministic=False, **kwargs):
     """
     Set random seed for ``random``, ``numpy`` and ``torch`` packages. If
     ``seed`` is not specified, this method will generate and return a new
@@ -90,24 +100,24 @@ def set_random_seed(seed=None, deterministic=False, benchmark=False):
         seed (int or None, optional): The potential random seed to use.
             If not specified, a new random seed will be generated. Default:
             ``None``.
-        deterministic (bool, optional): Whether to enable deterministic mode.
-            Default: ``False``.
         benchmark (bool, optional): Whether to enable benchmark mode. Default:
             ``False``.
+        deterministic (bool, optional): Whether to enable deterministic mode.
+            Default: ``False``.
 
     Returns:
         int: The actually used random seed.
     """
     if seed is None:
-        seed = generate_random_seed()
+        seed = generate_random_seed(**kwargs)
 
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
 
-    torch.backends.cudnn.deterministic = deterministic
     torch.backends.cudnn.benchmark = benchmark
+    torch.backends.cudnn.deterministic = deterministic
 
     return seed
 
