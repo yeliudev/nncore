@@ -124,6 +124,35 @@ def rename(old_path, new_path):
     os.rename(old_path, new_path)
 
 
+def ls(path=None, ext=None, join_path=False):
+    """
+    List all files in a directory.
+
+    Args:
+        path (str or None, optional): Path to the directory. If not specified,
+            the current working path ``'.'`` will be used. Default: ``None``.
+        ext (list[str] or str or None, optional): The file extension or list
+            of file extensions to keep. If specified, all the other files will
+            be discarded. Default: ``None``.
+        join_path (bool, optional): Whether to return the joined path of files.
+            Default: ``False``.
+    """
+    files = os.listdir(path)
+
+    if isinstance(ext, (list, tuple)):
+        files = [f for f in files if any(f.endswith(e) for e in ext)]
+    elif isinstance(ext, str):
+        files = [f for f in files if f.endswith(ext)]
+    elif ext is not None:
+        raise TypeError("ext must be a list or str, but got '{}'".format(
+            type(ext)))
+
+    if join_path:
+        files = [join(path, f) for f in files]
+
+    return files
+
+
 def cp(src, dst, symlink=True):
     """
     Copy files on the disk.
