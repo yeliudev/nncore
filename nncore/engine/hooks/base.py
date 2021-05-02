@@ -1,5 +1,6 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+from abc import ABCMeta
 from types import MethodType
 
 import nncore
@@ -14,7 +15,7 @@ HOOK_NAMES = [
 
 
 @nncore.bind_getter('name')
-class Hook(object):
+class Hook(metaclass=ABCMeta):
     """
     Base class for hooks that can be registered into :obj:`Engine`.
 

@@ -7,10 +7,12 @@ import h5py
 import numpy as np
 
 import nncore
-from .handlers import Hdf5Handler, JsonHandler, PickleHandler, YamlHandler
+from .handlers import (Hdf5Handler, JsonHandler, PickleHandler, XmlHandler,
+                       YamlHandler)
 
 _FILE_HANDLERS = {
     'json': JsonHandler(),
+    'xml': XmlHandler(),
     'yaml': YamlHandler(),
     'yml': YamlHandler(),
     'pickle': PickleHandler(),
@@ -30,14 +32,14 @@ def _get_handler(format):
 
 def load(name_or_file, format=None, **kwargs):
     """
-    Load data from json/yaml/pickle/hdf5 files.
+    Load data from json/xml/yaml/pickle/hdf5 files.
 
     Args:
         name_or_file (str or file object): Path to the file or a file object.
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
-            supported formats include ``json``, ``yaml/yml``, ``pickle/pkl``
-            and ``hdf5/h5``. Default: ``None``.
+            supported formats include ``json``, ``xml``, ``yaml/yml``,
+            ``pickle/pkl`` and ``hdf5/h5``. Default: ``None``.
 
     Returns:
         any: The loaded data.
@@ -57,15 +59,15 @@ def load(name_or_file, format=None, **kwargs):
 
 def dump(obj, name_or_file, format=None, overwrite=False, **kwargs):
     """
-    Dump data to json/yaml/pickle/hdf5 files.
+    Dump data to json/xml/yaml/pickle/hdf5 files.
 
     Args:
         obj (any): The object to be dumped.
         name_or_file (str or file object): Path to the file or a file object.
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
-            supported formats include ``json``, ``yaml/yml``, ``pickle/pkl``
-            and ``hdf5/h5``. Default: ``None``.
+            supported formats include ``json``, ``xml``, ``yaml/yml``,
+            ``pickle/pkl`` and ``hdf5/h5``. Default: ``None``.
         overwrite (bool, optional): Whether to overwrite it if the file exists.
             Default: ``False``.
     """
@@ -95,13 +97,13 @@ def dump(obj, name_or_file, format=None, overwrite=False, **kwargs):
 
 def loads(string, format='pickle', **kwargs):
     """
-    Load data from a json/yaml/pickle style string.
+    Load data from a json/xml/yaml/pickle style string.
 
     Args:
         string (str or btyearray): String of the data.
         format (str, optional): Format of the string. Currently supported
-            formats include ``json``, ``yaml/yml`` and ``pickle/pkl``. Default:
-            ``'pickle'``.
+            formats include ``json``, ``xml``, ``yaml/yml`` and ``pickle/pkl``.
+            Default: ``'pickle'``.
 
     Returns:
         any: The loaded data.
@@ -113,13 +115,13 @@ def loads(string, format='pickle', **kwargs):
 
 def dumps(obj, format='pickle', **kwargs):
     """
-    Dump data to a json/yaml/pickle style string.
+    Dump data to a json/xml/yaml/pickle style string.
 
     Args:
         obj (any): The object to be dumped.
         format (str, optional): Format of the string. Currently supported
-            formats include ``json``, ``yaml/yml`` and ``pickle/pkl``. Default:
-            ``'pickle'``.
+            formats include ``json``, ``xml``, ``yaml/yml`` and ``pickle/pkl``.
+            Default: ``'pickle'``.
 
     Returns:
         str: The dumped string.
@@ -161,7 +163,7 @@ def list_from_file(filename, offset=0, separator=',', max_length=-1):
     return out_list
 
 
-def open(file=None, mode='r', format=None, as_decorator=None, **_kwargs):
+def open(file=None, mode='r', format=None, as_decorator=None, **kwargs):
     """
     Open a file and return a file object. This method can be used as a function
     or a decorator. When used as a decorator, the function to be decorated
@@ -198,7 +200,7 @@ def open(file=None, mode='r', format=None, as_decorator=None, **_kwargs):
 
     if not as_decorator:
         nncore.mkdir(nncore.dir_name(nncore.abs_path(file)))
-        return handler(file, mode, **_kwargs)
+        return handler(file, mode, **kwargs)
 
     def _decorator(func):
         vars = func.__code__.co_varnames
@@ -208,10 +210,10 @@ def open(file=None, mode='r', format=None, as_decorator=None, **_kwargs):
             )
 
         @wraps(func)
-        def _wrapper(*args, file=file, mode=mode, **kwargs):
+        def _wrapper(*args, file=file, mode=mode, **_kwargs):
             nncore.mkdir(nncore.dir_name(nncore.abs_path(file)))
-            with handler(file, mode, **_kwargs) as f:
-                func(*args, **kwargs, f=f)
+            with handler(file, mode, **kwargs) as f:
+                func(*args, **_kwargs, f=f)
 
         return _wrapper
 
