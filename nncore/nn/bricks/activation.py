@@ -2,10 +2,31 @@
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 import nncore
 
 ACTIVATIONS = nncore.Registry('activation')
+
+
+class _MishImplementation(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, i):
+        result = i * torch.tanh(F.softplus(i))
+        ctx.save_for_backward(i)
+        return result
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        i = ctx.saved_variables[0]
+        v = 1. + i.exp()
+        h = v.log()
+        grad_gh = 1. / h.cosh().pow_(2)
+        grad_hx = i.sigmoid()
+        grad_gx = grad_gh * grad_hx
+        grad_f = grad_gx * i + torch.tanh(F.softplus(i))
+        return grad_output * grad_f
 
 
 class _SwishImplementation(torch.autograd.Function):
@@ -24,6 +45,19 @@ class _SwishImplementation(torch.autograd.Function):
 
 
 @ACTIVATIONS.register()
+class EffMish(nn.Module):
+    """
+    An efficient implementation of Mish activation layer introduced in [1].
+
+    References:
+        1. Misra et al. (https://arxiv.org/abs/1908.08681)
+    """
+
+    def forward(self, x):
+        return _MishImplementation.apply(x)
+
+
+@ACTIVATIONS.register()
 class EffSwish(nn.Module):
     """
     An efficient implementation of Swish activation layer introduced in [1].
@@ -34,6 +68,19 @@ class EffSwish(nn.Module):
 
     def forward(self, x):
         return _SwishImplementation.apply(x)
+
+
+@ACTIVATIONS.register()
+class Mish(nn.Module):
+    """
+    Mish activation layer introduced in [1].
+
+    References:
+        1. Misra et al. (https://arxiv.org/abs/1908.08681)
+    """
+
+    def forward(self, x):
+        return x * torch.tanh(F.softplus(x))
 
 
 @ACTIVATIONS.register()
@@ -50,6 +97,7 @@ class Swish(nn.Module):
 
 
 @ACTIVATIONS.register()
+@nncore.bind_getter('min', 'max')
 class Clamp(nn.Module):
     """
     Clamp activation layer.
