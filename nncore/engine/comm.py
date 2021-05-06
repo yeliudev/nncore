@@ -41,8 +41,8 @@ def _get_default_device(group=None):
 def _serialize_to_tensor(data, device):
     buffer = nncore.dumps(data)
     storage = torch.ByteStorage.from_buffer(buffer)
-    data_tensor = torch.ByteTensor(storage, device=device)
-    size_tensor = torch.LongTensor([data_tensor.numel()], device=device)
+    data_tensor = torch.ByteTensor(storage).to(device)
+    size_tensor = torch.LongTensor([data_tensor.numel()]).to(device)
     return data_tensor, size_tensor
 
 
