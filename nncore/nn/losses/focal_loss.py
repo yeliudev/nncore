@@ -1,6 +1,5 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
@@ -30,7 +29,7 @@ def sigmoid_focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
     References:
         1. Lin et al. (https://arxiv.org/abs/1708.02002)
     """
-    p = torch.sigmoid(pred)
+    p = pred.sigmoid()
     ce_loss = F.binary_cross_entropy_with_logits(
         pred, target, reduction='none')
     p_t = p * target + (1 - p) * (1 - target)

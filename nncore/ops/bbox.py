@@ -36,13 +36,13 @@ def bbox_intersection(bboxes1, bboxes2, aligned=False):
         lt = torch.max(bboxes1[:, :2], bboxes2[:, :2])
         rb = torch.min(bboxes1[:, 2:], bboxes2[:, 2:])
 
-        wh = (rb - lt).clamp(min=0)
+        wh = (rb - lt).clamp(0)
         inter = wh[:, 0] * wh[:, 1]
     else:
         lt = torch.max(bboxes1[:, None, :2], bboxes2[:, :2])
         rb = torch.min(bboxes1[:, None, 2:], bboxes2[:, 2:])
 
-        wh = (rb - lt).clamp(min=0)
+        wh = (rb - lt).clamp(0)
         inter = wh[:, :, 0] * wh[:, :, 1]
 
     return inter

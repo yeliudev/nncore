@@ -13,7 +13,7 @@ class _MishImplementation(torch.autograd.Function):
 
     @staticmethod
     def forward(ctx, i):
-        result = i * torch.tanh(F.softplus(i))
+        result = i * F.softplus(i).tanh()
         ctx.save_for_backward(i)
         return result
 
@@ -25,7 +25,7 @@ class _MishImplementation(torch.autograd.Function):
         grad_gh = 1. / h.cosh().pow_(2)
         grad_hx = i.sigmoid()
         grad_gx = grad_gh * grad_hx
-        grad_f = grad_gx * i + torch.tanh(F.softplus(i))
+        grad_f = grad_gx * i + F.softplus(i).tanh()
         return grad_output * grad_f
 
 
@@ -33,14 +33,14 @@ class _SwishImplementation(torch.autograd.Function):
 
     @staticmethod
     def forward(ctx, i):
-        result = i * torch.sigmoid(i)
+        result = i * i.sigmoid()
         ctx.save_for_backward(i)
         return result
 
     @staticmethod
     def backward(ctx, grad_output):
         i = ctx.saved_tensors[0]
-        sigmoid_i = torch.sigmoid(i)
+        sigmoid_i = i.sigmoid()
         return grad_output * (sigmoid_i * (1 + i * (1 - sigmoid_i)))
 
 
@@ -80,7 +80,7 @@ class Mish(nn.Module):
     """
 
     def forward(self, x):
-        return x * torch.tanh(F.softplus(x))
+        return x * F.softplus(x).tanh()
 
 
 @ACTIVATIONS.register()
@@ -93,7 +93,7 @@ class Swish(nn.Module):
     """
 
     def forward(self, x):
-        return x * torch.sigmoid(x)
+        return x * x.sigmoid()
 
 
 @ACTIVATIONS.register()
@@ -113,7 +113,7 @@ class Clamp(nn.Module):
         self._max = max
 
     def forward(self, x):
-        return torch.clamp(x, min=self._min, max=self._max)
+        return x.clamp(self._min, self._max)
 
 
 def build_act_layer(cfg, **kwargs):

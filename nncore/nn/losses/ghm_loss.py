@@ -30,8 +30,9 @@ class GHMCLoss(nn.Module):
         self._loss_weight = loss_weight
 
         edges = torch.arange(bins + 1).float() / bins
+        edges[-1] += 1e-6
         self.register_buffer('edges', edges)
-        self.edges[-1] += 1e-6
+
         if momentum > 0:
             acc_sum = torch.zeros(bins)
             self.register_buffer('acc_sum', acc_sum)
@@ -42,7 +43,7 @@ class GHMCLoss(nn.Module):
 
     def forward(self, pred, target):
         weights = torch.zeros_like(pred)
-        g = torch.abs(pred.sigmoid().detach() - target)
+        g = (pred.sigmoid().detach() - target).abs()
 
         tot = target.size(1)
         n = 0
