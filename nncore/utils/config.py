@@ -136,11 +136,14 @@ class CfgNode(OrderedDict):
 
         for key, value in other.items():
             if isinstance(value, dict):
-                delete = value.pop('_delete_', 0)
-                append = value.pop('_append_', 0)
-                assert not delete or not append
+                delete = value.pop('_delete_', False)
+                append = value.pop('_append_', False)
+                update = value.pop('_update_', False)
+                assert sum(map(int, (delete, append, update))) <= 1
 
-                if key in self and isinstance(
+                if key not in self and update:
+                    continue
+                elif key in self and isinstance(
                         self[key], dict) and not delete and not append:
                     self[key].merge_from(value)
                 elif key in self and append:
