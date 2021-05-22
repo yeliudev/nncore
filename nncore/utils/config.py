@@ -227,8 +227,11 @@ class Config(CfgNode):
 
             _cfg = CfgNode()
             for name in base:
-                path = nncore.join(nncore.dir_name(filename), name)
-                _cfg.merge_from(Config.from_file(path))
+                if name.endswith('.py'):
+                    path = nncore.join(nncore.dir_name(filename), name)
+                    _cfg.merge_from(Config.from_file(path))
+                else:
+                    import_module(name)
 
             _cfg.merge_from(cfg)
             cfg = _cfg
