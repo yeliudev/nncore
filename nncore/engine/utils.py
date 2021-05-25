@@ -132,9 +132,7 @@ def get_checkpoint(file_or_url, map_location=None, **kwargs):
             interface. Default: ``None``.
 
     Returns:
-        :obj:`OrderedDict` or dict: The loaded checkpoint. It can be either \
-            an :obj:`OrderedDict` storing model weights or a dict containing \
-            other information, which depends on the checkpoint.
+        :obj:`OrderedDict` or dict: The loaded checkpoint.
     """
     if file_or_url.startswith('torchvision://'):
         model_urls = dict()
@@ -150,6 +148,7 @@ def get_checkpoint(file_or_url, map_location=None, **kwargs):
         checkpoint = _load_url_dist(file_or_url, **kwargs)
     else:
         checkpoint = torch.load(file_or_url, map_location=map_location)
+
     return checkpoint
 
 
@@ -174,6 +173,9 @@ def load_checkpoint(model,
         logger (:obj:`logging.Logger` or str or None, optional): The logger or
             name of the logger for displaying error messages. Default:
             ``None``.
+
+    Returns:
+        :obj:`OrderedDict` or dict: The loaded checkpoint.
     """
     if isinstance(checkpoint, str):
         checkpoint = get_checkpoint(
@@ -199,6 +201,8 @@ def load_checkpoint(model,
         strict=strict,
         logger=logger)
 
+    return checkpoint
+
 
 def save_checkpoint(model, filename, optimizer=None, meta=None):
     """
@@ -214,6 +218,9 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         optimizer (:obj:`optim.Optimizer`, optional): The optimizer to be
             saved. Default: ``None``.
         meta (dict, optional): The metadata to be saved. Default: ``None``.
+
+    Returns:
+        :obj:`OrderedDict` or dict: The saved checkpoint.
     """
     if meta is None:
         meta = dict()
@@ -233,3 +240,5 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
 
     checkpoint = move_to_device(checkpoint, 'cpu')
     torch.save(checkpoint, filename)
+
+    return checkpoint
