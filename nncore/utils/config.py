@@ -135,13 +135,22 @@ class CfgNode(OrderedDict):
         other = self.__class__(**other)
 
         for key, value in other.items():
+            if key.startswith('_'):
+                continue
+
             if isinstance(value, dict):
                 delete = value.pop('_delete_', False)
+                refine = value.pop('_refine_', False)
                 append = value.pop('_append_', False)
                 update = value.pop('_update_', False)
-                assert sum(map(int, (delete, append, update))) <= 1
+                insert = value.pop('_insert_', False)
 
-                if key not in self and update:
+                has_update = type(update) is int
+                has_insert = type(insert) is int
+                assert sum(
+                    (delete, refine, append, has_update, has_insert)) <= 1
+
+                if key not in self and refine:
                     continue
                 elif key in self and isinstance(
                         self[key], dict) and not delete and not append:
@@ -153,6 +162,24 @@ class CfgNode(OrderedDict):
                         self[key] = tuple(list(self[key]) + [value])
                     else:
                         self[key] = [self[key]] + [value]
+                elif key in self and isinstance(self[key],
+                                                (list, tuple)) and has_update:
+                    if isinstance(self[key][update], dict):
+                        self[key][update].merge_from(value)
+                    elif isinstance(self[key], list):
+                        self[key][update] = value
+                    else:
+                        tmp_list = list(self[key])
+                        tmp_list[update] = value
+                        self[key] = tuple(tmp_list)
+                elif key in self and isinstance(self[key],
+                                                (list, tuple)) and has_insert:
+                    if isinstance(self[key], list):
+                        self[key].insert(insert, value)
+                    elif isinstance(self[key], tuple):
+                        tmp_list = list(self[key])
+                        tmp_list.insert(insert, value)
+                        self[key] = tuple(tmp_list)
                 else:
                     self[key] = value
             else:
