@@ -34,7 +34,8 @@ def _init_dist_slurm(backend, port=29500, **kwargs):
 
 def _get_default_device(group=None):
     backend = dist.get_backend(group)
-    device = torch.device('cuda' if backend == 'nccl' else 'cpu')
+    assert backend in ('gloo', 'nccl')
+    device = torch.device('cpu' if backend == 'gloo' else 'cuda')
     return device
 
 
@@ -109,7 +110,7 @@ def get_rank(group=None):
     """
     if not is_distributed():
         return 0
-    return dist.get_rank(group=group or dist.group.WORLD)
+    return dist.get_rank(group=group)
 
 
 def get_world_size(group=None):
@@ -126,7 +127,7 @@ def get_world_size(group=None):
     """
     if not is_distributed():
         return 1
-    return dist.get_world_size(group=group or dist.group.WORLD)
+    return dist.get_world_size(group=group)
 
 
 def get_dist_info(group=None):
@@ -141,10 +142,10 @@ def get_dist_info(group=None):
     Returns:
         tuple[int]: The process rank and the world size.
     """
-    if not is_distributed():
+    if is_distributed():
+        return get_rank(group=group), get_world_size(group=group)
+    else:
         return 0, 1
-    group = group or dist.group.WORLD
-    return get_rank(group=group), get_world_size(group=group)
 
 
 def is_main_process():
@@ -161,8 +162,7 @@ def synchronize(group=None):
     """
     Synchronize all processes in a process group.
     """
-    if not dist.is_available() or not dist.is_initialized() or get_world_size(
-            group=group) == 1:
+    if not is_distributed() or get_world_size(group=group) == 1:
         return
     dist.barrier(group=group)
 
