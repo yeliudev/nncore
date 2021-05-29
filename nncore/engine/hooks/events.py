@@ -86,7 +86,7 @@ class CommandLineWriter(Writer):
                                 num_iters_passed))
                 log += 'eta: {}, '.format(eta)
 
-            for key in ['time', 'data_time']:
+            for key in ('time', 'data_time'):
                 if key in metrics:
                     log += '{}: {:.3f}, '.format(key, metrics[key])
 
@@ -207,10 +207,8 @@ class TensorboardWriter(Writer):
                 tokens = key.split('_')
                 log_type = tokens[-2]
 
-                if log_type not in [
-                        'histogram', 'image', 'images', 'figure', 'video',
-                        'audio', 'text'
-                ]:
+                if log_type not in ('histogram', 'image', 'images', 'figure',
+                                    'video', 'audio', 'text'):
                     raise TypeError(
                         "unsupported log type: '{}'".format(log_type))
 

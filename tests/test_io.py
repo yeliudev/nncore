@@ -35,9 +35,8 @@ obj_for_test = [{'a': 'abc', 'b': 1}, 2, 'c']
 def test_json():
 
     def json_checker(dump_str):
-        assert dump_str in [
-            '[{"a": "abc", "b": 1}, 2, "c"]', '[{"b": 1, "a": "abc"}, 2, "c"]'
-        ]
+        assert dump_str in ('[{"a": "abc", "b": 1}, 2, "c"]',
+                            '[{"b": 1, "a": "abc"}, 2, "c"]')
 
     _test_handler('json', obj_for_test, json_checker)
 
@@ -45,10 +44,10 @@ def test_json():
 def test_yaml():
 
     def yaml_checker(dump_str):
-        assert dump_str in [
-            '- {a: abc, b: 1}\n- 2\n- c\n', '- {b: 1, a: abc}\n- 2\n- c\n',
-            '- a: abc\n  b: 1\n- 2\n- c\n', '- b: 1\n  a: abc\n- 2\n- c\n'
-        ]
+        assert dump_str in ('- {a: abc, b: 1}\n- 2\n- c\n',
+                            '- {b: 1, a: abc}\n- 2\n- c\n',
+                            '- a: abc\n  b: 1\n- 2\n- c\n',
+                            '- b: 1\n  a: abc\n- 2\n- c\n')
 
     _test_handler('yaml', obj_for_test, yaml_checker)
 

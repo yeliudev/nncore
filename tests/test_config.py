@@ -17,7 +17,7 @@ def test_construct():
 
 
 def test_build_config():
-    for filename in ['a.py', 'a.b.py', 'b.json', 'c.yaml']:
+    for filename in ('a.py', 'a.b.py', 'b.json', 'c.yaml'):
         cfg_file = osp.join(osp.dirname(__file__), 'data', filename)
         cfg = nncore.Config.from_file(cfg_file)
         assert isinstance(cfg, nncore.Config)
@@ -33,7 +33,7 @@ def test_build_config():
 def test_dict():
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
 
-    for filename in ['a.py', 'b.json', 'c.yaml']:
+    for filename in ('a.py', 'b.json', 'c.yaml'):
         cfg_file = osp.join(osp.dirname(__file__), 'data', filename)
         cfg = nncore.Config.from_file(cfg_file)
 
@@ -52,7 +52,7 @@ def test_dict():
         assert cfg.item4 == cfg_dict['item4']
         with pytest.raises(KeyError):
             cfg.not_exist
-        for name in ['item1', 'item2', 'item3', 'item4']:
+        for name in ('item1', 'item2', 'item3', 'item4'):
             assert name in cfg
             assert cfg[name] == cfg_dict[name]
             assert cfg.get(name) == cfg_dict[name]

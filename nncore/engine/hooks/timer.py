@@ -59,7 +59,7 @@ class TimerHook(Hook):
     @master_only
     def before_epoch(self, engine):
         for key in list(engine.buffer.keys()):
-            if key in ['total', 'iter', 'data', 'train', 'val']:
+            if key in ('total', 'iter', 'data', 'train', 'val'):
                 engine.buffer.pop('_{}_time'.format(key))
 
     @master_only

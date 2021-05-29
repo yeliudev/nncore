@@ -242,7 +242,7 @@ class Config(CfgNode):
                     for k, v in mod.__dict__.items()
                     if not k.startswith('__') or not k.endswith('__')
                 }
-        elif format in ['json', 'yml', 'yaml']:
+        elif format in ('json', 'yml', 'yaml'):
             cfg = nncore.load(filename)
         else:
             raise TypeError("unsupported format: '{}'".format(format))
@@ -254,7 +254,7 @@ class Config(CfgNode):
 
             _cfg = CfgNode()
             for name in base:
-                if name.endswith('.py'):
+                if name.endswith(('.py', '.json', '.yml', '.yaml')):
                     path = nncore.join(nncore.dir_name(filename), name)
                     _cfg.merge_from(Config.from_file(path))
                 else:

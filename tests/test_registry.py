@@ -45,10 +45,9 @@ def test_registry():
             pass
 
     assert CATS.get('PersianCat') is None
-    assert repr(CATS) in [
+    assert repr(CATS) in (
         "Registry(name='cat', items=['BritishShorthair', 'Munchkin'])",
-        "Registry(name='cat', items=['Munchkin', 'BritishShorthair'])"
-    ]
+        "Registry(name='cat', items=['Munchkin', 'BritishShorthair'])")
 
 
 def test_build_object():
