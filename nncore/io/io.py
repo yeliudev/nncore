@@ -131,12 +131,17 @@ def dumps(obj, format='pickle', **kwargs):
     return handler.dump_to_str(obj, **kwargs)
 
 
-def list_from_file(filename, offset=0, separator=',', max_length=-1):
+def list_from_file(filename,
+                   encoding='utf-8',
+                   offset=0,
+                   separator=',',
+                   max_length=-1):
     """
     Load a text file and parse the content as a list of tuples or str.
 
     Args:
         filename (str): Path to the file to be loaded.
+        encoding (str, optional): The encoding of the file.
         offset (int, optional): The offset of line numbers. Default: ``0``.
         separator (str or None, optional): The separator to use for parsing
             tuples. If not specified, each line would be treated as a str.
@@ -149,7 +154,7 @@ def list_from_file(filename, offset=0, separator=',', max_length=-1):
         list[str]: The loaded str list.
     """
     out_list, count = [], 0
-    with _open(filename, 'r') as f:
+    with _open(filename, 'r', encoding=encoding) as f:
         for _ in range(offset):
             f.readline()
         for line in f:
