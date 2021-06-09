@@ -28,11 +28,11 @@ def bind_getter(*vars):
         ...
         ...     @property
         ...     def name(self):
-        ...         return self._name
+        ...         return copy.deepcopy(self._name)
         ...
         ...     @property
         ...     def depth(self):
-        ...         return self._depth
+        ...         return copy.deepcopy(self._depth)
     """
 
     def _wrapper(cls):

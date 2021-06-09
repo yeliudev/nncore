@@ -83,8 +83,8 @@ def generate_random_seed(sync=False, src=0, group=None):
     """
     seed = 0
     while len(str(seed)) != 8:
-        seed = os.getpid() + int.from_bytes(os.urandom(2), 'big') + int(
-            datetime.now().strftime('%S%f'))
+        seed = os.getpid() + int.from_bytes(os.urandom(4), 'big') + int(
+            datetime.now().strftime('%f'))
     if sync:
         seed = broadcast(data=seed, src=src, group=group)
     return seed
