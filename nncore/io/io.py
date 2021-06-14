@@ -57,7 +57,7 @@ def load(name_or_file, format=None, **kwargs):
                 type(name_or_file)))
 
 
-def dump(obj, name_or_file, format=None, overwrite=False, **kwargs):
+def dump(obj, name_or_file, format=None, overwrite=True, **kwargs):
     """
     Dump data to json/xml/yaml/pickle/hdf5 files.
 
@@ -69,7 +69,7 @@ def dump(obj, name_or_file, format=None, overwrite=False, **kwargs):
             supported formats include ``json``, ``xml``, ``yaml/yml``,
             ``pickle/pkl`` and ``hdf5/h5``. Default: ``None``.
         overwrite (bool, optional): Whether to overwrite it if the file exists.
-            Default: ``False``.
+            Default: ``True``.
     """
     format = format or nncore.pure_ext(name_or_file)
     if format in ('hdf5', 'h5') and not isinstance(obj, np.ndarray):

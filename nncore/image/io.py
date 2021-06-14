@@ -11,7 +11,7 @@ _COLOR_SPACES = {
 }
 
 
-def imread(filename, flag='color', to_rgb=True):
+def imread(filename, flag='color', to_rgb=False):
     """
     Read an image from a file.
 
@@ -21,7 +21,7 @@ def imread(filename, flag='color', to_rgb=True):
             loaded image. Currently supported flags include ``'color'``,
             ``'grayscale'`` and ``'unchanged'``. Default: ``'color'``.
         to_rgb (bool, optional): Whether to convert channel order from ``BGR``
-            to ``RGB``. Default: ``True``.
+            to ``RGB``. Default: ``False``.
 
     Returns:
         :obj:`np.ndarray`: The loaded image array.
@@ -41,7 +41,7 @@ def imread(filename, flag='color', to_rgb=True):
     return img
 
 
-def imwrite(img, filename, params=None):
+def imwrite(img, filename, overwrite=True, params=None):
     """
     Write an image to a file.
 
@@ -54,5 +54,11 @@ def imwrite(img, filename, params=None):
     Returns:
         bool: Successful or not.
     """
+    if nncore.is_file(filename):
+        if overwrite:
+            nncore.remove(filename)
+        else:
+            raise FileExistsError("file '{}' exists".format(filename))
+
     nncore.mkdir(nncore.dir_name(nncore.abs_path(filename)))
     return cv2.imwrite(filename, img, params)
