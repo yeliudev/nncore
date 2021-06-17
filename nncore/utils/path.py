@@ -124,7 +124,7 @@ def rename(old_path, new_path):
     os.rename(old_path, new_path)
 
 
-def ls(path=None, ext=None, join_path=False):
+def ls(path=None, ext=None, skip_hidden_files=True, join_path=False):
     """
     List all files in a directory.
 
@@ -134,9 +134,14 @@ def ls(path=None, ext=None, join_path=False):
         ext (list[str] or str or None, optional): The file extension or list
             of file extensions to keep. If specified, all the other files will
             be discarded. Default: ``None``.
+        skip_hidden_files (bool, optional): Whether to discard hidden files
+            whose filenames start with '.'. Default: ``True``.
         join_path (bool, optional): Whether to return the joined path of files.
             Default: ``False``.
     """
+    if is_file(path):
+        return [path]
+
     files = os.listdir(path)
 
     if isinstance(ext, (list, tuple)):
@@ -146,6 +151,9 @@ def ls(path=None, ext=None, join_path=False):
     elif ext is not None:
         raise TypeError("ext must be a list or str, but got '{}'".format(
             type(ext)))
+
+    if skip_hidden_files:
+        files = [f for f in files if not f.startswith('.')]
 
     if join_path:
         files = [join(path, f) for f in files]
