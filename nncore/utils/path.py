@@ -139,7 +139,7 @@ def ls(path=None, ext=None, skip_hidden_files=True, join_path=False):
         join_path (bool, optional): Whether to return the joined path of files.
             Default: ``False``.
     """
-    if is_file(path):
+    if path is not None and is_file(path):
         return [path]
 
     files = os.listdir(path)
