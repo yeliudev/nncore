@@ -139,16 +139,15 @@ class CfgNode(OrderedDict):
                 continue
 
             if isinstance(value, dict):
-                delete = value.pop('_delete_', False)
                 refine = value.pop('_refine_', False)
+                delete = value.pop('_delete_', False)
                 append = value.pop('_append_', False)
                 update = value.pop('_update_', False)
                 insert = value.pop('_insert_', False)
 
                 has_update = type(update) is int
                 has_insert = type(insert) is int
-                assert sum(
-                    (delete, refine, append, has_update, has_insert)) <= 1
+                assert sum((delete, append, has_update, has_insert)) <= 1
 
                 if key not in self and refine:
                     continue
@@ -181,7 +180,14 @@ class CfgNode(OrderedDict):
                         tmp_list.insert(insert, value)
                         self[key] = tuple(tmp_list)
                 else:
-                    self[key] = value
+                    tmp_node = self.__class__()
+                    tmp_node.merge_from(value)
+                    if tmp_node or not value:
+                        self[key] = tmp_node
+
+            elif value == '_delete_':
+                if key in self:
+                    del self[key]
             else:
                 self[key] = value
 
