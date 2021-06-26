@@ -131,6 +131,49 @@ class CfgNode(OrderedDict):
                 self[key].update(value)
 
     def merge_from(self, other):
+
+        def _insert(ori, value, cfg):
+            assert isinstance(cfg, (dict, int))
+            if isinstance(cfg, dict):
+                assert nncore.is_seq_of(cfg['index'], int) or isinstance(
+                    cfg['index'], int)
+                if isinstance(cfg['index'], (list, tuple)):
+                    assert isinstance(cfg['value'], (list, tuple)) and len(
+                        cfg['index']) == len(cfg['value'])
+                    idxs, vals = cfg['index'], cfg['value']
+                else:
+                    idxs, vals = [cfg['index']], [cfg['value']]
+                for i, idx in enumerate(idxs):
+                    ori.insert(idx, vals[i])
+            elif type(cfg) is int:
+                ori.insert(cfg, value)
+            else:
+                ori.append(value)
+            return ori
+
+        def _update(ori, value, cfg):
+            assert isinstance(cfg, (dict, int))
+            if isinstance(cfg, dict):
+                assert nncore.is_seq_of(cfg['index'], int) or isinstance(
+                    cfg['index'], int)
+                if isinstance(cfg['index'], (list, tuple)):
+                    assert isinstance(cfg['value'], (list, tuple)) and len(
+                        cfg['index']) == len(cfg['value'])
+                    idxs, vals = cfg['index'], cfg['value']
+                else:
+                    idxs, vals = [cfg['index']], [cfg['value']]
+                for i, idx in enumerate(idxs):
+                    if isinstance(ori[idx], dict) and isinstance(
+                            vals[i], dict):
+                        ori[idx].merge_from(vals[i])
+                    else:
+                        ori[idx] = vals[i]
+            elif isinstance(ori[cfg], dict):
+                ori[cfg].merge_from(value)
+            else:
+                ori[cfg] = value
+            return ori
+
         assert isinstance(other, dict)
         other = self.__class__(**other)
 
@@ -139,52 +182,44 @@ class CfgNode(OrderedDict):
                 continue
 
             if isinstance(value, dict):
-                refine = value.pop('_refine_', False)
-                delete = value.pop('_delete_', False)
-                append = value.pop('_append_', False)
-                update = value.pop('_update_', False)
-                insert = value.pop('_insert_', False)
+                refine = value.pop('_refine_', None)
+                delete = value.pop('_delete_', None)
+                insert = value.pop('_insert_', None)
+                update = value.pop('_update_', None)
 
-                has_update = type(update) is int
-                has_insert = type(insert) is int
-                assert sum((delete, append, has_update, has_insert)) <= 1
+                do_insert = type(insert) is int or insert
+                do_update = type(update) is int or update
 
                 if key not in self and refine:
                     continue
-                elif key in self and isinstance(
-                        self[key], dict) and not delete and not append:
-                    self[key].merge_from(value)
-                elif key in self and append:
-                    if isinstance(self[key], list):
-                        self[key].append(value)
-                    elif isinstance(self[key], tuple):
-                        self[key] = tuple(list(self[key]) + [value])
-                    else:
-                        self[key] = [self[key]] + [value]
-                elif key in self and isinstance(self[key],
-                                                (list, tuple)) and has_update:
-                    if isinstance(self[key][update], dict):
-                        self[key][update].merge_from(value)
-                    elif isinstance(self[key], list):
-                        self[key][update] = value
-                    else:
-                        tmp_list = list(self[key])
-                        tmp_list[update] = value
-                        self[key] = tuple(tmp_list)
-                elif key in self and isinstance(self[key],
-                                                (list, tuple)) and has_insert:
-                    if isinstance(self[key], list):
-                        self[key].insert(insert, value)
-                    elif isinstance(self[key], tuple):
-                        tmp_list = list(self[key])
-                        tmp_list.insert(insert, value)
-                        self[key] = tuple(tmp_list)
-                else:
-                    tmp_node = self.__class__()
-                    tmp_node.merge_from(value)
-                    if tmp_node or not value:
-                        self[key] = tmp_node
 
+                if key in self and isinstance(self[key], dict):
+                    assert not do_update and not (delete and do_insert)
+                    if do_insert:
+                        self[key] = _insert([self[key]], value, insert)
+                        continue
+                    elif not delete:
+                        self[key].merge_from(value)
+                        continue
+
+                if key in self and isinstance(self[key], (list, tuple)):
+                    if do_insert or do_update:
+                        is_tuple = isinstance(self[key], tuple)
+                        if is_tuple:
+                            self[key] = list(self[key])
+                        if do_insert:
+                            self[key] = _insert(self[key], value, insert)
+                        if do_update:
+                            self[key] = _update(self[key], value, update)
+                        if is_tuple:
+                            self[key] = tuple(self[key])
+                        continue
+
+                assert not do_insert and not do_update
+                tmp_node = self.__class__()
+                tmp_node.merge_from(value)
+                if tmp_node or not value:
+                    self[key] = tmp_node
             elif value == '_delete_':
                 if key in self:
                     del self[key]
@@ -198,14 +233,14 @@ class CfgNode(OrderedDict):
                 base[key] = value.to_dict()
             elif isinstance(value, (list, tuple)):
                 base[key] = type(value)(
-                    o.to_dict() if isinstance(o, self.__class__) else o
-                    for o in value)
+                    v.to_dict() if isinstance(v, self.__class__) else v
+                    for v in value)
             else:
                 base[key] = value
         return base
 
-    def to_json(self):
-        return nncore.dumps(self.to_dict(), format='json', indent=2)
+    def to_json(self, indent=2):
+        return nncore.dumps(self.to_dict(), format='json', indent=indent)
 
 
 @bind_getter('filename')
