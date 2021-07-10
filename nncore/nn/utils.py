@@ -15,13 +15,13 @@ def move_to_device(data, device):
     device.
 
     Args:
-        data (dict or list or :obj:`torch.Tensor`): The tensor or collection
-            of tensors to move.
-        device (:obj:`torch.device` or str): The destination device.
+        data (dict | list | :obj:`torch.Tensor`): The tensor or collection of
+            tensors to move.
+        device (:obj:`torch.device` | str): The destination device.
 
     Returns:
-        dict or list or :obj:`torch.Tensor`: The move tensor or \
-            collection of tensors.
+        dict | list | :obj:`torch.Tensor`: The moved tensor or collection of \
+            tensors.
     """
     if isinstance(data, dict):
         return {k: move_to_device(v, device) for k, v in data.items()}

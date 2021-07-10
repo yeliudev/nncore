@@ -14,10 +14,10 @@ def sigmoid_focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
         pred (:obj:`torch.Tensor`): The predictions for each example.
         target (:obj:`torch.Tensor`): The binary classification label for
             each element (0 for negative classes and 1 for positive classes).
-        alpha (int or float, optional): Weighting factor in range ``(0, 1)`` to
+        alpha (int | float, optional): Weighting factor in range ``(0, 1)`` to
             balance positive vs negative examples. ``-1`` means no weighting.
             Default: ``-1``.
-        gamma (int or float, optional): Exponent of the modulating factor
+        gamma (int | float, optional): Exponent of the modulating factor
             ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
         reduction (str, optional): Reduction method. Currently supported
             methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
@@ -55,10 +55,10 @@ def sigmoid_focal_loss_star(pred, target, alpha=-1, gamma=1, reduction='mean'):
         pred (:obj:`torch.Tensor`): The predictions for each example.
         target (:obj:`torch.Tensor`): The binary classification label for
             each element (0 for negative classes and 1 for positive classes).
-        alpha (int or float, optional): Weighting factor in range ``(0, 1)`` to
+        alpha (int | float, optional): Weighting factor in range ``(0, 1)`` to
             balance positive vs negative examples. ``-1`` means no weighting.
             Default: ``-1``.
-        gamma (int or float, optional): Exponent of the modulating factor
+        gamma (int | float, optional): Exponent of the modulating factor
             ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
         reduction (str, optional): Reduction method. Currently supported
             methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
@@ -91,10 +91,10 @@ class FocalLoss(nn.Module):
     Focal Loss introduced in [1].
 
     Args:
-        alpha (int or float, optional): Weighting factor in range ``(0, 1)`` to
+        alpha (int | float, optional): Weighting factor in range ``(0, 1)`` to
             balance positive vs negative examples. ``-1`` means no weighting.
             Default: ``-1``.
-        gamma (int or float, optional): Exponent of the modulating factor
+        gamma (int | float, optional): Exponent of the modulating factor
             ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
         reduction (str, optional): Reduction method. Currently supported
             methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
@@ -131,10 +131,10 @@ class FocalLossStar(FocalLoss):
     Focal Loss* introduced in [1].
 
     Args:
-        alpha (int or float, optional): Weighting factor in range ``(0, 1)`` to
+        alpha (int | float, optional): Weighting factor in range ``(0, 1)`` to
             balance positive vs negative examples. ``-1`` means no weighting.
             Default: ``-1``.
-        gamma (int or float, optional): Exponent of the modulating factor
+        gamma (int | float, optional): Exponent of the modulating factor
             ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
         reduction (str, optional): Reduction method. Currently supported
             methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:

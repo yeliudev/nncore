@@ -32,17 +32,16 @@ class Writer(metaclass=ABCMeta):
         metrics['epoch'] = engine.epoch
         metrics['iter'] = engine.iter_in_epoch
 
-        if len(engine.optimizer.param_groups) == 1:
-            metrics['lr'] = round(engine.optimizer.param_groups[0]['lr'], 5)
-        else:
-            metrics['lr'] = [
-                round(group['lr'], 5)
-                for group in engine.optimizer.param_groups
-            ]
-
         if engine.mode == 'train':
+            groups = engine.optimizer.param_groups
+            if len(groups) == 1:
+                metrics['lr'] = round(groups[0]['lr'], 5)
+            else:
+                metrics['lr'] = [round(group['lr'], 5) for group in groups]
+
             metrics['epoch'] += 1
             metrics['iter'] += 1
+
             if '_iter_time' in engine.buffer.keys():
                 metrics['time'] = engine.buffer.mean(
                     '_iter_time', window_size=window_size)

@@ -17,7 +17,7 @@ def imread(filename, flag='color', to_rgb=False):
 
     Args:
         filename (str): Path to the image file.
-        flag (str or int, optional): Flags specifying the color type of the
+        flag (str | int, optional): Flags specifying the color type of the
             loaded image. Currently supported flags include ``'color'``,
             ``'grayscale'`` and ``'unchanged'``. Default: ``'color'``.
         to_rgb (bool, optional): Whether to convert channel order from ``BGR``
@@ -48,7 +48,7 @@ def imwrite(img, filename, overwrite=True, params=None):
     Args:
         img (:obj:`np.ndarray`): The image array to be written.
         filename (str): Path to the image file.
-        params (list or None, optional): Same as the :obj:`cv2.imwrite`
+        params (list | None, optional): Same as the :obj:`cv2.imwrite`
             interface. Default: ``None``.
 
     Returns:

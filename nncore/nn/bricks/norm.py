@@ -28,7 +28,7 @@ def build_norm_layer(cfg, **kwargs):
     in :obj:`NORMS` first, and then fall back to :obj:`torch.nn`.
 
     Args:
-        cfg (dict or str): The config or name of the layer.
+        cfg (dict | str): The config or name of the layer.
 
     Returns:
         :obj:`nn.Module`: The constructed layer.

@@ -73,7 +73,7 @@ def generate_random_seed(sync=False, src=0, group=None):
         src (int, optional): The source rank of the process in distributed
             settings. This argument is valid only when ``sync==True``. Default:
             ``0``.
-        group (:obj:`dist.ProcessGroup` or None, optional): The process group
+        group (:obj:`dist.ProcessGroup` | None, optional): The process group
             to use in distributed settings. This argument is valid only when
             ``sync==True``. If not specified, the default process group will
             be used. Default: ``None``.
@@ -97,9 +97,8 @@ def set_random_seed(seed=None, benchmark=False, deterministic=False, **kwargs):
     random seed.
 
     Args:
-        seed (int or None, optional): The potential random seed to use.
-            If not specified, a new random seed will be generated. Default:
-            ``None``.
+        seed (int | None, optional): The potential random seed to use. If not
+            specified, a new random seed will be generated. Default: ``None``.
         benchmark (bool, optional): Whether to enable benchmark mode. Default:
             ``False``.
         deterministic (bool, optional): Whether to enable deterministic mode.
@@ -128,11 +127,11 @@ def get_checkpoint(file_or_url, map_location=None, **kwargs):
 
     Args:
         file_or_url (str): The filename or URL of the checkpoint.
-        map_location (str or None, optional): Same as the :obj:`torch.load`
+        map_location (str | None, optional): Same as the :obj:`torch.load`
             interface. Default: ``None``.
 
     Returns:
-        :obj:`OrderedDict` or dict: The loaded checkpoint.
+        :obj:`OrderedDict` | dict: The loaded checkpoint.
     """
     if file_or_url.startswith('torchvision://'):
         model_urls = dict()
@@ -163,19 +162,19 @@ def load_checkpoint(model,
 
     Args:
         model (:obj:`nn.Module`): The module to load checkpoint.
-        checkpoint (dict or str): A dict, a filename, an URL or a
+        checkpoint (dict | str): A dict, a filename, an URL or a
             ``torchvision://<model_name>`` str indicating the checkpoint.
-        map_location (str or None, optional): Same as the :obj:`torch.load`
-            interface.
+        map_location (str | None, optional): Same as the :obj:`torch.load`
+            interface. Default: ``None``.
         strict (bool, optional): Whether to allow different params for the
             model and checkpoint. If ``True``, raise an error when the params
             do not match exactly. Default: ``False``.
-        logger (:obj:`logging.Logger` or str or None, optional): The logger or
+        logger (:obj:`logging.Logger` | str | None, optional): The logger or
             name of the logger for displaying error messages. Default:
             ``None``.
 
     Returns:
-        :obj:`OrderedDict` or dict: The loaded checkpoint.
+        :obj:`OrderedDict` | dict: The loaded checkpoint.
     """
     if isinstance(checkpoint, str):
         checkpoint = get_checkpoint(

@@ -14,7 +14,7 @@ class LinearModule(nn.Module):
     Args:
         in_features (int): Number of input features.
         out_features (int): Number of output features.
-        bias (str or bool, optional): Whether to add the bias term in the
+        bias (str | bool, optional): Whether to add the bias term in the
             linear layer. If ``bias='auto'``, the module will decide it
             automatically base on whether it has a normalization layer.
             Default: ``'auto'``.
@@ -82,7 +82,7 @@ def build_mlp(dims, with_last_act=False, **kwargs):
             after the last linear layer. Default: ``False``.
 
     Returns:
-        :obj:`nn.Sequential` The constructed MLP module.
+        :obj:`nn.Sequential`: The constructed MLP module.
     """
     _kwargs = kwargs.copy()
     layers = []

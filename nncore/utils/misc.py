@@ -10,7 +10,7 @@ def recursive(key=None, type='list'):
     be used as a decorator.
 
     Args:
-        key (str or None, optional): The name of the argument to iterate. If
+        key (str | None, optional): The name of the argument to iterate. If
             not specified, the first argument of the function will be used.
             Default: ``None``.
         type (str, optional): The type of returned object. Expected values

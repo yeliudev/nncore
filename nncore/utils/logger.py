@@ -43,14 +43,14 @@ def get_logger(logger_or_name=None,
     ``0``, a :obj:`FileHandler` will also be added.
 
     Args:
-        logger_or_name (:obj:`logging.Logger` or str or None, optional): The
+        logger_or_name (:obj:`logging.Logger` | str | None, optional): The
             logger or name of the logger. Default: ``None``.
         fmt (str, optional): Logging format of the logger. The format must end
             with ``'%(message)s'`` to make sure that the colors can be rendered
             properly. Default: ``'[%(asctime)s %(levelname)s]: %(message)s'``.
         datefmt (str, optional): Date format of the logger. Default:
             ``'%Y-%m-%d %H:%M:%S'``.
-        log_level (str or int, optional): Log level of the logger. Note that
+        log_level (str | int, optional): Log level of the logger. Note that
             only the main process (rank 0) is affected, and other processes
             will set the level to ``ERROR`` thus be silent at most of the time.
             Default: :obj:`logging.INFO`.
@@ -108,7 +108,7 @@ def log_or_print(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
 
     Args:
         msg (str): The message to be logged.
-        logger_or_name (:obj:`logging.Logger` or str or None, optional): The
+        logger_or_name (:obj:`logging.Logger` | str | None, optional): The
             potential logger or name of the logger to use. Default: ``None``.
         log_level (int, optional): Log level of the logger. Default:
             :obj:`logging.INFO`.

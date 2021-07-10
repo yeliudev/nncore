@@ -21,7 +21,7 @@ class CheckpointHook(Hook):
         create_symlink (bool, optional): Whether to create a symlink to the
             latest checkpoint. This argument is invalid on Windows due to the
             limitations of its file system. Default: ``False``.
-        out (str or None, optional): Path to the output directory. If not
+        out (str | None, optional): Path to the output directory. If not
             specified, :obj:`enging.work_dir` will be used as the default path.
             Default: ``None``.
     """

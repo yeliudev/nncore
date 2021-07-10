@@ -11,14 +11,14 @@ def swap_element(matrix, i, j, dim=0):
     Swap two elements of an array or a tensor.
 
     Args:
-        matrix (:obj:`np.ndarray` or :obj:`torch.Tensor`): The array or tensor
+        matrix (:obj:`np.ndarray` | :obj:`torch.Tensor`): The array or tensor
             to be swapped.
-        i (int or tuple): Index of the first element.
-        j (int or tuple): Index of the second element.
+        i (int | tuple): Index of the first element.
+        j (int | tuple): Index of the second element.
         dim (int, optional): The dimension to swap. Default: ``0``.
 
     Returns:
-        :obj:`np.ndarray` or :obj:`torch.Tensor`: The swapped array or tensor.
+        :obj:`np.ndarray` | :obj:`torch.Tensor`: The swapped array or tensor.
     """
     inds = [slice(0, matrix.shape[d]) for d in range(dim)]
 
@@ -82,7 +82,7 @@ def slice_list(in_list, length):
 
     Args:
         in_list (list): The list to be sliced.
-        length (list[int] or int): The expected length or list of lengths of
+        length (list[int] | int): The expected length or list of lengths of
             output lists.
 
     Returns:

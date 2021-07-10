@@ -14,7 +14,7 @@ def expand_user(*args):
         *args (str): The paths to be expanded.
 
     Returns:
-        list[str] or str: The expanded path or list of paths.
+        list[str] | str: The expanded path or list of paths.
     """
     if len(args) == 1:
         return osp.expanduser(args[0])
@@ -129,11 +129,11 @@ def ls(path=None, ext=None, skip_hidden_files=True, join_path=False):
     List all files in a directory.
 
     Args:
-        path (str or None, optional): Path to the directory. If not specified,
+        path (str | None, optional): Path to the directory. If not specified,
             the current working path ``'.'`` will be used. Default: ``None``.
-        ext (list[str] or str or None, optional): The file extension or list
-            of file extensions to keep. If specified, all the other files will
-            be discarded. Default: ``None``.
+        ext (list[str] | str | None, optional): The file extension or list of
+            file extensions to keep. If specified, all the other files will be
+            discarded. Default: ``None``.
         skip_hidden_files (bool, optional): Whether to discard hidden files
             whose filenames start with '.'. Default: ``True``.
         join_path (bool, optional): Whether to return the joined path of files.

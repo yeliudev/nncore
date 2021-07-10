@@ -63,7 +63,7 @@ def init_dist(launcher='pytorch', backend='gloo', **kwargs):
         launcher (str, optional): Launcher for the process group. Currently
             supported launchers include ``pytorch`` and ``slurm``. Default:
             ``'pytorch'``.
-        backend (:obj:`dist.Backend` or str, optional): The distribution
+        backend (:obj:`dist.Backend` | str, optional): The distribution
             backend to use. This field should be given as a :obj:`dist.Backend`
             object or a str (e.g. ``'gloo'``) which can also be accessed via
             :obj:`dist.Backend` attributes. Depending on build-time
@@ -101,7 +101,7 @@ def get_rank(group=None):
     Get the rank of the current process in a process group.
 
     Args:
-        group (:obj:`dist.ProcessGroup` or None, optional): The process group
+        group (:obj:`dist.ProcessGroup` | None, optional): The process group
             to use. If not specified, the default process group will be used.
             Default: ``None``.
 
@@ -118,7 +118,7 @@ def get_world_size(group=None):
     Get the world size of a process group.
 
     Args:
-        group (:obj:`dist.ProcessGroup` or None, optional): The process group
+        group (:obj:`dist.ProcessGroup` | None, optional): The process group
             to use. If not specified, the default process group will be used.
             Default: ``None``.
 
@@ -135,7 +135,7 @@ def get_dist_info(group=None):
     Get the rank of the current process and the world size of a process group.
 
     Args:
-        group (:obj:`dist.ProcessGroup` or None, optional): The process group
+        group (:obj:`dist.ProcessGroup` | None, optional): The process group
             to use. If not specified, the default process group will be used.
             Default: ``None``.
 
@@ -174,7 +174,7 @@ def broadcast(data=None, src=0, group=None):
     Args:
         data (any, optional): Any serializable object.
         src (int, optional): The source rank. Default: ``0``.
-        group (:obj:`dist.ProcessGroup` or None, optional): The process group
+        group (:obj:`dist.ProcessGroup` | None, optional): The process group
             to use. If not specified, the default process group will be used.
             Default: ``None``.
 
@@ -213,7 +213,7 @@ def all_gather(data, group=None):
 
     Args:
         data (any): Any serializable object.
-        group (:obj:`dist.ProcessGroup` or None, optional): The process group
+        group (:obj:`dist.ProcessGroup` | None, optional): The process group
             to use. If not specified, the default process group will be used.
             Default: ``None``.
 
@@ -250,13 +250,13 @@ def gather(data, dst=0, group=None):
     Args:
         data (any): Any serializable object.
         dst (int, optional): The destination rank. Default: ``0``.
-        group (:obj:`dist.ProcessGroup` or None, optional): The process group
+        group (:obj:`dist.ProcessGroup` | None, optional): The process group
             to use. If not specified, the default process group will be used.
             Default: ``None``.
 
     Returns:
-        list or ``None``: On ``dst``, it should be a list of data gathered \
-            from each rank. Otherwise, ``None``.
+        list | None: On ``dst``, it should be a list of data gathered from \
+            each rank. Otherwise, ``None``.
     """
     rank, world_size = get_dist_info(group=group)
     if world_size == 1:

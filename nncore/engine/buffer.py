@@ -18,7 +18,7 @@ class Buffer(object):
         max_size (int, optional): Maximal number of internal values that can
             be stored in the buffer. When the capacity of the buffer is
             exhausted, old values will be removed. Default: ``100000``.
-        logger (:obj:`logging.Logger` or str or None, optional): The potential
+        logger (:obj:`logging.Logger` | str | None, optional): The potential
             logger or name of the logger to use. Default: ``None``.
     """
 
@@ -35,7 +35,7 @@ class Buffer(object):
 
         Args:
             key (str): The key of the values.
-            value (number): The new value of the values.
+            value (any): The new value.
             warning (bool, optional): Whether to display warning when removing
                 values. Default: ``False``.
         """
@@ -84,7 +84,7 @@ class Buffer(object):
 
         Args:
             key (str): The key of the values.
-            window_size (int or None, optional): The window size of the values
+            window_size (int | None, optional): The window size of the values
                 to be computed. If not specified, all the values will be taken
                 into account. Default: ``None``.
 
@@ -112,7 +112,7 @@ class Buffer(object):
 
         Args:
             key (str): The key of the values.
-            window_size (int or None, optional): The window size of the values
+            window_size (int | None, optional): The window size of the values
                 to be computed. If not specified, all the values will be taken
                 into account. Default: ``None``.
 
@@ -136,7 +136,7 @@ class Buffer(object):
 
         Args:
             key (str): The key of the values.
-            window_size (int or None, optional): The window size of the values
+            window_size (int | None, optional): The window size of the values
                 to be computed. If not specified, all the values will be taken
                 into account. Default: ``None``.
 
@@ -165,7 +165,7 @@ class Buffer(object):
             key (str): The key of the values.
             by (str, optional): The key of number of samples. Default:
                 ``'_num_samples'``.
-            window_size (int or None, optional): The window size of the values
+            window_size (int | None, optional): The window size of the values
                 to be computed. If not specified, all the values will be taken
                 into account. Default: ``None``.
 

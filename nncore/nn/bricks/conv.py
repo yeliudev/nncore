@@ -26,7 +26,7 @@ def build_conv_layer(cfg, **kwargs):
     :obj:`CONVS` first, and then fall back to :obj:`torch.nn`.
 
     Args:
-        cfg (dict or str): The config or name of the layer.
+        cfg (dict | str): The config or name of the layer.
 
     Returns:
         :obj:`nn.Module`: The constructed layer.

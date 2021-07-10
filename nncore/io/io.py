@@ -35,7 +35,7 @@ def load(name_or_file, format=None, **kwargs):
     Load data from json/xml/yaml/pickle/hdf5 files.
 
     Args:
-        name_or_file (str or file object): Path to the file or a file object.
+        name_or_file (str | file object): Path to the file or a file object.
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json``, ``xml``, ``yaml/yml``,
@@ -63,7 +63,7 @@ def dump(obj, name_or_file, format=None, overwrite=True, **kwargs):
 
     Args:
         obj (any): The object to be dumped.
-        name_or_file (str or file object): Path to the file or a file object.
+        name_or_file (str | file object): Path to the file or a file object.
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json``, ``xml``, ``yaml/yml``,
@@ -100,7 +100,7 @@ def loads(string, format='pickle', **kwargs):
     Load data from a json/xml/yaml/pickle style string.
 
     Args:
-        string (str or btyearray): String of the data.
+        string (str | btyearray): String of the data.
         format (str, optional): Format of the string. Currently supported
             formats include ``json``, ``xml``, ``yaml/yml`` and ``pickle/pkl``.
             Default: ``'pickle'``.
@@ -143,7 +143,7 @@ def list_from_file(filename,
         filename (str): Path to the file to be loaded.
         encoding (str, optional): The encoding of the file.
         offset (int, optional): The offset of line numbers. Default: ``0``.
-        separator (str or None, optional): The separator to use for parsing
+        separator (str | None, optional): The separator to use for parsing
             tuples. If not specified, each line would be treated as a str.
             Default: ``','``.
         max_length (int, optional): The maximum number of lines to be loaded.
@@ -177,19 +177,19 @@ def open(file=None, mode='r', format=None, as_decorator=None, **kwargs):
     Argument ``file`` and ``format`` should not be ``None`` at the same time.
 
     Args:
-        file (str or None, optional): Path to the file to be loaded.
+        file (str | None, optional): Path to the file to be loaded.
         mode (str, optional): The loading mode to use. Default: ``'r'``.
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json``, ``yaml/yml``, ``pickle/pkl``
             and ``hdf5/h5``. Default: ``None``.
-        as_decorator (bool or None, optional): Whether this method is used as
-            a decorator. Please explicitly assign a bool value to this
-            argument when using this method in a Python Shell. If not
-            specified, the method will try to determine it automatically.
+        as_decorator (bool | None, optional): Whether this method is used as a
+            decorator. Please explicitly assign a bool value to this argument
+            when using this method in a Python Shell. If not specified, the
+            method will try to determine it automatically.
 
     Returns:
-        file-like object: The opened file object.
+        file object: The opened file object.
     """
     assert file is not None or format is not None
     format = format or nncore.pure_ext(file)

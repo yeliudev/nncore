@@ -42,12 +42,12 @@ class Engine(object):
         data_loaders (dict): The potential data loaders for training,
             validation and testing. It should be in the format of
             ``dict(train=train_loader, val=val_loader, test=test_loader)``.
-        stages (list[dict], dict, optional): The stage config or list of stage
-            configs to be scheduled. Each stage config should be a dict
+        stages (list[dict] | dict, optional): The stage config or list of
+            stage configs to be scheduled. Each stage config should be a dict
             containing the following fields:
 
             - `epochs` (int): Number of epochs in the stage.
-            - `optimizer` (:obj:`optim.Optimizer` or dict): The optimizer or \
+            - `optimizer` (:obj:`optim.Optimizer` | dict): The optimizer or \
                 an optimizer config containing the following fields:
 
                 - `type` (str): Type of the optimizer, which can be accessed \
@@ -90,12 +90,12 @@ class Engine(object):
                     before counting the interval. Default: ``0``.
 
             Default: ``_DEFAULT_STAGES``.
-        hooks (list[:obj:`Hook`] or list[dict] or list[str], optional): The
-            list of hooks to be registered. Each hook can be represented as a
-            :obj:`Hook`, a dict or a str. Default: ``_DEFAULT_HOOKS``.
+        hooks (list[:obj:`Hook` | dict | str], optional): The list of hooks to
+            be registered. Each hook can be represented as a :obj:`Hook`, a
+            dict or a str. Default: ``_DEFAULT_HOOKS``.
         buffer_size (int, optional): Maximum size of the buffer. Default:
             ``100000``.
-        logger (:obj:`logging.Logger` or str or None, optional): The logger or
+        logger (:obj:`logging.Logger` | str | None, optional): The logger or
             name of the logger to use. Default: ``None``.
         work_dir (str, optional): Path to the working directory. If not
             specified, the default working directory will be used. Default:
@@ -213,8 +213,8 @@ class Engine(object):
         Register a hook or a list of hooks into the engine.
 
         Args:
-            hook (list or :obj:`Hook` or dict or str): The hook or list of
-                hooks to be registered. Each hook should be represented as a
+            hook (list | :obj:`Hook` | dict | str): The hook or list of hooks
+                to be registered. Each hook can be represented as a
                 :obj:`Hook`, a dict or a str.
             before (str, optional): Name of the hook to be inserted before. If
                 not specified, the new hook will be added to the end of hook
@@ -258,9 +258,9 @@ class Engine(object):
         Unregister a hook or a list of hooks from the engine.
 
         Args:
-            hook (list or :obj:`Hook` or str): The hook or list of hooks to be
-                unregistered. Each hook should be represented as a :obj:`Hook`
-                or a str.
+            hook (list | :obj:`Hook` | str): The hook or list of hooks to be
+                unregistered. Each hook can be represented as a :obj:`Hook` or
+                a str.
         """
         if isinstance(hook, (list, tuple)):
             for h in hook:
@@ -276,7 +276,7 @@ class Engine(object):
         Build an optimizer for the engine.
 
         Args:
-            optimizer (:obj:`optim.Optimizer` or dict): The optimizer or an
+            optimizer (:obj:`optim.Optimizer` | dict): The optimizer or an
                 optimizer config used for constructing the optimizer.
         """
         if isinstance(optimizer, torch.optim.Optimizer):
@@ -294,7 +294,7 @@ class Engine(object):
         Load checkpoint from a file or an URL.
 
         Args:
-            checkpoint (dict or str): A dict, a filename, an URL or a
+            checkpoint (dict | str): A dict, a filename, an URL or a
                 ``torchvision://<model_name>`` str indicating the checkpoint.
             strict (bool, optional): Whether to allow different params for the
                 model and checkpoint. If ``True``, raise an error when the
@@ -317,7 +317,7 @@ class Engine(object):
         Resume from a checkpoint file.
 
         Args:
-            checkpoint (dict or str): A dict, a filename or an URL indicating
+            checkpoint (dict | str): A dict, a filename or an URL indicatin
                 the checkpoint.
             strict (bool, optional): Whether to allow different params for the
                 model and checkpoint. If ``True``, raise an error when the
