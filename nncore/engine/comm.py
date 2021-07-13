@@ -13,23 +13,29 @@ import nncore
 
 def _init_dist_pytorch(backend, **kwargs):
     if torch.cuda.is_available():
-        rank = int(os.environ['RANK'])
-        num_gpus = torch.cuda.device_count()
-        torch.cuda.set_device(rank % num_gpus)
-    dist.init_process_group(backend=backend, **kwargs)
+        local_rank = int(os.environ['LOCAL_RANK'])
+        assert local_rank < torch.cuda.device_count()
+        torch.cuda.set_device(local_rank)
+    dist.init_process_group(backend, **kwargs)
 
 
-def _init_dist_slurm(backend, port=29500, **kwargs):
-    proc_id = int(os.environ['SLURM_PROCID'])
-    ntasks = os.environ['SLURM_NTASKS']
-    node_list = os.environ['SLURM_NODELIST']
-    addr = getoutput('scontrol show hostname {} | head -n1'.format(node_list))
-    os.environ['MASTER_ADDR'] = addr
-    os.environ['MASTER_PORT'] = str(port)
-    os.environ['WORLD_SIZE'] = ntasks
-    os.environ['RANK'] = str(proc_id)
-    torch.cuda.set_device(proc_id % torch.cuda.device_count())
-    dist.init_process_group(backend=backend, **kwargs)
+def _init_dist_slurm(backend, **kwargs):
+    nodes = os.environ.get('SLURM_NODELIST', os.environ['SLURM_JOB_NODELIST'])
+    master_addr = getoutput(f'scontrol show hostname {nodes} | head -n1')
+
+    os.environ.setdefault('MASTER_ADDR', master_addr)
+    os.environ.setdefault('MASTER_PORT', '29500')
+
+    os.environ['WORLD_SIZE'] = os.environ['SLURM_NTASKS']
+    os.environ['RANK'] = os.environ['SLURM_PROCID']
+    os.environ['LOCAL_RANK'] = os.environ['SLURM_LOCALID']
+
+    if torch.cuda.is_available():
+        local_rank = int(os.environ['LOCAL_RANK'])
+        assert local_rank < torch.cuda.device_count()
+        torch.cuda.set_device(local_rank)
+
+    dist.init_process_group(backend, **kwargs)
 
 
 def _get_default_device(group=None):
@@ -61,17 +67,16 @@ def init_dist(launcher='pytorch', backend='gloo', **kwargs):
 
     Args:
         launcher (str, optional): Launcher for the process group. Currently
-            supported launchers include ``pytorch`` and ``slurm``. Default:
+            supported launchers include ``pytorch`` and ``slurm``, Default:
             ``'pytorch'``.
         backend (:obj:`dist.Backend` | str, optional): The distribution
             backend to use. This field should be given as a :obj:`dist.Backend`
-            object or a str (e.g. ``'gloo'``) which can also be accessed via
-            :obj:`dist.Backend` attributes. Depending on build-time
-            configurations, valid values include ``'gloo'`` and ``'nccl'``. If
-            using multiple processes per machine with ``nccl`` backend, each
-            process must have exclusive access to every GPU it uses, as
-            sharing GPUs between processes can result in deadlocks. Default:
-            ``'gloo'``.
+            object or a str which can be accessed via :obj:`dist.Backend`
+            attributes. Depending on build-time configurations, valid values
+            are ``'gloo'`` and ``'nccl'``. If using multiple processes per
+            machine with ``nccl`` backend, each process must have exclusive
+            access to every GPU it uses, as sharing GPUs between processes can
+            result in deadlocks. Default: ``'gloo'``.
     """
     assert backend in ('gloo', 'nccl')
 
