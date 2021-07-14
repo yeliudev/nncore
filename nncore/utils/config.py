@@ -299,6 +299,9 @@ class Config(CfgNode):
                     path = nncore.join(nncore.dir_name(filename), name)
                     _cfg.merge_from(Config.from_file(path))
                 else:
+                    curr_path = os.getcwd()
+                    if curr_path not in sys.path:
+                        sys.path.insert(0, curr_path)
                     import_module(name)
 
             _cfg.merge_from(cfg)
