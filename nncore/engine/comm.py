@@ -11,11 +11,16 @@ import torch.multiprocessing as mp
 import nncore
 
 
+def _bind_cuda_device():
+    if not torch.cuda.is_available():
+        return
+    local_rank = int(os.environ['LOCAL_RANK'])
+    assert local_rank < torch.cuda.device_count()
+    torch.cuda.set_device(local_rank)
+
+
 def _init_dist_pytorch(backend, **kwargs):
-    if torch.cuda.is_available():
-        local_rank = int(os.environ['LOCAL_RANK'])
-        assert local_rank < torch.cuda.device_count()
-        torch.cuda.set_device(local_rank)
+    _bind_cuda_device()
     dist.init_process_group(backend, **kwargs)
 
 
@@ -30,11 +35,7 @@ def _init_dist_slurm(backend, **kwargs):
     os.environ['RANK'] = os.environ['SLURM_PROCID']
     os.environ['LOCAL_RANK'] = os.environ['SLURM_LOCALID']
 
-    if torch.cuda.is_available():
-        local_rank = int(os.environ['LOCAL_RANK'])
-        assert local_rank < torch.cuda.device_count()
-        torch.cuda.set_device(local_rank)
-
+    _bind_cuda_device()
     dist.init_process_group(backend, **kwargs)
 
 
