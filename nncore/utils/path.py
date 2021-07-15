@@ -113,15 +113,40 @@ def pure_ext(path):
     return split_ext(path)[1][1:]
 
 
-def rename(old_path, new_path):
+def is_file(path, raise_error=False):
     """
-    Rename a file or a directory.
+    Check whether a file exists.
 
     Args:
-        old_path (str): Old path to the file or directory.
-        new_path (str): New path to the file or directory.
+        path (str): Path to the file.
+        raise_error (bool, optional): Whether to raise an error if the file is
+            not found. Default: ``False``.
+
+    Returns:
+        bool: Whether the file exists.
     """
-    os.rename(old_path, new_path)
+    is_file = osp.isfile(expand_user(path))
+    if not is_file and raise_error:
+        raise FileNotFoundError("file '{}' not found".format(path))
+    return is_file
+
+
+def is_dir(path, raise_error=False):
+    """
+    Check whether a directory exists.
+
+    Args:
+        path (str): Path to the directory.
+        raise_error (bool, optional): Whether to raise an error if the
+            directory is not found. Default: ``False``.
+
+    Returns:
+        bool: Whether the directory exists.
+    """
+    is_dir = osp.isdir(expand_user(path))
+    if not is_dir and raise_error:
+        raise NotADirectoryError("directory '{}' not found".format(path))
+    return is_dir
 
 
 def ls(path=None, ext=None, skip_hidden_files=True, join_path=False):
@@ -161,6 +186,17 @@ def ls(path=None, ext=None, skip_hidden_files=True, join_path=False):
     return files
 
 
+def rename(old_path, new_path):
+    """
+    Rename a file or a directory.
+
+    Args:
+        old_path (str): Old path to the file or directory.
+        new_path (str): New path to the file or directory.
+    """
+    os.rename(old_path, new_path)
+
+
 def cp(src, dst, symlink=True):
     """
     Copy files on the disk.
@@ -192,43 +228,7 @@ def mv(src, dst):
     move(src, dst)
 
 
-def is_dir(path, raise_error=False):
-    """
-    Check whether a directory exists.
-
-    Args:
-        path (str): Path to the directory.
-        raise_error (bool, optional): Whether to raise an error if the
-            directory is not found. Default: ``False``.
-
-    Returns:
-        bool: Whether the directory exists.
-    """
-    is_dir = osp.isdir(expand_user(path))
-    if not is_dir and raise_error:
-        raise NotADirectoryError("directory '{}' not found".format(path))
-    return is_dir
-
-
-def is_file(path, raise_error=False):
-    """
-    Check whether a file exists.
-
-    Args:
-        path (str): Path to the file.
-        raise_error (bool, optional): Whether to raise an error if the file is
-            not found. Default: ``False``.
-
-    Returns:
-        bool: Whether the file exists.
-    """
-    is_file = osp.isfile(expand_user(path))
-    if not is_file and raise_error:
-        raise FileNotFoundError("file '{}' not found".format(path))
-    return is_file
-
-
-def mkdir(dir_name, raise_error=False, keep_empty=False):
+def mkdir(dir_name, raise_error=False, modify_path=False):
     """
     Create a leaf directory and all intermediate ones.
 
@@ -236,15 +236,25 @@ def mkdir(dir_name, raise_error=False, keep_empty=False):
         dir_name (str): Path to the directory.
         raise_error (bool, optional): Whether to raise an error if the
             directory exists. Default: ``False``.
-        keep_empty (bool, optional): Whether to keep the directory empty.
-            Default: ``False``.
+        modify_path (bool, optional): Whether to add ``'_i'`` (where i is an
+            accumulating integer starting from ``0``) to the end of the path if
+            the directory exists. Default: ``False``.
+
+    Returns:
+        str: Path to the actually created directory.
     """
     assert isinstance(dir_name, str) and dir_name != ''
     dir_name = expand_user(dir_name)
+
+    if is_dir(dir_name) and modify_path:
+        tmp, i = dir_name, 0
+        while is_dir(tmp):
+            tmp = f'{dir_name}_{i}'
+            i += 1
+        dir_name = tmp
+
     os.makedirs(dir_name, exist_ok=not raise_error)
-    if keep_empty:
-        for f in os.listdir(dir_name):
-            os.remove(join(dir_name, f))
+    return dir_name
 
 
 def remove(path, raise_error=False):
