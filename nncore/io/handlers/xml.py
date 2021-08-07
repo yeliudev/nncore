@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 from .base import FileHandler
 
 
-class XmlHandler(FileHandler):
+class XMLHandler(FileHandler):
     """
     Handler for XML files.
     """

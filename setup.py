@@ -8,8 +8,8 @@ from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
 INSTALL_REQUIRES = [
-    'h5py>=3.1', 'joblib>=1', 'numpy>=1.19', 'pyyaml>=5.4', 'tabulate>=0.8',
-    'termcolor>=1.1'
+    'h5py>=3.1', 'joblib>=1', 'jsonlines>=2', 'numpy>=1.19', 'pyyaml>=5.4',
+    'tabulate>=0.8', 'termcolor>=1.1'
 ]
 
 OPENCV_INSTALL_REQUIRES = 'opencv-python-headless>=3', 'opencv-python>=3'

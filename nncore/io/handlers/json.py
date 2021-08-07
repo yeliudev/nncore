@@ -2,10 +2,12 @@
 
 import json
 
+import jsonlines
+
 from .base import FileHandler
 
 
-class JsonHandler(FileHandler):
+class JSONHandler(FileHandler):
     """
     Handler for JSON files.
     """
@@ -21,3 +23,26 @@ class JsonHandler(FileHandler):
 
     def dump_to_str(self, obj, **kwargs):
         return json.dumps(obj, **kwargs)
+
+
+class JSONLHandler(FileHandler):
+    """
+    Handler for JSON Lines files.
+    """
+
+    def load_from_file(self, file):
+        return [line for line in file]
+
+    def dump_to_file(self, obj, file):
+        if isinstance(obj, (list, tuple)):
+            file.write_all(obj)
+        else:
+            file.write(obj)
+
+    def load_from_path(self, file, mode='r'):
+        with jsonlines.open(file, mode) as f:
+            return self.load_from_file(f)
+
+    def dump_to_path(self, obj, file, mode='w'):
+        with jsonlines.open(file, mode) as f:
+            self.dump_to_file(obj, f)

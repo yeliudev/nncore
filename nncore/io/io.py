@@ -4,21 +4,22 @@ import inspect
 from functools import wraps
 
 import h5py
-import numpy as np
+import jsonlines
 
 import nncore
-from .handlers import (Hdf5Handler, JsonHandler, PickleHandler, XmlHandler,
-                       YamlHandler)
+from .handlers import (HDF5Handler, JSONHandler, JSONLHandler, PickleHandler,
+                       XMLHandler, YAMLHandler)
 
 _FILE_HANDLERS = {
-    'json': JsonHandler(),
-    'xml': XmlHandler(),
-    'yaml': YamlHandler(),
-    'yml': YamlHandler(),
+    'json': JSONHandler(),
+    'jsonl': JSONLHandler(),
+    'xml': XMLHandler(),
+    'yaml': YAMLHandler(),
+    'yml': YAMLHandler(),
     'pickle': PickleHandler(),
     'pkl': PickleHandler(),
-    'hdf5': Hdf5Handler(),
-    'h5': Hdf5Handler()
+    'hdf5': HDF5Handler(),
+    'h5': HDF5Handler()
 }
 
 _open = open
@@ -38,8 +39,8 @@ def load(name_or_file, format=None, **kwargs):
         name_or_file (str | file object): Path to the file or a file object.
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
-            supported formats include ``json``, ``xml``, ``yaml/yml``,
-            ``pickle/pkl`` and ``hdf5/h5``. Default: ``None``.
+            supported formats include ``json/jsonl``, ``yaml/yml``,
+            ``pickle/pkl``, ``hdf5/h5`` and ``xml``. Default: ``None``.
 
     Returns:
         any: The loaded data.
@@ -66,17 +67,12 @@ def dump(obj, name_or_file, format=None, overwrite=True, **kwargs):
         name_or_file (str | file object): Path to the file or a file object.
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
-            supported formats include ``json``, ``xml``, ``yaml/yml``,
-            ``pickle/pkl`` and ``hdf5/h5``. Default: ``None``.
+            supported formats include ``json/jsonl``, ``yaml/yml``,
+            ``pickle/pkl``, ``hdf5/h5`` and ``xml``. Default: ``None``.
         overwrite (bool, optional): Whether to overwrite it if the file exists.
             Default: ``True``.
     """
     format = format or nncore.pure_ext(name_or_file)
-    if format in ('hdf5', 'h5') and not isinstance(obj, np.ndarray):
-        raise TypeError(
-            "obj must be an np.ndarray for hdf5 files, but got '{}'".format(
-                type(obj)))
-
     handler = _get_handler(format)
 
     if isinstance(name_or_file, str):
@@ -102,13 +98,12 @@ def loads(string, format='pickle', **kwargs):
     Args:
         string (str | btyearray): String of the data.
         format (str, optional): Format of the string. Currently supported
-            formats include ``json``, ``xml``, ``yaml/yml`` and ``pickle/pkl``.
-            Default: ``'pickle'``.
+            formats include ``json/jsonl``, ``yaml/yml``, ``pickle/pkl`` and
+            ``xml``. Default: ``'pickle'``.
 
     Returns:
         any: The loaded data.
     """
-    assert format not in ('hdf5', 'h5')
     handler = _get_handler(format)
     return handler.load_from_str(string, **kwargs)
 
@@ -120,13 +115,12 @@ def dumps(obj, format='pickle', **kwargs):
     Args:
         obj (any): The object to be dumped.
         format (str, optional): Format of the string. Currently supported
-            formats include ``json``, ``xml``, ``yaml/yml`` and ``pickle/pkl``.
-            Default: ``'pickle'``.
+            formats include ``json/jsonl``, ``yaml/yml``, ``pickle/pkl`` and
+            ``xml``. Default: ``'pickle'``.
 
     Returns:
         str: The dumped string.
     """
-    assert format not in ('hdf5', 'h5')
     handler = _get_handler(format)
     return handler.dump_to_str(obj, **kwargs)
 
@@ -181,8 +175,8 @@ def open(file=None, mode='r', format=None, as_decorator=None, **kwargs):
         mode (str, optional): The loading mode to use. Default: ``'r'``.
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
-            supported formats include ``json``, ``yaml/yml``, ``pickle/pkl``
-            and ``hdf5/h5``. Default: ``None``.
+            supported formats include ``json/jsonl``, ``yaml/yml``,
+            ``pickle/pkl`` and ``hdf5/h5``. Default: ``None``.
         as_decorator (bool | None, optional): Whether this method is used as a
             decorator. Please explicitly assign a bool value to this argument
             when using this method in a Python Shell. If not specified, the
@@ -196,6 +190,8 @@ def open(file=None, mode='r', format=None, as_decorator=None, **kwargs):
 
     if format in ('hdf5', 'h5'):
         handler = h5py.File
+    elif format == 'jsonlines':
+        handler = jsonlines.open
     else:
         handler = _open
 

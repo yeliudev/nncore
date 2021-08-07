@@ -1,11 +1,12 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import h5py
+import numpy as np
 
 from .base import FileHandler
 
 
-class Hdf5Handler(FileHandler):
+class HDF5Handler(FileHandler):
     """
     Handler for HDF5 files.
     """
@@ -17,6 +18,10 @@ class Hdf5Handler(FileHandler):
         return obj
 
     def dump_to_file(self, obj, file, dataset, append_mode=True, **kwargs):
+        if not isinstance(obj, np.ndarray):
+            raise TypeError("obj must be an np.ndarray for hdf5 files, "
+                            "but got '{}'".format(type(obj)))
+
         if dataset in file:
             ori_size = file[dataset].shape[0]
             file[dataset].resize(ori_size + obj.shape[0], axis=0)

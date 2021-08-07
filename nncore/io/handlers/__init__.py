@@ -1,13 +1,13 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 from .base import FileHandler
-from .hdf5 import Hdf5Handler
-from .json import JsonHandler
+from .hdf5 import HDF5Handler
+from .json import JSONHandler, JSONLHandler
 from .pickle import PickleHandler
-from .xml import XmlHandler
-from .yaml import YamlHandler
+from .xml import XMLHandler
+from .yaml import YAMLHandler
 
 __all__ = [
-    'FileHandler', 'Hdf5Handler', 'JsonHandler', 'PickleHandler', 'XmlHandler',
-    'YamlHandler'
+    'FileHandler', 'HDF5Handler', 'JSONHandler', 'JSONLHandler',
+    'PickleHandler', 'XMLHandler', 'YAMLHandler'
 ]

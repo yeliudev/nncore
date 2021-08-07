@@ -13,7 +13,7 @@ except ImportError:
     from yaml import Dumper, Loader
 
 
-class YamlHandler(FileHandler):
+class YAMLHandler(FileHandler):
     """
     Handler for YAML files.
     """
