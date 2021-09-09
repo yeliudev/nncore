@@ -22,7 +22,7 @@
     <img src="https://badgen.net/coveralls/c/github/yeliudev/nncore/main?label=Coverage&cache=300">
   </a>
   <a href="https://www.codacy.com/gh/yeliudev/nncore/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yeliudev/nncore&amp;utm_campaign=Badge_Grade">
-    <img src="https://badgen.net/codacy/grade/2a8a24217cfe4263bb6b02298706a237?label=Code%20Quality&icon=codacy&cache=300">
+    <img src="https://badgen.net/codacy/grade/93d963e3247e43eb86d282cffacf0125?label=Code%20Quality&icon=codacy&cache=300">
   </a>
 </p>
 
