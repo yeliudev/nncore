@@ -157,10 +157,11 @@ def update_bn_stats_(model, data_loader, num_iters=200, **kwargs):
 def publish_model(in_file,
                   out_file,
                   keys_to_remove=['optimizer'],
+                  device='cpu',
                   hash_type='sha256'):
     """
-    Publish a model by removing needless data in a checkpoint and hash the
-    output checkpoint file.
+    Publish a model by removing needless data in the checkpoint, moving the
+    weights to the specified device, and hashing the output checkpoint file.
 
     Args:
         in_file (str): Path to the input checkpoint file.
@@ -168,6 +169,8 @@ def publish_model(in_file,
             end with ``'.pth'``.
         keys_to_remove (list[str], optional): The list of keys to be removed
             from the checkpoint. Default: ``['optimizer']``.
+        device (:obj:`torch.device` | str): The destination device. Default:
+            ``'cpu'``.
         hash_type (str, optional): Type of the hash algorithm. Currently
             supported algorithms include ``'md5'``, ``'sha1'``, ``'sha224'``,
             ``'sha256'``, ``'sha384'``, ``'sha512'``, ``'blake2b'``,
@@ -182,6 +185,8 @@ def publish_model(in_file,
     for key in keys_to_remove:
         if key in checkpoint:
             del checkpoint[key]
+
+    checkpoint = move_to_device(checkpoint, device)
     torch.save(checkpoint, out_file)
 
     with open(out_file, 'rb') as f:
