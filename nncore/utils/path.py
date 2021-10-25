@@ -2,6 +2,7 @@
 
 import os
 import os.path as osp
+from pathlib import Path
 from platform import system
 from shutil import copy2, copytree, move, rmtree
 
@@ -163,6 +164,9 @@ def ls(path=None, ext=None, skip_hidden_files=True, join_path=False):
             whose filenames start with '.'. Default: ``True``.
         join_path (bool, optional): Whether to return the joined path of files.
             Default: ``False``.
+
+    Returns:
+        list: The list of files.
     """
     if path is not None and is_file(path):
         return [path]
@@ -184,6 +188,24 @@ def ls(path=None, ext=None, skip_hidden_files=True, join_path=False):
         files = [join(path, f) for f in files]
 
     return files
+
+
+def find(path, pattern, sort=True):
+    """
+    Recursively search for files in a directory.
+
+    Args:
+        path (str): Path to the directory.
+        pattern (str): The pattern of file names.
+        sort (bool, optional): Whether to sort the results. Default: ``True``.
+
+    Returns:
+        list: The list of found files.
+    """
+    out = [str(m) for m in Path(path).rglob(pattern)]
+    if sort:
+        out = sorted(out)
+    return out
 
 
 def rename(old_path, new_path):
