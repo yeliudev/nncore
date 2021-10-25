@@ -13,6 +13,12 @@ Colorspace
 .. automodule:: nncore.image.colorspace
    :members:
 
+Geometric
+--------------------
+
+.. automodule:: nncore.image.geometric
+   :members:
+
 Normalize
 --------------------
 
