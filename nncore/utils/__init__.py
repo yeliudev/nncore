@@ -9,7 +9,7 @@ from .logger import get_logger, log_or_print
 from .misc import recursive
 from .path import (abs_path, base_name, cp, dir_name, expand_user, is_dir,
                    is_file, join, ls, mkdir, mv, pure_ext, pure_name, remove,
-                   rename, split_ext, symlink)
+                   rename, same_dir, split_ext, symlink)
 from .progress import ProgressBar
 from .registry import Registry, build_object
 from .timer import Timer
@@ -21,6 +21,6 @@ __all__ = [
     'get_time_str', 'get_timestamp', 'get_logger', 'log_or_print', 'recursive',
     'abs_path', 'base_name', 'cp', 'dir_name', 'expand_user', 'is_dir',
     'is_file', 'join', 'ls', 'mkdir', 'mv', 'pure_ext', 'pure_name', 'remove',
-    'rename', 'split_ext', 'symlink', 'ProgressBar', 'Registry',
+    'rename', 'same_dir', 'split_ext', 'symlink', 'ProgressBar', 'Registry',
     'build_object', 'Timer'
 ]

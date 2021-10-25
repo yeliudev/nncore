@@ -42,26 +42,27 @@ class ProgressBar(object):
         bar_width = min(int(width - len(msg)) + 2, int(width * 0.6), 40)
         return max(2, bar_width)
 
-    def update(self):
+    def update(self, times=1):
         if not self._active:
             return
 
-        self._completed += 1
-        ela = self._timer.seconds()
-        fps = self._completed / ela
+        for _ in range(times):
+            self._completed += 1
+            ela = self._timer.seconds()
+            fps = self._completed / ela
 
-        if self._task_num is not None:
-            perc = self._completed / float(self._task_num)
-            msg = self._wb.format(
-                self._completed, self._task_num, fps, ceil(ela),
-                int(ela * (1 - perc) / perc + 0.5),
-                '\n' if self._task_num == self._completed else '')
-            bar_width = self._get_bar_width(msg)
-            mark_width = int(bar_width * perc)
-            chars = '>' * mark_width + ' ' * (bar_width - mark_width)
-            msg = msg.format(chars)
-        else:
-            msg = self._ob.format(self._completed, ceil(ela), fps)
+            if self._task_num is not None:
+                perc = self._completed / float(self._task_num)
+                msg = self._wb.format(
+                    self._completed, self._task_num, fps, ceil(ela),
+                    int(ela * (1 - perc) / perc + 0.5),
+                    '\n' if self._task_num == self._completed else '')
+                bar_width = self._get_bar_width(msg)
+                mark_width = int(bar_width * perc)
+                chars = '>' * mark_width + ' ' * (bar_width - mark_width)
+                msg = msg.format(chars)
+            else:
+                msg = self._ob.format(self._completed, ceil(ela), fps)
 
-        print(msg.ljust(self._last_length), end='')
-        self._last_length = len(msg)
+            print(msg.ljust(self._last_length), end='')
+            self._last_length = len(msg)

@@ -17,7 +17,7 @@ class ClosureHook(Hook):
             ``'before_train_epoch'``, ``'after_train_epoch'``,
             ``'before_val_epoch'``, ``'after_val_epoch'``,
             ``'before_train_iter'``, ``'after_train_iter'``,
-            ``'before_val_iter'`` and ``'after_val_iter'``
+            ``'before_val_iter'``, and ``'after_val_iter'``
         func (list[function] | function): A function or a list of functions
             for the hooks. These functions should receive an argument
             ``engine`` to access more properties about the context.

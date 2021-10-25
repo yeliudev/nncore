@@ -23,7 +23,7 @@ class LinearModule(nn.Module):
         act_cfg (dict, optional): The config of the activation layer. Default:
             ``dict(type='ReLU', inplace=True)``.
         order (tuple[str], optional): The order of layers. It is expected to
-            be a sequence of ``'linear'``, ``'norm'`` and ``'act'``. Default:
+            be a sequence of ``'linear'``, ``'norm'``, and ``'act'``. Default:
             ``('linear', 'norm', 'act')``.
     """
 

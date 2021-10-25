@@ -7,6 +7,7 @@ from .utils import *  # noqa
 
 try:
     from .image import *  # noqa
+    from .video import *  # noqa
 except ImportError:
     warnings.warn("Please install opencv-python to enable 'nncore.image'")
 

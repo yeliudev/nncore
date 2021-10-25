@@ -8,7 +8,7 @@ import jsonlines
 
 import nncore
 from .handlers import (HDF5Handler, JSONHandler, JSONLHandler, PickleHandler,
-                       XMLHandler, YAMLHandler)
+                       TXTHandler, XMLHandler, YAMLHandler)
 
 _FILE_HANDLERS = {
     'json': JSONHandler(),
@@ -19,7 +19,8 @@ _FILE_HANDLERS = {
     'pickle': PickleHandler(),
     'pkl': PickleHandler(),
     'hdf5': HDF5Handler(),
-    'h5': HDF5Handler()
+    'h5': HDF5Handler(),
+    'txt': TXTHandler()
 }
 
 _open = open
@@ -40,7 +41,7 @@ def load(name_or_file, format=None, **kwargs):
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json/jsonl``, ``yaml/yml``,
-            ``pickle/pkl``, ``hdf5/h5`` and ``xml``. Default: ``None``.
+            ``pickle/pkl``, ``hdf5/h5``, and ``xml``. Default: ``None``.
 
     Returns:
         any: The loaded data.
@@ -68,7 +69,7 @@ def dump(obj, name_or_file, format=None, overwrite=True, **kwargs):
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json/jsonl``, ``yaml/yml``,
-            ``pickle/pkl``, ``hdf5/h5`` and ``xml``. Default: ``None``.
+            ``pickle/pkl``, ``hdf5/h5``, and ``xml``. Default: ``None``.
         overwrite (bool, optional): Whether to overwrite it if the file exists.
             Default: ``True``.
     """
@@ -176,7 +177,7 @@ def open(file=None, mode='r', format=None, as_decorator=None, **kwargs):
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json/jsonl``, ``yaml/yml``,
-            ``pickle/pkl`` and ``hdf5/h5``. Default: ``None``.
+            ``pickle/pkl``, and ``hdf5/h5``. Default: ``None``.
         as_decorator (bool | None, optional): Whether this method is used as a
             decorator. Please explicitly assign a bool value to this argument
             when using this method in a Python Shell. If not specified, the

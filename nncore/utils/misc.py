@@ -14,7 +14,7 @@ def recursive(key=None, type='list'):
             not specified, the first argument of the function will be used.
             Default: ``None``.
         type (str, optional): The type of returned object. Expected values
-            include ``'list'``, ``'tuple'`` and ``'dict'``. Default:
+            include ``'list'``, ``'tuple'``, and ``'dict'``. Default:
             ``'list'``.
 
     Example:

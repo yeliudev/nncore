@@ -228,7 +228,7 @@ def mv(src, dst):
     move(src, dst)
 
 
-def mkdir(dir_name, raise_error=False, modify_path=False):
+def mkdir(dir_name, raise_error=False, keep_empty=False, modify_path=False):
     """
     Create a leaf directory and all intermediate ones.
 
@@ -236,6 +236,8 @@ def mkdir(dir_name, raise_error=False, modify_path=False):
         dir_name (str): Path to the directory.
         raise_error (bool, optional): Whether to raise an error if the
             directory exists. Default: ``False``.
+        keep_empty (bool, optional): Whether to keep the directory empty.
+            Default: ``False``.
         modify_path (bool, optional): Whether to add ``'_i'`` (where i is an
             accumulating integer starting from ``0``) to the end of the path if
             the directory exists. Default: ``False``.
@@ -254,7 +256,23 @@ def mkdir(dir_name, raise_error=False, modify_path=False):
         dir_name = tmp
 
     os.makedirs(dir_name, exist_ok=not raise_error)
+
+    if keep_empty:
+        for f in ls(dir_name, join_path=True):
+            remove(f)
+
     return dir_name
+
+
+def same_dir(old_path, new_path):
+    """
+    Parse another file or directory in the same directory.
+
+    Args:
+        old_path (str): Old path to the file or directory.
+        new_path (str): New relative path to the file or directory.
+    """
+    return join(dir_name(old_path), new_path)
 
 
 def remove(path, raise_error=False):

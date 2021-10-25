@@ -48,7 +48,7 @@ class LrUpdaterHook(Hook):
     """
     Update learning rate periodically during training. Currently supported
     learning rate and warm-up policies are ``step``, ``cosine``, ``exp``,
-    ``poly``, ``inv`` and ``linear``, ``exp``, ``constant`` respectively.
+    ``poly``, ``inv``, and ``linear``, ``exp``, ``constant`` respectively.
 
     Learning rate policy configs:
         - `step`: step (list[int]), gamma (float, Default: ``0.1``)

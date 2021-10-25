@@ -62,7 +62,7 @@ class Engine(object):
                     updating learning rates every epoch or iteration.
                 - `policy` (str): The learning rate policy to use. Currently \
                     supported policies include ``step``, ``cosine``, ``exp``, \
-                    ``poly`` and ``inv``.
+                    ``poly``, and ``inv``.
                 - `configs for the learning rate policy, e.g.` \
                     ``target_lr=0``. Please refer to :obj:`LrUpdaterHook` for \
                     full configs.
@@ -114,7 +114,7 @@ class Engine(object):
         >>> # [Stage 1] Train the model for 5 epochs using Adam optimizer with
         >>> # a fixed learning rate (1e-3) and a linear warm-up policy.
         >>> # [Stage 2] Train the model for another 3 epochs using SGD with
-        >>> # momentum optimizer and a iter-based cosine learning rate
+        >>> # momentum optimizer and an iter-based cosine learning rate
         >>> # schedule. Perform validation after every training epoch.
         >>> stages = [
         ...     dict(

@@ -18,8 +18,8 @@ def imread(filename, flag='color', to_rgb=False):
     Args:
         filename (str): Path to the image file.
         flag (str | int, optional): Flags specifying the color type of the
-            loaded image. Currently supported flags include ``'color'``,
-            ``'grayscale'`` and ``'unchanged'``. Default: ``'color'``.
+            loaded image. Currently supported flags include ``color``,
+            ``grayscale``, and ``unchanged``. Default: ``color``.
         to_rgb (bool, optional): Whether to convert channel order from ``BGR``
             to ``RGB``. Default: ``False``.
 

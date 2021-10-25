@@ -26,8 +26,8 @@ class MsgPassModule(nn.Module):
         act_cfg (dict, optional): The config of the activation layer. Default:
             ``dict(type='ReLU', inplace=True)``.
         order (tuple[str], optional): The order of layers. It is expected to
-            be a sequence of ``'msg_pass'``, ``'norm'`` and ``'act'``. Default:
-            ``('msg_pass', 'norm', 'act')``.
+            be a sequence of ``'msg_pass'``, ``'norm'``, and ``'act'``.
+            Default: ``('msg_pass', 'norm', 'act')``.
     """
 
     def __init__(self,

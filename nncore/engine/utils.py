@@ -92,7 +92,7 @@ def generate_random_seed(sync=False, src=0, group=None):
 
 def set_random_seed(seed=None, benchmark=False, deterministic=False, **kwargs):
     """
-    Set random seed for ``random``, ``numpy`` and ``torch`` packages. If
+    Set random seed for ``random``, ``numpy``, and ``torch`` packages. If
     ``seed`` is not specified, this method will generate and return a new
     random seed.
 

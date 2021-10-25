@@ -20,7 +20,7 @@ def sigmoid_focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
         gamma (int | float, optional): Exponent of the modulating factor
             ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
         reduction (str, optional): Reduction method. Currently supported
-            methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
+            methods include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
 
     Returns:
@@ -61,7 +61,7 @@ def sigmoid_focal_loss_star(pred, target, alpha=-1, gamma=1, reduction='mean'):
         gamma (int | float, optional): Exponent of the modulating factor
             ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
         reduction (str, optional): Reduction method. Currently supported
-            methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
+            methods include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
 
     Returns:
@@ -97,7 +97,7 @@ class FocalLoss(nn.Module):
         gamma (int | float, optional): Exponent of the modulating factor
             ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
         reduction (str, optional): Reduction method. Currently supported
-            methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
+            methods include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
         loss_weight (float, optional): Weight of the loss. Default: ``1``.
 
@@ -137,7 +137,7 @@ class FocalLossStar(FocalLoss):
         gamma (int | float, optional): Exponent of the modulating factor
             ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
         reduction (str, optional): Reduction method. Currently supported
-            methods include ``'mean'``, ``'sum'`` and ``'none'``. Default:
+            methods include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
         loss_weight (float, optional): Weight of the loss. Default: ``1``.
 

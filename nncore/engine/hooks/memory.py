@@ -21,7 +21,7 @@ class EmptyCacheHook(Hook):
             ``'before_train_epoch'``, ``'after_train_epoch'``,
             ``'before_val_epoch'``, ``'after_val_epoch'``,
             ``'before_train_iter'``, ``'after_train_iter'``,
-            ``'before_val_iter'`` and ``'after_val_iter'``
+            ``'before_val_iter'``, and ``'after_val_iter'``
     """
 
     def __init__(self, names=[]):

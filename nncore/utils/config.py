@@ -260,7 +260,7 @@ class Config(CfgNode):
 
         Args:
             filename (str): Path to the config file. Currently supported
-                formats include ``py``, ``json`` and ``yaml/yml``.
+                formats include ``py``, ``json``, and ``yaml/yml``.
             freeze (bool, optional): Whether to freeze the config after
                 initialization.  Default: ``False``.
 
