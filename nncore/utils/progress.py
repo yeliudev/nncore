@@ -15,15 +15,18 @@ class ProgressBar(object):
     _wb = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}s, eta: {}s{}'
     _ob = '\rcompleted: {}, elapsed: {}s, {:.1f} tasks/s'
 
-    def __init__(self, num_tasks=None):
+    def __init__(self, num_tasks=None, active=None):
         self._task_num = num_tasks
         self._completed = 0
 
-        try:
-            from nncore.engine import is_main_process
-            self._active = is_main_process()
-        except ImportError:
-            self._active = True
+        if active is None:
+            try:
+                from nncore.engine import is_main_process
+                self._active = is_main_process()
+            except ImportError:
+                self._active = True
+        else:
+            self._active = active
 
         if self._active:
             if self._task_num is not None:

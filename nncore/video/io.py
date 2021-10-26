@@ -1,6 +1,7 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 from collections import OrderedDict
+from math import ceil
 
 import cv2
 
@@ -168,6 +169,7 @@ class VideoReader(object):
                     scale=None,
                     interpolation='bilinear',
                     template='img_{:05d}.jpg',
+                    interval=1,
                     start=0,
                     max_num=-1,
                     show_progress=False,
@@ -190,6 +192,8 @@ class VideoReader(object):
                 ``bicubic``, ``area``, and ``lanczos``. Default: ``bilinear``.
             template (str, optional): Filename template. Default:
                 ``'img_{:05d}.jpg'``.
+            interval (int, optional): The interval of dumped frames. Default:
+                ``1``.
             start (int, optional): The starting frame index. Default: ``0``.
             max_num (int, optional): The maximum number of frames to be dumped.
                 Default: ``-1``.
@@ -198,32 +202,34 @@ class VideoReader(object):
             raise_error (bool, optional): Whether to raise an error if a frame
                 is not successfully decoded. Default: ``True``.
         """
-        nncore.mkdir(out_dir)
-
         if max_num > 0:
-            num_tasks = min(self._num_frames - start, max_num)
+            total_tasks = min(self._num_frames - start, max_num)
         else:
-            num_tasks = self._num_frames - start
+            total_tasks = self._num_frames - start
 
-        if num_tasks <= 0:
+        if total_tasks <= 0:
             raise ValueError('start must be less than the total frame number')
+
+        num_tasks = ceil(total_tasks / interval)
 
         if start > 0:
             self._set_position(start)
 
-        if show_progress:
-            prog_bar = nncore.ProgressBar(num_tasks=num_tasks)
+        prog_bar = nncore.ProgressBar(
+            num_tasks=num_tasks, active=show_progress)
 
-        for i in range(num_tasks):
+        for i in range(total_tasks):
             img = self.read()
+
+            if i % interval != 0:
+                continue
 
             if img is None:
                 if raise_error:
                     raise ValueError(
                         'frame {} is not successfully decoded'.format(i))
                 else:
-                    if show_progress:
-                        prog_bar.update()
+                    prog_bar.update()
                     return
 
             if size is not None:
@@ -235,5 +241,4 @@ class VideoReader(object):
             filename = nncore.join(out_dir, template.format(i))
             nncore.imwrite(img, filename)
 
-            if show_progress:
-                prog_bar.update()
+            prog_bar.update()
