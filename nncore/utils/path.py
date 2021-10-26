@@ -6,23 +6,24 @@ from pathlib import Path
 from platform import system
 from shutil import copy2, copytree, move, rmtree
 
+from .misc import recursive
 
-def expand_user(*args):
+
+@recursive()
+def expand_user(path):
     """
     Expand users in paths.
 
     Args:
-        *args (str): The paths to be expanded.
+        path (str): The path to be expanded.
 
     Returns:
         list[str] | str: The expanded path or list of paths.
     """
-    if len(args) == 1:
-        return osp.expanduser(args[0])
-    else:
-        return [osp.expanduser(p) for p in args]
+    return osp.expanduser(path)
 
 
+@recursive()
 def abs_path(path):
     """
     Parse the absolute path from a relative path.
@@ -31,11 +32,12 @@ def abs_path(path):
         path (str): Path to the file or directory.
 
     Returns:
-        str: The absolute path.
+        list[str] | str: The absolute path or list of paths.
     """
     return osp.abspath(expand_user(path))
 
 
+@recursive()
 def dir_name(path):
     """
     Parse the directory name from a path.
@@ -44,11 +46,12 @@ def dir_name(path):
         path (str): Path to the file or directory.
 
     Returns:
-        str: The parsed directory name.
+        list[str] | str: The parsed directory name or list of directory names.
     """
     return osp.dirname(expand_user(path))
 
 
+@recursive()
 def base_name(path):
     """
     Parse the base name from a path.
@@ -57,7 +60,7 @@ def base_name(path):
         path (str): Path to the file or directory.
 
     Returns:
-        str: The parsed base name.
+        list[str] | str: The parsed base name or list of base names.
     """
     return osp.basename(path)
 
@@ -88,6 +91,7 @@ def split_ext(path):
     return osp.splitext(base_name(path))
 
 
+@recursive()
 def pure_name(path):
     """
     Parse the filename without extension from a path.
@@ -96,11 +100,12 @@ def pure_name(path):
         path (str): Path to the file
 
     Returns:
-        str: The parsed filename.
+        list[str] | str: The parsed filename or list of filenames.
     """
     return split_ext(path)[0]
 
 
+@recursive()
 def pure_ext(path):
     """
     Parse the file extension from a path.
@@ -109,11 +114,12 @@ def pure_ext(path):
         path (str): Path to the file.
 
     Returns:
-        str: The parsed extension.
+        list[str] | str: The parsed extension or list of extensions.
     """
     return split_ext(path)[1][1:]
 
 
+@recursive()
 def is_file(path, raise_error=False):
     """
     Check whether a file exists.
@@ -124,7 +130,7 @@ def is_file(path, raise_error=False):
             not found. Default: ``False``.
 
     Returns:
-        bool: Whether the file exists.
+        list[bool] | bool: Whether the file or files exist.
     """
     is_file = osp.isfile(expand_user(path))
     if not is_file and raise_error:
@@ -132,6 +138,7 @@ def is_file(path, raise_error=False):
     return is_file
 
 
+@recursive()
 def is_dir(path, raise_error=False):
     """
     Check whether a directory exists.
@@ -142,7 +149,7 @@ def is_dir(path, raise_error=False):
             directory is not found. Default: ``False``.
 
     Returns:
-        bool: Whether the directory exists.
+        list[bool] | bool: Whether the directory or directories exist.
     """
     is_dir = osp.isdir(expand_user(path))
     if not is_dir and raise_error:
@@ -229,7 +236,7 @@ def cp(src, dst, symlink=True):
         symlink (bool, optional): Whether to create a new symlink instead of
             copying the file it points to. Default: ``True``.
     """
-    src, dst = expand_user(src, dst)
+    src, dst = expand_user((src, dst))
     if is_dir(src):
         if is_dir(dst):
             dst = join(dst, base_name(src))
@@ -246,10 +253,11 @@ def mv(src, dst):
         src (str): Path to the source file or directory.
         dst (str): Path to the destination file or directory.
     """
-    src, dst = expand_user(src, dst)
+    src, dst = expand_user((src, dst))
     move(src, dst)
 
 
+@recursive()
 def mkdir(dir_name, raise_error=False, keep_empty=False, modify_path=False):
     """
     Create a leaf directory and all intermediate ones.
@@ -265,7 +273,8 @@ def mkdir(dir_name, raise_error=False, keep_empty=False, modify_path=False):
             the directory exists. Default: ``False``.
 
     Returns:
-        str: Path to the actually created directory.
+        list[str] | str: Path or list of paths to the actually created \
+            directories.
     """
     assert isinstance(dir_name, str) and dir_name != ''
     dir_name = expand_user(dir_name)
@@ -297,6 +306,7 @@ def same_dir(old_path, new_path):
     return join(dir_name(old_path), new_path)
 
 
+@recursive()
 def remove(path, raise_error=False):
     """
     Remove a file or a directory.
