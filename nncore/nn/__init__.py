@@ -9,7 +9,8 @@ from .init import (constant_init_, init_module_, kaiming_init_, normal_init_,
                    uniform_init_, xavier_init_)
 from .losses import (DynamicBCELoss, FocalLoss, FocalLossStar, GHMCLoss,
                      focal_loss, focal_loss_star)
-from .modules import (LinearModule, MsgPassModule, build_linear_modules,
+from .modules import (ConvModule, DepthwiseSeparableConvModule, LinearModule,
+                      MsgPassModule, build_conv_modules, build_linear_modules,
                       build_msg_pass_modules)
 from .utils import fuse_bn_, move_to_device, publish_model, update_bn_stats_
 
@@ -20,8 +21,8 @@ __all__ = [
     'build_model', 'build_msg_pass_layer', 'build_norm_layer',
     'constant_init_', 'init_module_', 'kaiming_init_', 'normal_init_',
     'uniform_init_', 'xavier_init_', 'DynamicBCELoss', 'FocalLoss',
-    'FocalLossStar', 'GHMCLoss', 'focal_loss', 'focal_loss_star',
-    'LinearModule', 'MsgPassModule', 'build_linear_modules',
-    'build_msg_pass_modules', 'fuse_bn_', 'move_to_device', 'publish_model',
-    'update_bn_stats_'
+    'FocalLossStar', 'GHMCLoss', 'focal_loss', 'focal_loss_star', 'ConvModule',
+    'DepthwiseSeparableConvModule', 'LinearModule', 'MsgPassModule',
+    'build_conv_modules', 'build_linear_modules', 'build_msg_pass_modules',
+    'fuse_bn_', 'move_to_device', 'publish_model', 'update_bn_stats_'
 ]

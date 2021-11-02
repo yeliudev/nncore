@@ -8,13 +8,13 @@ INITIALIZERS = Registry('initializer')
 
 
 @INITIALIZERS.register(name='constant')
-def constant_init_(module, value, bias=0):
+def constant_init_(module, value=1, bias=0):
     """
     Initialize a module using a constant.
 
     Args:
         module (:obj:`nn.Module`): The module to be initialized.
-        value (int): The value to be filled.
+        value (int, optional): The value to be filled. Default: ``1``.
         bias (int, optional): The bias of the module. Default: ``0``.
     """
     if hasattr(module, 'weight') and module.weight is not None:

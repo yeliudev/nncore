@@ -3,6 +3,7 @@
 import torch.nn as nn
 
 from nncore import Registry, build_object
+from nncore.parallel import NNDataParallel, NNDistributedDataParallel
 
 MODELS = Registry('block')
 ACTIVATIONS = Registry('activation', parent=MODELS)
@@ -13,7 +14,7 @@ LOSSES = Registry('loss', parent=MODELS)
 MODULES = Registry('module', parent=MODELS)
 
 
-def build_model(cfg, *args, bundle_type=None, **kwargs):
+def build_model(cfg, *args, bundle_type=None, wrap_type=None, **kwargs):
     """
     Build a general model from a dict. This method searches for modules in
     :obj:`MODELS` first, and then fall back to :obj:`torch.nn`.
@@ -21,13 +22,18 @@ def build_model(cfg, *args, bundle_type=None, **kwargs):
     Args:
         cfg (dict | str): The config or name of the model.
         bundle_type (str | None, optional): The type of bundler for multiple
-            modele. Expect values include ``'sequential'``, ``'modulelist'``,
+            models. Expected values include ``'sequential'``, ``'modulelist'``,
             and ``None``. Default: ``None``.
+        wrap_type (str | None, optional): The type of wrapper for the model.
+            Expected values include ``'dp'``, ``'ddp'``, and ``None``. Default:
+            ``None``.
 
     Returns:
         :obj:`nn.Module`: The constructed model.
     """
     assert bundle_type in ('sequential', 'modulelist', None)
+    assert wrap_type in ('dp', 'ddp', None)
+
     obj = build_object(cfg, [MODELS, nn], args=args, **kwargs)
 
     if isinstance(cfg, (list, tuple)):
@@ -35,6 +41,11 @@ def build_model(cfg, *args, bundle_type=None, **kwargs):
             obj = nn.Sequential(*obj)
         elif bundle_type == 'modulelist':
             obj = nn.ModuleList(obj)
+
+    if wrap_type == 'dp':
+        obj = NNDataParallel(obj)
+    elif wrap_type == 'ddp':
+        obj = NNDistributedDataParallel(obj)
 
     return obj
 
@@ -94,11 +105,12 @@ def build_norm_layer(cfg, *args, dims=None, **kwargs):
     Returns:
         :obj:`nn.Module`: The constructed layer.
     """
-    norm_type = cfg['type'] if isinstance(cfg, dict) else cfg
+    if isinstance(cfg, str):
+        cfg = dict(type=cfg)
 
-    if dims is not None and norm_type not in NORMS.group('drop'):
-        key = 'normalized_shape' if norm_type == 'LN' else 'num_features'
-        kwargs[key] = dims
+    if dims is not None and cfg['type'] not in NORMS.group('drop'):
+        key = 'normalized_shape' if cfg['type'] == 'LN' else 'num_features'
+        cfg.setdefault(key, dims)
 
     return build_object(cfg, [NORMS, nn], args=args, **kwargs)
 

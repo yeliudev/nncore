@@ -106,8 +106,16 @@ def _scatter_kwargs(inputs, kwargs, target_gpus, dim=0):
 
 class NNDataParallel(DataParallel):
     """
-    A :obj:`nn.DataParallel` class with :obj:`DataContainer` support.
+    A :obj:`nn.DataParallel` class with :obj:`DataContainer` support and uses
+    single GPU by default.
     """
+
+    def __init__(self, module, device_ids=[0], output_device=None, dim=0):
+        super(NNDataParallel, self).__init__(
+            module,
+            device_ids=device_ids,
+            output_device=output_device,
+            dim=dim)
 
     def scatter(self, inputs, kwargs, device_ids):
         return _scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
