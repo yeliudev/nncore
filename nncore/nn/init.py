@@ -4,10 +4,10 @@ import torch.nn as nn
 
 from nncore import Registry
 
-INITIALIZATIONS = Registry('initialization')
+INITIALIZERS = Registry('initializer')
 
 
-@INITIALIZATIONS.register(name='constant')
+@INITIALIZERS.register(name='constant')
 def constant_init_(module, value, bias=0):
     """
     Initialize a module using a constant.
@@ -23,7 +23,7 @@ def constant_init_(module, value, bias=0):
         nn.init.constant_(module.bias, bias)
 
 
-@INITIALIZATIONS.register(name='normal')
+@INITIALIZERS.register(name='normal')
 def normal_init_(module, mean=0, std=1, bias=0):
     """
     Initialize a module using normal distribution.
@@ -40,7 +40,7 @@ def normal_init_(module, mean=0, std=1, bias=0):
         nn.init.constant_(module.bias, bias)
 
 
-@INITIALIZATIONS.register(name='uniform')
+@INITIALIZERS.register(name='uniform')
 def uniform_init_(module, a=0, b=1, bias=0):
     """
     Initialize a module using uniform distribution.
@@ -56,7 +56,7 @@ def uniform_init_(module, a=0, b=1, bias=0):
         nn.init.constant_(module.bias, bias)
 
 
-@INITIALIZATIONS.register(name='xavier')
+@INITIALIZERS.register(name='xavier')
 def xavier_init_(module, gain=1, bias=0, distribution='normal'):
     """
     Initialize a module using the method introduced in [1].
@@ -81,7 +81,7 @@ def xavier_init_(module, gain=1, bias=0, distribution='normal'):
         nn.init.constant_(module.bias, bias)
 
 
-@INITIALIZATIONS.register(name='kaiming')
+@INITIALIZERS.register(name='kaiming')
 def kaiming_init_(module,
                   a=0,
                   mode='fan_in',
@@ -129,5 +129,5 @@ def init_module_(module, method, **kwargs):
             ``'constant'``, ``'normal'``, ``'uniform'``, ``'xavier'``,
             ``'kaiming'``.
     """
-    assert method in INITIALIZATIONS
-    INITIALIZATIONS.get(method)(module, **kwargs)
+    assert method in INITIALIZERS
+    INITIALIZERS.get(method)(module, **kwargs)

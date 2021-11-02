@@ -19,13 +19,13 @@ class GHMCLoss(nn.Module):
             calculation. Default: ``10``.
         momentum (float, optional): The parameter for moving average. Default:
             ``0``.
-        loss_weight (float, optional): Weight of the loss. Default: ``1``.
+        loss_weight (float, optional): Weight of the loss. Default: ``1.0``.
 
     References:
         1. Li et al. (https://arxiv.org/abs/1811.05181)
     """
 
-    def __init__(self, bins=10, momentum=0, loss_weight=1):
+    def __init__(self, bins=10, momentum=0, loss_weight=1.0):
         super(GHMCLoss, self).__init__()
         self._bins = bins
         self._momentum = momentum

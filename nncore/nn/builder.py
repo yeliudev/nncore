@@ -4,31 +4,31 @@ import torch.nn as nn
 
 from nncore import Registry, build_object
 
-BLOCKS = Registry('block')
-ACTIVATIONS = Registry('activation', parent=BLOCKS)
-CONVS = Registry('conv', parent=BLOCKS)
-MESSAGE_PASSINGS = Registry('message passing', parent=BLOCKS)
-NORMS = Registry('norm', parent=BLOCKS)
-LOSSES = Registry('loss', parent=BLOCKS)
-MODULES = Registry('module', parent=BLOCKS)
+MODELS = Registry('block')
+ACTIVATIONS = Registry('activation', parent=MODELS)
+CONVS = Registry('conv', parent=MODELS)
+MESSAGE_PASSINGS = Registry('message passing', parent=MODELS)
+NORMS = Registry('norm', parent=MODELS)
+LOSSES = Registry('loss', parent=MODELS)
+MODULES = Registry('module', parent=MODELS)
 
 
-def build_block(cfg, *args, bundle_type=None, **kwargs):
+def build_model(cfg, *args, bundle_type=None, **kwargs):
     """
-    Build a general module from a dict. This method searches for modules in
-    :obj:`BLOCKS` first, and then fall back to :obj:`torch.nn`.
+    Build a general model from a dict. This method searches for modules in
+    :obj:`MODELS` first, and then fall back to :obj:`torch.nn`.
 
     Args:
-        cfg (dict | str): The config or name of the module.
+        cfg (dict | str): The config or name of the model.
         bundle_type (str | None, optional): The type of bundler for multiple
-            modules. Expect values include ``'sequential'``, ``'modulelist'``,
+            modele. Expect values include ``'sequential'``, ``'modulelist'``,
             and ``None``. Default: ``None``.
 
     Returns:
-        :obj:`nn.Module`: The constructed module.
+        :obj:`nn.Module`: The constructed model.
     """
     assert bundle_type in ('sequential', 'modulelist', None)
-    obj = build_object(cfg, [BLOCKS, nn], args=args, **kwargs)
+    obj = build_object(cfg, [MODELS, nn], args=args, **kwargs)
 
     if isinstance(cfg, (list, tuple)):
         if bundle_type == 'sequential':

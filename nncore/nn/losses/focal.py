@@ -21,7 +21,7 @@ def focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
         gamma (int | float, optional): Exponent of the modulating factor
             ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
         reduction (str, optional): Reduction method. Currently supported
-            methods include ``'mean'``, ``'sum'``, and ``'none'``. Default:
+            values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
 
     Returns:
@@ -62,7 +62,7 @@ def focal_loss_star(pred, target, alpha=-1, gamma=1, reduction='mean'):
         gamma (int | float, optional): Exponent of the modulating factor
             ``(1 - p_t)`` to balance easy vs hard examples. Default: ``1``.
         reduction (str, optional): Reduction method. Currently supported
-            methods include ``'mean'``, ``'sum'``, and ``'none'``. Default:
+            values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
 
     Returns:
@@ -99,16 +99,18 @@ class FocalLoss(nn.Module):
         gamma (int | float, optional): Exponent of the modulating factor
             ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
         reduction (str, optional): Reduction method. Currently supported
-            methods include ``'mean'``, ``'sum'``, and ``'none'``. Default:
+            values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
-        loss_weight (float, optional): Weight of the loss. Default: ``1``.
+        loss_weight (float, optional): Weight of the loss. Default: ``1.0``.
 
     References:
         1. Lin et al. (https://arxiv.org/abs/1708.02002)
     """
 
-    def __init__(self, alpha=-1, gamma=2, reduction='mean', loss_weight=1):
+    def __init__(self, alpha=-1, gamma=2, reduction='mean', loss_weight=1.0):
         super(FocalLoss, self).__init__()
+        assert reduction in ('mean', 'sum', 'none')
+
         self._alpha = alpha
         self._gamma = gamma
         self._reduction = reduction
@@ -140,15 +142,15 @@ class FocalLossStar(FocalLoss):
         gamma (int | float, optional): Exponent of the modulating factor
             ``(1 - p_t)`` to balance easy vs hard examples. Default: ``1``.
         reduction (str, optional): Reduction method. Currently supported
-            methods include ``'mean'``, ``'sum'``, and ``'none'``. Default:
+            values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
-        loss_weight (float, optional): Weight of the loss. Default: ``1``.
+        loss_weight (float, optional): Weight of the loss. Default: ``1.0``.
 
     References:
         1. Lin et al. (https://arxiv.org/abs/1708.02002)
     """
 
-    def __init__(self, alpha=-1, gamma=1, reduction='mean', loss_weight=1):
+    def __init__(self, alpha=-1, gamma=1, reduction='mean', loss_weight=1.0):
         super(FocalLossStar, self).__init__(
             alpha=alpha,
             gamma=gamma,
