@@ -5,8 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import nncore
-
-MESSAGE_PASSINGS = nncore.Registry('message passing')
+from ..builder import MESSAGE_PASSINGS
 
 
 @MESSAGE_PASSINGS.register()
@@ -228,17 +227,3 @@ class GAT(nn.Module):
             y += self.bias
 
         return y
-
-
-def build_msg_pass_layer(cfg, **kwargs):
-    """
-    Build a message passing layer from a dict. This method searches for layers
-    in :obj:`MESSAGE_PASSINGS` first, and then fall back to :obj:`torch.nn`.
-
-    Args:
-        cfg (dict | str): The config or name of the layer.
-
-    Returns:
-        :obj:`nn.Module`: The constructed layer.
-    """
-    return nncore.build_object(cfg, [MESSAGE_PASSINGS, nn], **kwargs)

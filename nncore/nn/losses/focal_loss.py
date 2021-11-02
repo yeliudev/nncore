@@ -4,9 +4,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import nncore
+from ..builder import LOSSES
 
 
-def sigmoid_focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
+def focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
     """
     Focal Loss introduced in [1].
 
@@ -47,7 +48,7 @@ def sigmoid_focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
     return loss
 
 
-def sigmoid_focal_loss_star(pred, target, alpha=-1, gamma=1, reduction='mean'):
+def focal_loss_star(pred, target, alpha=-1, gamma=1, reduction='mean'):
     """
     Focal Loss* introduced in [1].
 
@@ -59,7 +60,7 @@ def sigmoid_focal_loss_star(pred, target, alpha=-1, gamma=1, reduction='mean'):
             balance positive vs negative examples. ``-1`` means no weighting.
             Default: ``-1``.
         gamma (int | float, optional): Exponent of the modulating factor
-            ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
+            ``(1 - p_t)`` to balance easy vs hard examples. Default: ``1``.
         reduction (str, optional): Reduction method. Currently supported
             methods include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
@@ -85,6 +86,7 @@ def sigmoid_focal_loss_star(pred, target, alpha=-1, gamma=1, reduction='mean'):
     return loss
 
 
+@LOSSES.register()
 @nncore.bind_getter('alpha', 'gamma', 'reduction', 'loss_weight')
 class FocalLoss(nn.Module):
     """
@@ -117,7 +119,7 @@ class FocalLoss(nn.Module):
             self._alpha, self._gamma, self._reduction, self._loss_weight)
 
     def forward(self, pred, target):
-        return sigmoid_focal_loss(
+        return focal_loss(
             pred,
             target,
             alpha=self._alpha,
@@ -125,6 +127,7 @@ class FocalLoss(nn.Module):
             reduction=self._reduction) * self._loss_weight
 
 
+@LOSSES.register()
 @nncore.bind_getter('alpha', 'gamma', 'reduction', 'loss_weight')
 class FocalLossStar(FocalLoss):
     """
@@ -135,7 +138,7 @@ class FocalLossStar(FocalLoss):
             balance positive vs negative examples. ``-1`` means no weighting.
             Default: ``-1``.
         gamma (int | float, optional): Exponent of the modulating factor
-            ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
+            ``(1 - p_t)`` to balance easy vs hard examples. Default: ``1``.
         reduction (str, optional): Reduction method. Currently supported
             methods include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
@@ -153,7 +156,7 @@ class FocalLossStar(FocalLoss):
             loss_weight=loss_weight)
 
     def forward(self, pred, target):
-        return sigmoid_focal_loss_star(
+        return focal_loss_star(
             pred,
             target,
             alpha=self._alpha,

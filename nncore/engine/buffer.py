@@ -18,8 +18,8 @@ class Buffer(object):
         max_size (int, optional): Maximal number of internal values that can
             be stored in the buffer. When the capacity of the buffer is
             exhausted, old values will be removed. Default: ``100000``.
-        logger (:obj:`logging.Logger` | str | None, optional): The potential
-            logger or name of the logger to use. Default: ``None``.
+        logger (:obj:`logging.Logger` | str | None, optional): The logger or
+            name of the logger to use. Default: ``None``.
     """
 
     def __init__(self, max_size=100000, logger=None):

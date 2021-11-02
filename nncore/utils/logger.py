@@ -102,14 +102,14 @@ def get_logger(logger_or_name=None,
 
 def log_or_print(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
     """
-    Print a message with a potential logger. If ``logger`` is a valid
+    Print a message with a logger. If ``logger`` is a valid
     :obj:`logging.Logger` or a name of the logger, then it would be used.
     Otherwise this method will use the normal :obj:`print` function instead.
 
     Args:
         msg (str): The message to be logged.
         logger_or_name (:obj:`logging.Logger` | str | None, optional): The
-            potential logger or name of the logger to use. Default: ``None``.
+            logger or name of the logger to use. Default: ``None``.
         log_level (int, optional): Log level of the logger. Default:
             :obj:`logging.INFO`.
     """

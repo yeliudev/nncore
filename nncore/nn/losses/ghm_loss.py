@@ -5,8 +5,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import nncore
+from ..builder import LOSSES
 
 
+@LOSSES.register()
 @nncore.bind_getter('bins', 'momentum', 'loss_weight')
 class GHMCLoss(nn.Module):
     """

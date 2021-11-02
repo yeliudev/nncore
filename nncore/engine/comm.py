@@ -26,7 +26,8 @@ def _init_dist_pytorch(backend, **kwargs):
 
 def _init_dist_slurm(backend, **kwargs):
     nodes = os.environ.get('SLURM_NODELIST', os.environ['SLURM_JOB_NODELIST'])
-    master_addr = getoutput(f'scontrol show hostname {nodes} | head -n1')
+    master_addr = getoutput(
+        'scontrol show hostname {} | head -n1'.format(nodes))
 
     os.environ.setdefault('MASTER_ADDR', master_addr)
     os.environ.setdefault('MASTER_PORT', '29500')

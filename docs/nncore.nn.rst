@@ -1,10 +1,10 @@
 nncore.nn
 ====================
 
-Bricks
+Blocks
 --------------------
 
-.. automodule:: nncore.nn.bricks
+.. automodule:: nncore.nn.blocks
    :members:
 
 Losses
@@ -17,6 +17,12 @@ Modules
 --------------------
 
 .. automodule:: nncore.nn.modules
+   :members:
+
+Builder
+--------------------
+
+.. automodule:: nncore.nn.builder
    :members:
 
 Init

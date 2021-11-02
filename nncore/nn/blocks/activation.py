@@ -5,8 +5,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import nncore
-
-ACTIVATIONS = nncore.Registry('activation')
+from ..builder import ACTIVATIONS
 
 
 class _MishImplementation(torch.autograd.Function):
@@ -114,17 +113,3 @@ class Clamp(nn.Module):
 
     def forward(self, x):
         return x.clamp(self._min, self._max)
-
-
-def build_act_layer(cfg, **kwargs):
-    """
-    Build an activation layer from a dict. This method searches for layers in
-    :obj:`ACTIVATIONS` first, and then fall back to :obj:`torch.nn`.
-
-    Args:
-        cfg (dict | str): The config or name of the layer.
-
-    Returns:
-        :obj:`nn.Module`: The constructed layer.
-    """
-    return nncore.build_object(cfg, [ACTIVATIONS, nn], **kwargs)

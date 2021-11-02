@@ -97,8 +97,8 @@ def set_random_seed(seed=None, benchmark=False, deterministic=False, **kwargs):
     random seed.
 
     Args:
-        seed (int | None, optional): The potential random seed to use. If not
-            specified, a new random seed will be generated. Default: ``None``.
+        seed (int | None, optional): The random seed to use. If not specified,
+            a new random seed will be generated. Default: ``None``.
         benchmark (bool, optional): Whether to enable benchmark mode. Default:
             ``False``.
         deterministic (bool, optional): Whether to enable deterministic mode.

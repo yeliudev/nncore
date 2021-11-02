@@ -12,13 +12,13 @@ from .misc import recursive
 @recursive()
 def expand_user(path):
     """
-    Expand users in paths.
+    Expand user in a path.
 
     Args:
         path (str): The path to be expanded.
 
     Returns:
-        list[str] | str: The expanded path or list of paths.
+        str: The expanded path.
     """
     return osp.expanduser(path)
 
@@ -26,13 +26,13 @@ def expand_user(path):
 @recursive()
 def abs_path(path):
     """
-    Parse the absolute path from a relative path.
+    Parse absolute path from a relative path.
 
     Args:
         path (str): Path to the file or directory.
 
     Returns:
-        list[str] | str: The absolute path or list of paths.
+        str: The parsed absolute path.
     """
     return osp.abspath(expand_user(path))
 
@@ -40,13 +40,13 @@ def abs_path(path):
 @recursive()
 def dir_name(path):
     """
-    Parse the directory name from a path.
+    Parse directory name from a path.
 
     Args:
         path (str): Path to the file or directory.
 
     Returns:
-        list[str] | str: The parsed directory name or list of directory names.
+        str: The parsed directory name.
     """
     return osp.dirname(expand_user(path))
 
@@ -54,13 +54,13 @@ def dir_name(path):
 @recursive()
 def base_name(path):
     """
-    Parse the base name from a path.
+    Parse base name from a path.
 
     Args:
         path (str): Path to the file or directory.
 
     Returns:
-        list[str] | str: The parsed base name or list of base names.
+        str: The parsed base name.
     """
     return osp.basename(path)
 
@@ -94,13 +94,13 @@ def split_ext(path):
 @recursive()
 def pure_name(path):
     """
-    Parse the filename without extension from a path.
+    Parse pure filename from a path.
 
     Args:
         path (str): Path to the file
 
     Returns:
-        list[str] | str: The parsed filename or list of filenames.
+        str: The parsed pure filename.
     """
     return split_ext(path)[0]
 
@@ -108,13 +108,13 @@ def pure_name(path):
 @recursive()
 def pure_ext(path):
     """
-    Parse the file extension from a path.
+    Parse file extension from a path.
 
     Args:
         path (str): Path to the file.
 
     Returns:
-        list[str] | str: The parsed extension or list of extensions.
+        str: The parsed file extension.
     """
     return split_ext(path)[1][1:]
 
@@ -130,7 +130,7 @@ def is_file(path, raise_error=False):
             not found. Default: ``False``.
 
     Returns:
-        list[bool] | bool: Whether the file or files exist.
+        bool: Whether the file exists.
     """
     is_file = osp.isfile(expand_user(path))
     if not is_file and raise_error:
@@ -149,7 +149,7 @@ def is_dir(path, raise_error=False):
             directory is not found. Default: ``False``.
 
     Returns:
-        list[bool] | bool: Whether the directory or directories exist.
+        bool: Whether the directory exists.
     """
     is_dir = osp.isdir(expand_user(path))
     if not is_dir and raise_error:
@@ -217,7 +217,7 @@ def find(path, pattern, sort=True):
 
 def rename(old_path, new_path):
     """
-    Rename a file or a directory.
+    Rename a file or directory.
 
     Args:
         old_path (str): Old path to the file or directory.
@@ -273,8 +273,7 @@ def mkdir(dir_name, raise_error=False, keep_empty=False, modify_path=False):
             the directory exists. Default: ``False``.
 
     Returns:
-        list[str] | str: Path or list of paths to the actually created \
-            directories.
+        str: Path to the actually created directory.
     """
     assert isinstance(dir_name, str) and dir_name != ''
     dir_name = expand_user(dir_name)
@@ -282,7 +281,7 @@ def mkdir(dir_name, raise_error=False, keep_empty=False, modify_path=False):
     if is_dir(dir_name) and modify_path:
         tmp, i = dir_name, 0
         while is_dir(tmp):
-            tmp = f'{dir_name}_{i}'
+            tmp = '{}_{}'.format(dir_name, i)
             i += 1
         dir_name = tmp
 
@@ -309,7 +308,7 @@ def same_dir(old_path, new_path):
 @recursive()
 def remove(path, raise_error=False):
     """
-    Remove a file or a directory.
+    Remove a file or directory.
 
     Args:
         path (str): Path to the file or directory.

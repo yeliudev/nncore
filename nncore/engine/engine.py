@@ -28,7 +28,7 @@ _DEFAULT_HOOKS = [
                     'start_iter', 'stage', 'epoch', 'iter', 'kwargs')
 class Engine(object):
     """
-    An engine that can take over the whole training, validation and testing
+    An engine that can take over the whole training, validation, and testing
     process, with all the baby-sitting works (stage control, optimizer
     configuration, lr scheduling, checkpoint management, metrics & tensorboard
     writing, etc.) done automatically.
@@ -39,8 +39,8 @@ class Engine(object):
             a ``_num_samples`` field indicating the number of samples in the
             current batch, and optionally a ``_out`` field denoting the model
             outputs to be collected and evaluated.
-        data_loaders (dict): The potential data loaders for training,
-            validation and testing. It should be in the format of
+        data_loaders (dict): The data loaders for training, validation, and
+            testing. It should be in the format of
             ``dict(train=train_loader, val=val_loader, test=test_loader)``.
         stages (list[dict] | dict, optional): The stage config or list of
             stage configs to be scheduled. Each stage config should be a dict

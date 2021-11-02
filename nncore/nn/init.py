@@ -2,15 +2,20 @@
 
 import torch.nn as nn
 
+from nncore import Registry
 
+INITIALIZATIONS = Registry('initialization')
+
+
+@INITIALIZATIONS.register(name='constant')
 def constant_init_(module, value, bias=0):
     """
-    Initialize the module using a constant.
+    Initialize a module using a constant.
 
     Args:
         module (:obj:`nn.Module`): The module to be initialized.
         value (int): The value to be filled.
-        bias (int, optional): The potential bias of the module. Default: ``0``.
+        bias (int, optional): The bias of the module. Default: ``0``.
     """
     if hasattr(module, 'weight') and module.weight is not None:
         nn.init.constant_(module.weight, value)
@@ -18,45 +23,48 @@ def constant_init_(module, value, bias=0):
         nn.init.constant_(module.bias, bias)
 
 
+@INITIALIZATIONS.register(name='normal')
 def normal_init_(module, mean=0, std=1, bias=0):
     """
-    Initialize the module using normal distribution.
+    Initialize a module using normal distribution.
 
     Args:
         module (:obj:`nn.Module`): The module to be initialized.
         mean (int, optional): Mean of the distribution. Default: ``0``.
         std (int, optional): Standard deviation of the distribution. Default:
             ``1``.
-        bias (int, optional): The potential bias of the module. Default: ``0``.
+        bias (int, optional): The bias of the module. Default: ``0``.
     """
     nn.init.normal_(module.weight, mean, std)
     if hasattr(module, 'bias') and module.bias is not None:
         nn.init.constant_(module.bias, bias)
 
 
+@INITIALIZATIONS.register(name='uniform')
 def uniform_init_(module, a=0, b=1, bias=0):
     """
-    Initialize the module using uniform distribution.
+    Initialize a module using uniform distribution.
 
     Args:
         module (:obj:`nn.Module`): The module to be initialized.
         a (int, optional): Lower bound of the distribution. Default: ``0``.
         b (int, optional): Upper bound of the distribution. Default: ``1``.
-        bias (int, optional): The potential bias of the module. Default: ``0``.
+        bias (int, optional): The bias of the module. Default: ``0``.
     """
     nn.init.uniform_(module.weight, a, b)
     if hasattr(module, 'bias') and module.bias is not None:
         nn.init.constant_(module.bias, bias)
 
 
+@INITIALIZATIONS.register(name='xavier')
 def xavier_init_(module, gain=1, bias=0, distribution='normal'):
     """
-    Initialize the module using the method introduced in [1].
+    Initialize a module using the method introduced in [1].
 
     Args:
         module (:obj:`nn.Module`): The module to be initialized.
         gain (int, optional): The scaling factor. Default: ``1``.
-        bias (int, optional): The potential bias of the module. Default: ``0``.
+        bias (int, optional): The bias of the module. Default: ``0``.
         distribution (str, optional): The type of distribution to use.
             Expected values include ``normal`` and ``uniform``. Default:
             ``'normal'``.
@@ -73,6 +81,7 @@ def xavier_init_(module, gain=1, bias=0, distribution='normal'):
         nn.init.constant_(module.bias, bias)
 
 
+@INITIALIZATIONS.register(name='kaiming')
 def kaiming_init_(module,
                   a=0,
                   mode='fan_in',
@@ -80,7 +89,7 @@ def kaiming_init_(module,
                   bias=0,
                   distribution='normal'):
     """
-    Initialize the module using the method introduced in [1].
+    Initialize a module using the method introduced in [1].
 
     Args:
         module (:obj:`nn.Module`): The module to be initialized.
@@ -91,7 +100,7 @@ def kaiming_init_(module,
         nonlinearity (str, optional): The nonlinearity after the parameterized
             layers. The expected values are ``'relu'`` and ``'leaky_relu'``.
             Default: ``'leaky_relu'``.
-        bias (int, optional): The potential bias of the module. Default: ``0``.
+        bias (int, optional): The bias of the module. Default: ``0``.
         distribution (str, optional): The type of distribution to use.
             Expected values include ``normal`` and ``uniform``. Default:
             ``'normal'``.
@@ -108,3 +117,17 @@ def kaiming_init_(module,
             module.weight, a=a, mode=mode, nonlinearity=nonlinearity)
     if hasattr(module, 'bias') and module.bias is not None:
         nn.init.constant_(module.bias, bias)
+
+
+def init_module_(module, method, **kwargs):
+    """
+    Initialize a module using the specified method.
+
+    Args:
+        module (:obj:`nn.Module`): The module to be initialized.
+        method (str): The initialization method. Expected methods include
+            ``'constant'``, ``'normal'``, ``'uniform'``, ``'xavier'``,
+            ``'kaiming'``.
+    """
+    assert method in INITIALIZATIONS
+    INITIALIZATIONS.get(method)(module, **kwargs)
