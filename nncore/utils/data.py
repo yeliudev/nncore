@@ -35,31 +35,7 @@ def swap_element(matrix, i, j, dim=0):
     return matrix
 
 
-def all_in(src, tgt, raise_error=False):
-    """
-    Check whether all the elements in the source sequence are in the target
-    sequence.
-
-    Args:
-        src (list | tuple): The source sequence.
-        tgt (list | tuple): The target sequence.
-        raise_error (bool, optional): Whether to raise an error when the an
-            element is not in the target sequence. Default: ``False``.
-
-    Returns:
-        bool: Whether all the elements in the source sequence are in the \
-            target sequence.
-    """
-    for e in src:
-        if e not in tgt:
-            if raise_error:
-                raise ValueError("element '{}' in the source sequence is not "
-                                 "in the target sequence".format(e))
-            return False
-    return True
-
-
-def one_in(src, tgt, raise_error=False):
+def any_in(src, tgt, raise_error=False):
     """
     Check whether at least one element in the source sequence is in the target
     sequence.
@@ -82,6 +58,30 @@ def one_in(src, tgt, raise_error=False):
             'all elements in the source sequence are not in the target '
             'sequence')
     return False
+
+
+def all_in(src, tgt, raise_error=False):
+    """
+    Check whether all the elements in the source sequence are in the target
+    sequence.
+
+    Args:
+        src (list | tuple): The source sequence.
+        tgt (list | tuple): The target sequence.
+        raise_error (bool, optional): Whether to raise an error when the an
+            element is not in the target sequence. Default: ``False``.
+
+    Returns:
+        bool: Whether all the elements in the source sequence are in the \
+            target sequence.
+    """
+    for e in src:
+        if e not in tgt:
+            if raise_error:
+                raise ValueError("element '{}' in the source sequence is not "
+                                 "in the target sequence".format(e))
+            return False
+    return True
 
 
 def is_seq_of(seq, expected_type, seq_type=Sequence):
