@@ -17,8 +17,8 @@ class GHMCLoss(nn.Module):
     Args:
         bins (int, optional): Number of the unit regions for distribution
             calculation. Default: ``10``.
-        momentum (float, optional): The parameter for moving average. Default:
-            ``0``.
+        momentum (int | float, optional): The parameter for moving average.
+            Default: ``0``.
         loss_weight (float, optional): Weight of the loss. Default: ``1.0``.
 
     References:

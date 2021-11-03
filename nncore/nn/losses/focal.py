@@ -7,25 +7,25 @@ import nncore
 from ..builder import LOSSES
 
 
-def focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
+def focal_loss(pred, target, alpha=-1, gamma=2.0, reduction='mean'):
     """
     Focal Loss introduced in [1].
 
     Args:
-        pred (:obj:`torch.Tensor`): The predictions for each example.
+        pred (:obj:`torch.Tensor`): The predictions.
         target (:obj:`torch.Tensor`): The binary classification label for
             each element (0 for negative classes and 1 for positive classes).
         alpha (int | float, optional): Weighting factor in range ``(0, 1)`` to
-            balance positive vs negative examples. ``-1`` means no weighting.
+            balance positive and negative examples. ``-1`` means no weighting.
             Default: ``-1``.
-        gamma (int | float, optional): Exponent of the modulating factor
-            ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
+        gamma (float, optional): Exponent of the modulating factor
+            ``(1 - p_t)`` to balance easy and hard examples. Default: ``2.0``.
         reduction (str, optional): Reduction method. Currently supported
             values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
 
     Returns:
-        :obj:`torch.Tensor`: The loss tensor with reduction option applied.
+        :obj:`torch.Tensor`: The loss tensor.
 
     References:
         1. Lin et al. (https://arxiv.org/abs/1708.02002)
@@ -48,25 +48,25 @@ def focal_loss(pred, target, alpha=-1, gamma=2, reduction='mean'):
     return loss
 
 
-def focal_loss_star(pred, target, alpha=-1, gamma=1, reduction='mean'):
+def focal_loss_star(pred, target, alpha=-1, gamma=1.0, reduction='mean'):
     """
     Focal Loss* introduced in [1].
 
     Args:
-        pred (:obj:`torch.Tensor`): The predictions for each example.
+        pred (:obj:`torch.Tensor`): The predictions.
         target (:obj:`torch.Tensor`): The binary classification label for
             each element (0 for negative classes and 1 for positive classes).
         alpha (int | float, optional): Weighting factor in range ``(0, 1)`` to
-            balance positive vs negative examples. ``-1`` means no weighting.
+            balance positive and negative examples. ``-1`` means no weighting.
             Default: ``-1``.
-        gamma (int | float, optional): Exponent of the modulating factor
-            ``(1 - p_t)`` to balance easy vs hard examples. Default: ``1``.
+        gamma (float, optional): Exponent of the modulating factor
+            ``(1 - p_t)`` to balance easy and hard examples. Default: ``1.0``.
         reduction (str, optional): Reduction method. Currently supported
             values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
 
     Returns:
-        :obj:`torch.Tensor`: The loss tensor with reduction option applied.
+        :obj:`torch.Tensor`: The loss tensor.
 
     References:
         1. Lin et al. (https://arxiv.org/abs/1708.02002)
@@ -94,10 +94,10 @@ class FocalLoss(nn.Module):
 
     Args:
         alpha (int | float, optional): Weighting factor in range ``(0, 1)`` to
-            balance positive vs negative examples. ``-1`` means no weighting.
+            balance positive and negative examples. ``-1`` means no weighting.
             Default: ``-1``.
-        gamma (int | float, optional): Exponent of the modulating factor
-            ``(1 - p_t)`` to balance easy vs hard examples. Default: ``2``.
+        gamma (float, optional): Exponent of the modulating factor
+            ``(1 - p_t)`` to balance easy and hard examples. Default: ``2.0``.
         reduction (str, optional): Reduction method. Currently supported
             values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
@@ -107,7 +107,7 @@ class FocalLoss(nn.Module):
         1. Lin et al. (https://arxiv.org/abs/1708.02002)
     """
 
-    def __init__(self, alpha=-1, gamma=2, reduction='mean', loss_weight=1.0):
+    def __init__(self, alpha=-1, gamma=2.0, reduction='mean', loss_weight=1.0):
         super(FocalLoss, self).__init__()
         assert reduction in ('mean', 'sum', 'none')
 
@@ -137,10 +137,10 @@ class FocalLossStar(FocalLoss):
 
     Args:
         alpha (int | float, optional): Weighting factor in range ``(0, 1)`` to
-            balance positive vs negative examples. ``-1`` means no weighting.
+            balance positive and negative examples. ``-1`` means no weighting.
             Default: ``-1``.
-        gamma (int | float, optional): Exponent of the modulating factor
-            ``(1 - p_t)`` to balance easy vs hard examples. Default: ``1``.
+        gamma (float, optional): Exponent of the modulating factor
+            ``(1 - p_t)`` to balance easy and hard examples. Default: ``1.0``.
         reduction (str, optional): Reduction method. Currently supported
             values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
             ``'mean'``.
@@ -150,7 +150,7 @@ class FocalLossStar(FocalLoss):
         1. Lin et al. (https://arxiv.org/abs/1708.02002)
     """
 
-    def __init__(self, alpha=-1, gamma=1, reduction='mean', loss_weight=1.0):
+    def __init__(self, alpha=-1, gamma=1.0, reduction='mean', loss_weight=1.0):
         super(FocalLossStar, self).__init__(
             alpha=alpha,
             gamma=gamma,

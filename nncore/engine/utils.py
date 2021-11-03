@@ -2,7 +2,6 @@
 
 import os
 import random
-from collections import OrderedDict
 from datetime import datetime
 from importlib import import_module
 from pkgutil import walk_packages
@@ -10,6 +9,7 @@ from pkgutil import walk_packages
 import numpy as np
 import torch
 import torchvision
+from torch.hub import load_state_dict_from_url
 
 import nncore
 from nncore.nn import move_to_device
@@ -18,9 +18,9 @@ from .comm import broadcast, is_main_process, synchronize
 
 def _load_url_dist(url, **kwargs):
     if is_main_process():
-        torch.utils.model_zoo.load_url(url, **kwargs)
+        load_state_dict_from_url(url, **kwargs)
     synchronize()
-    return torch.utils.model_zoo.load_url(url, **kwargs)
+    return load_state_dict_from_url(url, **kwargs)
 
 
 def _load_state_dict(module, state_dict, strict=False, logger=None):
@@ -58,7 +58,7 @@ def _load_state_dict(module, state_dict, strict=False, logger=None):
         err_msg = '\n'.join(err_msg)
         if strict:
             raise RuntimeError(
-                'Error(s) in loading state_dict for {}:\n\t{}'.format(
+                'error in loading state_dict for {}:\n\t{}'.format(
                     module.__class__.__name__, "\n\t".join(err_msg)))
         nncore.log_or_print(err_msg, logger, log_level='WARNING')
 
@@ -179,15 +179,9 @@ def load_checkpoint(model,
     if isinstance(checkpoint, str):
         checkpoint = get_checkpoint(
             checkpoint, map_location=map_location, **kwargs)
-    elif not isinstance(checkpoint, dict):
-        raise TypeError(
-            "checkpoint must be a dict or str, but got '{}'".format(
-                type(checkpoint)))
 
-    if isinstance(checkpoint, OrderedDict):
-        state_dict = checkpoint
-    elif isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
-        state_dict = checkpoint['state_dict']
+    if isinstance(checkpoint, dict):
+        state_dict = checkpoint.get('state_dict', checkpoint)
     else:
         raise RuntimeError('no state_dict found in the checkpoint file')
 
@@ -214,30 +208,29 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     Args:
         model (:obj:`nn.Module`): The model whose params are to be saved.
         filename (str): Path to the checkpoint file.
-        optimizer (:obj:`optim.Optimizer`, optional): The optimizer to be
-            saved. Default: ``None``.
-        meta (dict, optional): The metadata to be saved. Default: ``None``.
+        optimizer (:obj:`optim.Optimizer` | None, optional): The optimizer to
+            be saved. Default: ``None``.
+        meta (dict | None, optional): The metadata to be saved. Default:
+            ``None``.
 
     Returns:
-        :obj:`OrderedDict` or dict: The saved checkpoint.
+        dict: The saved checkpoint.
     """
     if meta is None:
         meta = dict()
-    elif not isinstance(meta, dict):
-        raise TypeError("meta must be a dict or None, but got '{}'".format(
-            type(meta)))
 
     meta.update(
         nncore_version=nncore.__version__, create_time=nncore.get_time_str())
-    nncore.mkdir(nncore.dir_name(nncore.abs_path(filename)))
 
-    checkpoint = dict(
-        meta=meta, state_dict=getattr(model, 'module', model).state_dict())
+    state_dict = getattr(model, 'module', model).state_dict()
+    checkpoint = dict(meta=meta, state_dict=state_dict)
 
     if optimizer is not None:
         checkpoint['optimizer'] = optimizer.state_dict()
 
     checkpoint = move_to_device(checkpoint, 'cpu')
+
+    nncore.mkdir(nncore.dir_name(filename))
     torch.save(checkpoint, filename)
 
     return checkpoint

@@ -15,7 +15,7 @@ class LeNet(nn.Module):
         super(LeNet, self).__init__()
 
         # yapf:disable
-        self.convs = nn.Sequential(
+        self.backbone = nn.Sequential(
             nn.Conv2d(1, 6, 5),
             nn.Tanh(),
             nn.AvgPool2d(2),
@@ -23,7 +23,7 @@ class LeNet(nn.Module):
             nn.Tanh(),
             nn.AvgPool2d(2),
             nn.Conv2d(16, 120, 5))
-        self.fcs = nn.Sequential(
+        self.head = nn.Sequential(
             nn.Linear(120, 84),
             nn.Tanh(),
             nn.Linear(84, 10))
@@ -34,9 +34,8 @@ class LeNet(nn.Module):
     def forward(self, data, **kwargs):
         x, y = data[0], data[1]
 
-        x = self.convs(x)
-        x = x.squeeze()
-        x = self.fcs(x)
+        x = self.backbone(x).squeeze()
+        x = self.head(x)
 
         pred = torch.argmax(x, dim=1)
         acc = torch.eq(pred, y).sum().float() / x.size(0)

@@ -5,7 +5,7 @@ import torch.nn as nn
 from nncore import Registry, build_object
 from nncore.parallel import NNDataParallel, NNDistributedDataParallel
 
-MODELS = Registry('block')
+MODELS = Registry('model')
 ACTIVATIONS = Registry('activation', parent=MODELS)
 CONVS = Registry('conv', parent=MODELS)
 MESSAGE_PASSINGS = Registry('message passing', parent=MODELS)
@@ -14,37 +14,37 @@ LOSSES = Registry('loss', parent=MODELS)
 MODULES = Registry('module', parent=MODELS)
 
 
-def build_model(cfg, *args, bundle_type=None, wrap_type=None, **kwargs):
+def build_model(cfg, *args, bundler=None, wrapper=None, **kwargs):
     """
     Build a general model from a dict. This method searches for modules in
     :obj:`MODELS` first, and then fall back to :obj:`torch.nn`.
 
     Args:
         cfg (dict | str): The config or name of the model.
-        bundle_type (str | None, optional): The type of bundler for multiple
+        bundler (str | None, optional): The type of bundler for multiple
             models. Expected values include ``'sequential'``, ``'modulelist'``,
             and ``None``. Default: ``None``.
-        wrap_type (str | None, optional): The type of wrapper for the model.
+        wrapper (str | None, optional): The type of wrapper for the model.
             Expected values include ``'dp'``, ``'ddp'``, and ``None``. Default:
             ``None``.
 
     Returns:
         :obj:`nn.Module`: The constructed model.
     """
-    assert bundle_type in ('sequential', 'modulelist', None)
-    assert wrap_type in ('dp', 'ddp', None)
+    assert bundler in ('sequential', 'modulelist', None)
+    assert wrapper in ('dp', 'ddp', None)
 
     obj = build_object(cfg, [MODELS, nn], args=args, **kwargs)
 
     if isinstance(cfg, (list, tuple)):
-        if bundle_type == 'sequential':
+        if bundler == 'sequential':
             obj = nn.Sequential(*obj)
-        elif bundle_type == 'modulelist':
+        elif bundler == 'modulelist':
             obj = nn.ModuleList(obj)
 
-    if wrap_type == 'dp':
+    if wrapper == 'dp':
         obj = NNDataParallel(obj)
-    elif wrap_type == 'ddp':
+    elif wrapper == 'ddp':
         obj = NNDistributedDataParallel(obj)
 
     return obj

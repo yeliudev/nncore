@@ -8,8 +8,7 @@ from ..init import constant_init_, kaiming_init_
 
 
 @MODULES.register()
-@nncore.bind_getter('in_features', 'out_features', 'bias', 'order',
-                    'with_norm', 'with_act')
+@nncore.bind_getter('in_features', 'out_features', 'bias', 'order')
 class LinearModule(nn.Module):
     """
     A module that bundles linear, normalization, and activation layers.
@@ -38,45 +37,49 @@ class LinearModule(nn.Module):
                  act_cfg=dict(type='ReLU', inplace=True),
                  order=('linear', 'norm', 'act')):
         super(LinearModule, self).__init__()
-        assert 'linear' in order
 
         self._in_features = in_features
         self._out_features = out_features
-        self._order = order
-        self._with_norm = 'norm' in order and norm_cfg is not None
-        self._with_act = 'act' in order and act_cfg is not None
+
+        _map = dict(linear=True, norm=norm_cfg, act=act_cfg)
+        self._order = tuple(o for o in order if _map[o] is not None)
 
         if bias != 'auto':
             self._bias = bias
-        elif self._with_norm:
-            self._bias = norm_cfg['type'] if isinstance(
-                norm_cfg, dict) else norm_cfg in NORMS.group('drop')
+        elif self.with_norm:
+            _t = norm_cfg['type'] if isinstance(norm_cfg, dict) else norm_cfg
+            _d = self._order.index('norm') - self._order.index('linear')
+            self._bias = _t in NORMS.group('drop') or _d != 1
         else:
             self._bias = True
 
-        self.linear = nn.Linear(in_features, out_features, bias=self._bias)
-
-        if self._with_norm:
-            self.norm = build_norm_layer(norm_cfg, dims=out_features)
-
-        if self._with_act:
-            self.act = build_act_layer(act_cfg)
+        for layer in self._order:
+            if layer == 'linear':
+                self.linear = nn.Linear(
+                    in_features, out_features, bias=self._bias)
+            elif layer == 'norm':
+                self.norm = build_norm_layer(norm_cfg, dims=out_features)
+            else:
+                self.act = build_act_layer(act_cfg)
 
         self.init_weights()
 
+    @property
+    def with_norm(self):
+        return 'norm' in self._order
+
+    @property
+    def with_act(self):
+        return 'act' in self._order
+
     def init_weights(self):
         kaiming_init_(self.linear)
-        if self._with_norm:
+        if self.with_norm:
             constant_init_(self.norm)
 
     def forward(self, x):
         for layer in self._order:
-            if layer == 'linear':
-                x = self.linear(x)
-            elif layer == 'norm' and self._with_norm:
-                x = self.norm(x)
-            elif layer == 'act' and self._with_act:
-                x = self.act(x)
+            x = getattr(self, layer)(x)
         return x
 
 

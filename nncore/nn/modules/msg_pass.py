@@ -9,8 +9,7 @@ from ..init import constant_init_
 
 
 @MODULES.register()
-@nncore.bind_getter('in_features', 'out_features', 'bias', 'order',
-                    'with_norm', 'with_act')
+@nncore.bind_getter('in_features', 'out_features', 'bias', 'order')
 class MsgPassModule(nn.Module):
     """
     A module that bundles message passing, normalization, and activation
@@ -23,8 +22,9 @@ class MsgPassModule(nn.Module):
             message passing layer. If ``bias='auto'``, the module will decide
             it automatically base on whether it has a normalization layer.
             Default: ``'auto'``.
-        msg_pass_cfg (dict | str, optional): The config or name of the message
-            passing layer. Default: ``'GCN'``.
+        msg_pass_cfg (dict | str | None, optional): The config or name of the
+            message passing layer. If not specified, ``GCN`` will be used.
+            Default: ``None``.
         norm_cfg (dict | str | None, optional): The config or name of the
             normalization layer. Default: ``None``.
         act_cfg (dict | str | None, optional): The config or name of the
@@ -38,45 +38,53 @@ class MsgPassModule(nn.Module):
                  in_features,
                  out_features,
                  bias='auto',
-                 msg_pass_cfg='GCN',
+                 msg_pass_cfg=None,
                  norm_cfg=None,
                  act_cfg=dict(type='ReLU', inplace=True),
                  order=('msg_pass', 'norm', 'act'),
                  **kwargs):
         super(MsgPassModule, self).__init__()
-        assert 'msg_pass' in order
 
         self._in_features = in_features
         self._out_features = out_features
-        self._order = order
-        self._with_norm = 'norm' in order and norm_cfg is not None
-        self._with_act = 'act' in order and act_cfg is not None
+
+        _map = dict(msg_pass=True, norm=norm_cfg, act=act_cfg)
+        self._order = tuple(o for o in order if _map[o] is not None)
 
         if bias != 'auto':
             self._bias = bias
-        elif self._with_norm:
-            self._bias = norm_cfg['type'] if isinstance(
-                norm_cfg, dict) else norm_cfg in NORMS.group('drop')
+        elif self.with_norm:
+            _t = norm_cfg['type'] if isinstance(norm_cfg, dict) else norm_cfg
+            _d = self._order.index('norm') - self._order.index('msg_pass')
+            self._bias = _t in NORMS.group('drop') or _d != 1
         else:
             self._bias = True
 
-        self.msg_pass = build_msg_pass_layer(
-            msg_pass_cfg,
-            in_features=in_features,
-            out_features=out_features,
-            bias=self._bias,
-            **kwargs)
-
-        if self._with_norm:
-            self.norm = build_norm_layer(norm_cfg, dims=out_features)
-
-        if self._with_act:
-            self.act = build_act_layer(act_cfg)
+        for layer in self._order:
+            if layer == 'linear':
+                self.msg_pass = build_msg_pass_layer(
+                    msg_pass_cfg or 'GCN',
+                    in_features=in_features,
+                    out_features=out_features,
+                    bias=self._bias,
+                    **kwargs)
+            elif layer == 'norm':
+                self.norm = build_norm_layer(norm_cfg, dims=out_features)
+            else:
+                self.act = build_act_layer(act_cfg)
 
         self.init_weights()
 
+    @property
+    def with_norm(self):
+        return 'norm' in self._order
+
+    @property
+    def with_act(self):
+        return 'act' in self._order
+
     def init_weights(self):
-        if self._with_norm:
+        if self.with_norm:
             constant_init_(self.norm)
 
     def forward(self, x, graph):
@@ -91,10 +99,8 @@ class MsgPassModule(nn.Module):
         for layer in self._order:
             if layer == 'msg_pass':
                 x = self.msg_pass(x, graph)
-            elif layer == 'norm' and self._with_norm:
-                x = self.norm(x)
-            elif layer == 'act' and self._with_act:
-                x = self.act(x)
+            else:
+                x = getattr(self, layer)(x)
         return x
 
 
@@ -126,8 +132,8 @@ def build_msg_pass_modules(dims, last_norm=False, last_act=False, **kwargs):
     for i in range(len(dims) - 1):
         if i == len(dims) - 2:
             _kwargs['order'] = tuple(
-                o for o in _kwargs.get('order', ('linear', 'norm', 'act'))
-                if (o == 'linear' or (o == 'norm' and last_norm) or (
+                o for o in _kwargs.get('order', ('msg_pass', 'norm', 'act'))
+                if (o == 'msg_pass' or (o == 'norm' and last_norm) or (
                     o == 'act' and last_act)))
 
             _cfg = _kwargs.get('msg_pass_cfg')
