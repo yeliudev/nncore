@@ -2,10 +2,10 @@
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 import nncore
 from ..builder import MESSAGE_PASSINGS
+from .bundle import Parameter
 
 
 @MESSAGE_PASSINGS.register()
@@ -29,10 +29,10 @@ class GCN(nn.Module):
         self._out_features = out_features
         self._with_bias = bias
 
-        self.weight = nn.Parameter(torch.Tensor(in_features, out_features))
+        self.weight = Parameter(in_features, out_features)
 
         if self._with_bias:
-            self.bias = nn.Parameter(torch.Tensor(out_features))
+            self.bias = Parameter(out_features)
 
         self.reset_parameters()
 
@@ -119,8 +119,7 @@ class GAT(nn.Module):
         in_features (int): Number of input features.
         out_features (int): Number of output features.
         heads (int, optional): Number of attention heads. Default: ``1``.
-        p (float, optional): The probability of dropping elements. Default:
-            ``0``.
+        p (float, optional): The probability in dropout layer. Default: ``0``.
         negative_slope (float, optional): The negative slope of
             :obj:`LeakyReLU`. Default: ``0.2``.
         concat (bool, optional): Whether to concatenate the features from
@@ -154,19 +153,15 @@ class GAT(nn.Module):
         self._map_residual = in_features != self._head_features
         self._with_bias = bias
 
-        self.weight = nn.Parameter(
-            torch.Tensor(heads, in_features, self._head_features))
-        self.weight_i = nn.Parameter(
-            torch.Tensor(heads, self._head_features, 1))
-        self.weight_j = nn.Parameter(
-            torch.Tensor(heads, self._head_features, 1))
+        self.weight = Parameter(heads, in_features, self._head_features)
+        self.weight_i = Parameter(heads, self._head_features, 1)
+        self.weight_j = Parameter(heads, self._head_features, 1)
 
         if self._map_residual:
-            self.weight_r = nn.Parameter(
-                torch.Tensor(in_features, self._head_features * heads))
+            self.weight_r = Parameter(in_features, self._head_features * heads)
 
         if self._with_bias:
-            self.bias = nn.Parameter(torch.Tensor(out_features))
+            self.bias = Parameter(out_features)
 
         self.dropout = nn.Dropout(p=p)
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
@@ -207,7 +202,7 @@ class GAT(nn.Module):
         coe = self.leaky_relu(coe_i + coe_j)
 
         graph = torch.where(graph > 0, .0, float('-inf')).t()
-        att = self.dropout(F.softmax(coe + graph, dim=-1))
+        att = self.dropout((coe + graph).softmax(dim=-1))
 
         y = torch.bmm(att, h).transpose(0, 1).contiguous()
 
