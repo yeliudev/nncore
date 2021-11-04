@@ -120,6 +120,7 @@ def build_msg_pass_modules(dims, last_norm=False, last_act=False, **kwargs):
         :obj:`nn.ModuleList`: The constructed module list.
     """
     _kwargs = kwargs.copy()
+    _layers = [last_norm or 'norm', last_act or 'act']
     cfg, layers = [], []
 
     for key, value in _kwargs.items():
@@ -131,10 +132,10 @@ def build_msg_pass_modules(dims, last_norm=False, last_act=False, **kwargs):
 
     for i in range(len(dims) - 1):
         if i == len(dims) - 2:
-            _kwargs['order'] = tuple(
-                o for o in _kwargs.get('order', ('msg_pass', 'norm', 'act'))
-                if (o == 'msg_pass' or (o == 'norm' and last_norm) or (
-                    o == 'act' and last_act)))
+            order = list(_kwargs.get('order', ['msg_pass', 'norm', 'act']))
+            while order[-1] in _layers:
+                order.pop()
+            _kwargs['order'] = tuple(order)
 
             _cfg = _kwargs.get('msg_pass_cfg')
             if _cfg is not None and _cfg['type'] == 'GAT':

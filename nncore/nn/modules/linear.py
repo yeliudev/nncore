@@ -98,14 +98,15 @@ def build_linear_modules(dims, last_norm=False, last_act=False, **kwargs):
         :obj:`nn.Sequential` | :obj:`LinearModule`: The constructed module.
     """
     _kwargs = kwargs.copy()
+    _layers = [last_norm or 'norm', last_act or 'act']
     layers = []
 
     for i in range(len(dims) - 1):
         if i == len(dims) - 2:
-            _kwargs['order'] = tuple(
-                o for o in _kwargs.get('order', ('linear', 'norm', 'act'))
-                if (o == 'linear' or (o == 'norm' and last_norm) or (
-                    o == 'act' and last_act)))
+            order = list(_kwargs.get('order', ['linear', 'norm', 'act']))
+            while order[-1] in _layers:
+                order.pop()
+            _kwargs['order'] = tuple(order)
 
         module = LinearModule(dims[i], dims[i + 1], **_kwargs)
         layers.append(module)

@@ -36,8 +36,13 @@ def build_model(cfg, *args, bundler=None, wrapper=None, **kwargs):
 
     obj = build_object(cfg, [MODELS, nn], args=args, **kwargs)
 
+    if obj is None:
+        return
+
     if isinstance(cfg, (list, tuple)):
-        if bundler == 'sequential':
+        if all(o is None for o in obj):
+            return
+        elif bundler == 'sequential':
             obj = nn.Sequential(*obj)
         elif bundler == 'modulelist':
             obj = nn.ModuleList(obj)

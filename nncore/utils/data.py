@@ -38,7 +38,7 @@ def is_seq_of(seq, item_type, seq_type=(list, tuple)):
 
     Args:
         seq (Sequence): The sequence to be checked.
-        item_type (type): Expected item type.
+        item_type (tuple[type] | type): Expected item type.
         seq_type (tuple[type] | type, optional): Expected sequence type.
             Default: ``(list, tuple)``.
 

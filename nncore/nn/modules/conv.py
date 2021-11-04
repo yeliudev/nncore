@@ -138,6 +138,7 @@ def build_conv_modules(dims,
         :obj:`nn.Sequential` | :obj:`ConvModule`: The constructed module.
     """
     _kwargs = kwargs.copy()
+    _layers = [last_norm or 'norm', last_act or 'act']
     layers = []
 
     if isinstance(kernels, (int, tuple)):
@@ -145,10 +146,10 @@ def build_conv_modules(dims,
 
     for i in range(len(dims) - 1):
         if i == len(dims) - 2:
-            _kwargs['order'] = tuple(
-                o for o in _kwargs.get('order', ('conv', 'norm', 'act'))
-                if (o == 'conv' or (o == 'norm' and last_norm) or (
-                    o == 'act' and last_act)))
+            order = list(_kwargs.get('order', ['conv', 'norm', 'act']))
+            while order[-1] in _layers:
+                order.pop()
+            _kwargs['order'] = tuple(order)
 
         module = ConvModule(dims[i], dims[i + 1], kernels[i], **_kwargs)
         layers.append(module)
