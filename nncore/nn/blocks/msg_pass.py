@@ -119,7 +119,7 @@ class GAT(nn.Module):
         in_features (int): Number of input features.
         out_features (int): Number of output features.
         heads (int, optional): Number of attention heads. Default: ``1``.
-        p (float, optional): The probability in dropout layer. Default: ``0``.
+        p (float, optional): The dropout probability. Default: ``0``.
         negative_slope (float, optional): The negative slope of
             :obj:`LeakyReLU`. Default: ``0.2``.
         concat (bool, optional): Whether to concatenate the features from

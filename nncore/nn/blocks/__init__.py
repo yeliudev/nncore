@@ -5,10 +5,11 @@ from .bundle import ModuleDict, ModuleList, Parameter, Sequential
 from .conv import *  # noqa
 from .msg_pass import GAT, GCN, SGC
 from .norm import *  # noqa
-from .transformer import MultiHeadAttention
+from .transformer import (FFN, MultiHeadAttention, TransformerDecoderLayer,
+                          TransformerEncoderLayer)
 
 __all__ = [
     'Clamp', 'EffMish', 'EffSwish', 'Mish', 'Swish', 'ModuleDict',
-    'ModuleList', 'Parameter', 'Sequential', 'GAT', 'GCN', 'SGC',
-    'MultiHeadAttention'
+    'ModuleList', 'Parameter', 'Sequential', 'GAT', 'GCN', 'SGC', 'FFN',
+    'MultiHeadAttention', 'TransformerDecoderLayer', 'TransformerEncoderLayer'
 ]

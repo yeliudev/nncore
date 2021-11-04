@@ -15,16 +15,20 @@ class Sequential(nn.Sequential):
 
     def __init__(self, *args):
         super(nn.Sequential, self).__init__()
+
+        idx = 0
         for arg in args:
             if isinstance(arg, OrderedDict):
                 for key, mod in arg.items():
-                    self.add_module(key, mod)
+                    if mod is not None:
+                        self.add_module(key, mod)
                 continue
             elif not isinstance(arg, (list, tuple)):
                 arg = [arg]
 
-            for idx, mod in enumerate(args):
+            for mod in [a for a in arg if a is not None]:
                 self.add_module(str(idx), mod)
+                idx += 1
 
 
 class ModuleList(nn.ModuleList):
@@ -34,7 +38,7 @@ class ModuleList(nn.ModuleList):
 
     def __init__(self, *args):
         super(nn.ModuleList, self).__init__()
-        self += nncore.flatten(args)
+        self += [a for a in nncore.flatten(args) if a is not None]
 
 
 class ModuleDict(nn.ModuleDict):
