@@ -60,7 +60,7 @@ class MultiHeadAttention(nn.Module):
         self.proj_v = nn.Linear(self._v_dims, self._h_dims, bias=bias)
         self.proj_m = nn.Linear(self._h_dims, self._o_dims, bias=bias)
 
-        self.dropout = build_norm_layer('Drop', p=p, inplace=True)
+        self.dropout = build_norm_layer('Drop', p=p)
         self.reset_parameters()
 
     def __repr__(self):
@@ -132,8 +132,7 @@ class FeedForwardNetwork(nn.Module):
 
         self.mapping = Sequential(
             nn.Linear(dims, self._h_dims), build_act_layer(act_cfg),
-            build_norm_layer('Drop', p=p, inplace=True),
-            nn.Linear(self._h_dims, dims))
+            build_norm_layer('Drop', p=p), nn.Linear(self._h_dims, dims))
 
     def __repr__(self):
         return '{}(dims={}, ratio={}, p={})'.format(self.__class__.__name__,
@@ -190,8 +189,8 @@ class TransformerEncoderLayer(nn.Module):
         self.norm1 = build_norm_layer(norm_cfg, dims=dims)
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
 
-        self.drop1 = build_norm_layer('Drop', p=p, inplace=True)
-        self.drop2 = build_norm_layer('Drop', p=p, inplace=True)
+        self.drop1 = build_norm_layer('Drop', p=p)
+        self.drop2 = build_norm_layer('Drop', p=p)
 
     def forward(self, x, mask=None):
         if self._norm_first:
@@ -261,9 +260,9 @@ class TransformerDecoderLayer(nn.Module):
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
         self.norm3 = build_norm_layer(norm_cfg, dims=dims)
 
-        self.drop1 = build_norm_layer('Drop', p=p, inplace=True)
-        self.drop2 = build_norm_layer('Drop', p=p, inplace=True)
-        self.drop3 = build_norm_layer('Drop', p=p, inplace=True)
+        self.drop1 = build_norm_layer('Drop', p=p)
+        self.drop2 = build_norm_layer('Drop', p=p)
+        self.drop3 = build_norm_layer('Drop', p=p)
 
     def forward(self, x, m, mask=None):
         if self._norm_first:

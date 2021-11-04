@@ -25,12 +25,11 @@ def build_dataloader(cfg, seed=None, **kwargs):
     def _init_fn(worker_id):
         set_random_seed(seed=seed + worker_id)
 
+    _cfg = cfg.pop('loader', dict())
+
     dataset = DATASETS.build(cfg, **kwargs)
     data_loader = DataLoader(
-        dataset,
-        collate_fn=collate,
-        worker_init_fn=_init_fn,
-        **cfg.pop('loader', dict()))
+        dataset, collate_fn=collate, worker_init_fn=_init_fn, **_cfg)
 
     return data_loader
 
