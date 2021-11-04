@@ -17,8 +17,8 @@ Note that some methods in the library work with PyTorch 1.8+, but the installati
    getting_started
 
 .. toctree::
-   :maxdepth: 2
    :caption: API Reference
+   :maxdepth: 2
 
    nncore.engine
    nncore.image
@@ -27,3 +27,4 @@ Note that some methods in the library work with PyTorch 1.8+, but the installati
    nncore.ops
    nncore.parallel
    nncore.utils
+   nncore.video

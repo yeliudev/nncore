@@ -48,7 +48,7 @@ class GCN(nn.Module):
         return norm
 
     def reset_parameters(self):
-        nn.init.xavier_uniform_(self.weight)
+        nn.init.xavier_normal_(self.weight)
         if self._with_bias:
             nn.init.constant_(self.bias, 0)
 
@@ -178,9 +178,9 @@ class GAT(nn.Module):
 
     def reset_parameters(self):
         for weight in (self.weight, self.weight_i, self.weight_j):
-            nn.init.xavier_uniform_(weight)
+            nn.init.xavier_normal_(weight)
         if self._map_residual:
-            nn.init.xavier_uniform_(self.weight_r)
+            nn.init.xavier_normal_(self.weight_r)
         if self._with_bias:
             nn.init.constant_(self.bias, 0)
 
