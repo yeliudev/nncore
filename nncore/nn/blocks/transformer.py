@@ -3,11 +3,13 @@
 import torch.nn as nn
 import torch.nn.functional as F
 
+import nncore
 from ..builder import MODELS
 from .bundle import Parameter
 
 
 @MODELS.register()
+@nncore.bind_getter('q_dims', 'k_dims', 'v_dims', 'heads', 'p', 'bias')
 class MultiHeadAttention(nn.Module):
     """
     Multi-Head Attention module introduced in [1].
@@ -32,13 +34,12 @@ class MultiHeadAttention(nn.Module):
 
         self._q_dims, self._k_dims, self._v_dims = dims
         self._same_dims = dims[0] == dims[1] == dims[2]
-        self._head_dims = self._q_dims // heads
         self._heads = heads
         self._p = p
         self._bias = bias
 
         if self._same_dims:
-            self.weight_i = Parameter(3 * self._q_dims, self._q_dims)
+            self.weight_i = Parameter(self._q_dims * 3, self._q_dims)
             self.register_parameter('weight_q', None)
             self.register_parameter('weight_k', None)
             self.register_parameter('weight_v', None)
@@ -51,7 +52,7 @@ class MultiHeadAttention(nn.Module):
         self.weight_o = Parameter(self._q_dims, self._q_dims)
 
         if bias:
-            self.bias_i = Parameter(3 * self._q_dims)
+            self.bias_i = Parameter(self._q_dims * 3)
             self.bias_o = Parameter(self._q_dims)
         else:
             self.register_parameter('bias_i', None)

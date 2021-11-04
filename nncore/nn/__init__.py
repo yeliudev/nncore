@@ -1,7 +1,7 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 from .blocks import (GAT, GCN, SGC, Clamp, EffMish, EffSwish, Mish, ModuleDict,
-                     ModuleList, MultiheadAttention, Parameter, Sequential,
+                     ModuleList, MultiHeadAttention, Parameter, Sequential,
                      Swish)
 from .builder import (ACTIVATIONS, CONVS, LOSSES, MESSAGE_PASSINGS, MODELS,
                       MODULES, NORMS, build_act_layer, build_conv_layer,
@@ -19,7 +19,7 @@ from .utils import fuse_bn_, move_to_device, publish_model, update_bn_stats_
 
 __all__ = [
     'GAT', 'GCN', 'SGC', 'Clamp', 'EffMish', 'EffSwish', 'Mish', 'ModuleDict',
-    'ModuleList', 'MultiheadAttention', 'Parameter', 'Sequential', 'Swish',
+    'ModuleList', 'MultiHeadAttention', 'Parameter', 'Sequential', 'Swish',
     'ACTIVATIONS', 'CONVS', 'LOSSES', 'MESSAGE_PASSINGS', 'MODELS', 'MODULES',
     'NORMS', 'build_act_layer', 'build_conv_layer', 'build_loss',
     'build_model', 'build_msg_pass_layer', 'build_norm_layer',

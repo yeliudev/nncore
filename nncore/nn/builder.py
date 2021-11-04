@@ -109,7 +109,13 @@ def build_norm_layer(cfg, *args, dims=None, **kwargs):
         cfg = dict(type=cfg)
 
     if dims is not None and cfg['type'] not in NORMS.group('drop'):
-        key = 'normalized_shape' if cfg['type'] == 'LN' else 'num_features'
+        if cfg['type'] == 'LN':
+            key = 'normalized_shape'
+        elif cfg['type'] == 'GN':
+            key = 'num_channels'
+        else:
+            key = 'num_features'
+
         cfg.setdefault(key, dims)
 
     return build_object(cfg, [NORMS, nn], args=args, **kwargs)

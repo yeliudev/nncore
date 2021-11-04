@@ -479,7 +479,7 @@ class Engine(object):
         blob = gather(blob)
 
         if is_main_process():
-            blob = nncore.concat_list(blob)
+            blob = nncore.concat(blob)
             output = self.data_loader.dataset.evaluate(
                 blob, logger=self.logger)
         else:

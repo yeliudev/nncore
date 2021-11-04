@@ -59,7 +59,7 @@ def collate(batch, samples_per_gpu=-1):
             pad_dims=batch[0].pad_dims,
             to_gpu=batch[0].to_gpu)
     elif isinstance(batch[0], list):
-        return collate(nncore.concat_list(batch), samples_per_gpu)
+        return collate(nncore.concat(batch), samples_per_gpu)
     elif isinstance(batch[0], tuple):
         transposed = zip(*batch)
         return [collate(samples, samples_per_gpu) for samples in transposed]

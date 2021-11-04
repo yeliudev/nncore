@@ -77,8 +77,7 @@ class Registry(object):
 
     def __repr__(self):
         return "{}(name='{}', items={})".format(self.__class__.__name__,
-                                                self._name,
-                                                list(self._items.keys()))
+                                                self._name, self.keys())
 
     def _register(self, obj, name=None, group=None):
         if name is None:
@@ -98,6 +97,14 @@ class Registry(object):
         if isinstance(children, self.__class__):
             children = [children]
         self._children += children
+
+    def keys(self):
+        keys = list(self._items.keys())
+
+        for child in self._children:
+            keys += child.keys()
+
+        return keys
 
     def get(self, key, default=None):
         obj = self._items.get(key)

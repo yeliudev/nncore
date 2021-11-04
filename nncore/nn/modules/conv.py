@@ -135,7 +135,7 @@ def build_conv_modules(dims,
             the last convolution layer. Default: ``False``.
 
     Returns:
-        :obj:`nn.Sequential` or :obj:`ConvModule`: The constructed module.
+        :obj:`nn.Sequential` | :obj:`ConvModule`: The constructed module.
     """
     _kwargs = kwargs.copy()
     layers = []

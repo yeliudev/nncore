@@ -1,8 +1,5 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-from collections.abc import Sequence
-from itertools import chain
-
 import numpy as np
 
 
@@ -35,64 +32,15 @@ def swap_element(matrix, i, j, dim=0):
     return matrix
 
 
-def any_in(src, tgt, raise_error=False):
-    """
-    Check whether at least one element in the source sequence is in the target
-    sequence.
-
-    Args:
-        src (list | tuple): The source sequence.
-        tgt (list | tuple): The target sequence.
-        raise_error (bool, optional): Whether to raise an error when all the
-            elements are not in the target sequence. Default: ``False``.
-
-    Returns:
-        bool: Whether at least one element in the source sequence is in the \
-            target sequence.
-    """
-    for e in src:
-        if e in tgt:
-            return True
-    if raise_error:
-        raise ValueError(
-            'all elements in the source sequence are not in the target '
-            'sequence')
-    return False
-
-
-def all_in(src, tgt, raise_error=False):
-    """
-    Check whether all the elements in the source sequence are in the target
-    sequence.
-
-    Args:
-        src (list | tuple): The source sequence.
-        tgt (list | tuple): The target sequence.
-        raise_error (bool, optional): Whether to raise an error when the an
-            element is not in the target sequence. Default: ``False``.
-
-    Returns:
-        bool: Whether all the elements in the source sequence are in the \
-            target sequence.
-    """
-    for e in src:
-        if e not in tgt:
-            if raise_error:
-                raise ValueError("element '{}' in the source sequence is not "
-                                 "in the target sequence".format(e))
-            return False
-    return True
-
-
-def is_seq_of(seq, expected_type, seq_type=Sequence):
+def is_seq_of(seq, item_type, seq_type=(list, tuple)):
     """
     Check whether it is a sequence of some type.
 
     Args:
         seq (Sequence): The sequence to be checked.
-        expected_type (type): Expected type of sequence items.
-        seq_type (type, optional): Expected sequence type. Default:
-            ``Sequence``.
+        item_type (type): Expected item type.
+        seq_type (tuple[type] | type, optional): Expected sequence type.
+            Default: ``(list, tuple)``.
 
     Returns:
         bool: Whether the sequence is valid.
@@ -101,69 +49,103 @@ def is_seq_of(seq, expected_type, seq_type=Sequence):
         return False
 
     for item in seq:
-        if not isinstance(item, expected_type):
+        if not isinstance(item, item_type):
             return False
 
     return True
 
 
-def is_list_of(seq, expected_type):
+def is_list_of(seq, item_type):
     """
     Check whether it is a list of some type.
 
     A partial method of :obj:`is_seq_of`.
     """
-    return is_seq_of(seq, expected_type, seq_type=list)
+    return is_seq_of(seq, item_type, seq_type=list)
 
 
-def is_tuple_of(seq, expected_type):
+def is_tuple_of(seq, item_type):
     """
     Check whether it is a tuple of some type.
 
     A partial method of :obj:`is_seq_of`.
     """
-    return is_seq_of(seq, expected_type, seq_type=tuple)
+    return is_seq_of(seq, item_type, seq_type=tuple)
 
 
-def slice_list(in_list, length):
+def slice(seq, length, type='list'):
     """
-    Slice a list into several sub lists by length.
+    Slice a sequence into several sub sequences by length.
 
     Args:
-        in_list (list): The list to be sliced.
-        length (list[int] | int): The expected length or list of lengths of
-            output lists.
+        seq (list | tuple): The sequence to be sliced.
+        length (list[int] | int): The expected length or list of lengths.
+        type (str, optional): The type of returned object. Expected values
+            include ``'list'`` and ``'tuple'``. Default: ``'list'``.
 
     Returns:
-        list[list]: The sliced lists.
+        list[list]: The sliced sequences.
     """
+    assert type in ('list', 'tuple')
+
     if isinstance(length, int):
-        assert len(in_list) % length == 0
-        length = [length] * int(len(in_list) / length)
+        assert len(seq) % length == 0
+        length = [length] * int(len(seq) / length)
     elif not isinstance(length, list):
         raise TypeError("'length' must be an integer or a list of integers")
-    elif sum(length) != len(in_list):
-        raise ValueError('sum of the length and the list length are mismatch')
+    elif sum(length) != len(seq):
+        raise ValueError('the total length do not match the sequence length')
 
-    out_list, idx = [], 0
+    out, idx = [], 0
     for i in range(len(length)):
-        out_list.append(in_list[idx:idx + length[i]])
+        out.append(seq[idx:idx + length[i]])
         idx += length[i]
 
-    return out_list
+    if type == 'tuple':
+        out = tuple(out)
+
+    return out
 
 
-def concat_list(in_list):
+def concat(seq):
     """
-    Concatenate a list of lists into a single list.
+    Concatenate a sequence of sequences.
 
     Args:
-        in_list (list): The list of lists to be merged.
+        seq (list | tuple): The sequence to be concatenated.
 
     Returns:
-        list: The concatenated flat list.
+        list | tuple: The concatenated sequence.
     """
-    return list(chain(*in_list))
+    seq_type = type(seq)
+
+    out = []
+    for item in seq:
+        out += item
+
+    return seq_type(out)
+
+
+def flatten(seq):
+    """
+    Flatten a sequence of sequences and items.
+
+    Args:
+        seq (list | tuple): The sequence to be flattened.
+
+    Returns:
+        list | tuple: The flattened sequence.
+    """
+    seq_type = type(seq)
+
+    out = []
+    for item in seq:
+        if isinstance(item, (list, tuple)):
+            out += flatten(item)
+        else:
+            out.append(item)
+
+    return seq_type(out)
 
 
 def to_dict_of_list(in_list):

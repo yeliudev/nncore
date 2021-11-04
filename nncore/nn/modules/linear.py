@@ -95,7 +95,7 @@ def build_linear_modules(dims, last_norm=False, last_act=False, **kwargs):
             the last linear layer. Default: ``False``.
 
     Returns:
-        :obj:`nn.Sequential` or :obj:`LinearModule`: The constructed module.
+        :obj:`nn.Sequential` | :obj:`LinearModule`: The constructed module.
     """
     _kwargs = kwargs.copy()
     layers = []

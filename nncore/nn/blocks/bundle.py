@@ -34,8 +34,7 @@ class ModuleList(nn.ModuleList):
 
     def __init__(self, *args):
         super(nn.ModuleList, self).__init__()
-        mods = [m if isinstance(m, (list, tuple)) else [m] for m in args]
-        self += nncore.concat_list(mods)
+        self += nncore.flatten(args)
 
 
 class ModuleDict(nn.ModuleDict):
