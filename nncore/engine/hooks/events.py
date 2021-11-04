@@ -9,9 +9,9 @@ import torch.distributed as dist
 from torch.utils.data import DataLoader
 
 import nncore
+from ..builder import HOOKS
 from ..comm import get_world_size, master_only
 from .base import Hook
-from .builder import HOOKS
 
 WRITERS = nncore.Registry('writer')
 

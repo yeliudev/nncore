@@ -3,8 +3,8 @@
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from nncore.nn import update_bn_stats_
+from ..builder import HOOKS
 from .base import Hook
-from .builder import HOOKS
 
 
 @HOOKS.register()

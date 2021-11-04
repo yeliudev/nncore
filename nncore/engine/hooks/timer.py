@@ -3,9 +3,9 @@
 from datetime import timedelta
 
 import nncore
+from ..builder import HOOKS
 from ..comm import master_only
 from .base import Hook
-from .builder import HOOKS
 
 
 @HOOKS.register()

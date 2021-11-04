@@ -10,14 +10,14 @@ from .bundle import Sequential
 
 
 @MODELS.register()
-@nncore.bind_getter('q_dims', 'k_dims', 'v_dims', 'h_dims', 'o_dims', 'heads',
+@nncore.bind_getter('dims', 'k_dims', 'v_dims', 'h_dims', 'o_dims', 'heads',
                     'p', 'bias')
 class MultiHeadAttention(nn.Module):
     """
     Multi-Head Attention introduced in [1].
 
     Args:
-        q_dims (int): The dimensions of query matrix.
+        dims (int): The dimensions of query matrix.
         k_dims (int | None, optional): The dimensions of key matrix. If not
             specified, it will be the same as ``q_dims``. Default: ``None``.
         v_dims (int | None, optional): The dimensions of value matrix. If not
@@ -35,7 +35,7 @@ class MultiHeadAttention(nn.Module):
     """
 
     def __init__(self,
-                 q_dims,
+                 dims,
                  k_dims=None,
                  v_dims=None,
                  h_dims=None,
@@ -45,17 +45,17 @@ class MultiHeadAttention(nn.Module):
                  bias=True):
         super(MultiHeadAttention, self).__init__()
 
-        self._q_dims = q_dims
-        self._k_dims = k_dims or q_dims
-        self._v_dims = v_dims or q_dims
-        self._h_dims = h_dims or q_dims
-        self._o_dims = o_dims or q_dims
+        self._dims = dims
+        self._k_dims = k_dims or dims
+        self._v_dims = v_dims or dims
+        self._h_dims = h_dims or dims
+        self._o_dims = o_dims or dims
         self._heads = heads
         self._p = p
         self._bias = bias
         self._head_dims = self._h_dims // heads
 
-        self.proj_q = nn.Linear(self._q_dims, self._h_dims, bias=bias)
+        self.proj_q = nn.Linear(self._dims, self._h_dims, bias=bias)
         self.proj_k = nn.Linear(self._k_dims, self._h_dims, bias=bias)
         self.proj_v = nn.Linear(self._v_dims, self._h_dims, bias=bias)
         self.proj_m = nn.Linear(self._h_dims, self._o_dims, bias=bias)
@@ -64,9 +64,9 @@ class MultiHeadAttention(nn.Module):
         self.reset_parameters()
 
     def __repr__(self):
-        return ('{}(q_dims={}, k_dims={}, v_dims={}, h_dims={}, o_dims={}, '
+        return ('{}(dims={}, k_dims={}, v_dims={}, h_dims={}, o_dims={}, '
                 'heads={}, p={}, bias={})'.format(self.__class__.__name__,
-                                                  self._q_dims, self._k_dims,
+                                                  self._dims, self._k_dims,
                                                   self._v_dims, self._h_dims,
                                                   self._o_dims, self._heads,
                                                   self._p, self._bias))
@@ -102,7 +102,7 @@ class MultiHeadAttention(nn.Module):
 
 @MODELS.register()
 @nncore.bind_getter('dims', 'ratio', 'p')
-class FFN(nn.Module):
+class FeedForwardNetwork(nn.Module):
     """
     Feed Forward Network introduced in [1].
 
@@ -123,7 +123,7 @@ class FFN(nn.Module):
                  ratio=1,
                  p=0.1,
                  act_cfg=dict(type='ReLU', inplace=True)):
-        super(FFN, self).__init__()
+        super(FeedForwardNetwork, self).__init__()
 
         self._dims = dims
         self._ratio = ratio
@@ -158,7 +158,7 @@ class TransformerEncoderLayer(nn.Module):
             feed forward network. Default: ``1``.
         p (float, optional): The dropout probability. Default: ``0.1``.
         norm_first (bool, optional): Whether to apply the normalization before
-            instead of after each layer. Default: ``False``.
+            instead of after each layer. Default: ``True``.
         norm_cfg (dict | str | None, optional): The config or name of the
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
@@ -173,7 +173,7 @@ class TransformerEncoderLayer(nn.Module):
                  heads=1,
                  ratio=1,
                  p=0.1,
-                 norm_first=False,
+                 norm_first=True,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='ReLU', inplace=True)):
         super(TransformerEncoderLayer, self).__init__()
@@ -185,7 +185,7 @@ class TransformerEncoderLayer(nn.Module):
         self._norm_first = norm_first
 
         self.att = MultiHeadAttention(dims, heads=heads, p=p)
-        self.ffn = FFN(dims, ratio=ratio, p=p, act_cfg=act_cfg)
+        self.ffn = FeedForwardNetwork(dims, ratio=ratio, p=p, act_cfg=act_cfg)
 
         self.norm1 = build_norm_layer(norm_cfg, dims=dims)
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
@@ -227,7 +227,7 @@ class TransformerDecoderLayer(nn.Module):
             feed forward network. Default: ``1``.
         p (float, optional): The dropout probability. Default: ``0.1``.
         norm_first (bool, optional): Whether to apply the normalization before
-            instead of after each layer. Default: ``False``.
+            instead of after each layer. Default: ``True``.
         norm_cfg (dict | str | None, optional): The config or name of the
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
@@ -242,7 +242,7 @@ class TransformerDecoderLayer(nn.Module):
                  heads=1,
                  ratio=1,
                  p=0.1,
-                 norm_first=False,
+                 norm_first=True,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='ReLU', inplace=True)):
         super(TransformerDecoderLayer, self).__init__()
@@ -255,7 +255,7 @@ class TransformerDecoderLayer(nn.Module):
 
         self.att1 = MultiHeadAttention(dims, heads=heads, p=p)
         self.att2 = MultiHeadAttention(dims, heads=heads, p=p)
-        self.ffn = FFN(dims, ratio=ratio, p=p, act_cfg=act_cfg)
+        self.ffn = FeedForwardNetwork(dims, ratio=ratio, p=p, act_cfg=act_cfg)
 
         self.norm1 = build_norm_layer(norm_cfg, dims=dims)
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)

@@ -1,9 +1,9 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
-from .blocks import (FFN, GAT, GCN, SGC, Clamp, EffMish, EffSwish, Mish,
-                     ModuleDict, ModuleList, MultiHeadAttention, Parameter,
-                     Sequential, Swish, TransformerDecoderLayer,
-                     TransformerEncoderLayer)
+from .blocks import (GAT, GCN, SGC, Clamp, EffMish, EffSwish,
+                     FeedForwardNetwork, Mish, ModuleDict, ModuleList,
+                     MultiHeadAttention, Parameter, Sequential, Swish,
+                     TransformerDecoderLayer, TransformerEncoderLayer)
 from .builder import (ACTIVATIONS, CONVS, LOSSES, MESSAGE_PASSINGS, MODELS,
                       MODULES, NORMS, build_act_layer, build_conv_layer,
                       build_loss, build_model, build_msg_pass_layer,
@@ -19,8 +19,8 @@ from .modules import (ConvModule, LinearModule, MsgPassModule,
 from .utils import fuse_bn_, move_to_device, publish_model, update_bn_stats_
 
 __all__ = [
-    'FFN', 'GAT', 'GCN', 'SGC', 'Clamp', 'EffMish', 'EffSwish', 'Mish',
-    'ModuleDict', 'ModuleList', 'MultiHeadAttention', 'Parameter',
+    'GAT', 'GCN', 'SGC', 'Clamp', 'EffMish', 'EffSwish', 'FeedForwardNetwork',
+    'Mish', 'ModuleDict', 'ModuleList', 'MultiHeadAttention', 'Parameter',
     'Sequential', 'Swish', 'TransformerDecoderLayer',
     'TransformerEncoderLayer', 'ACTIVATIONS', 'CONVS', 'LOSSES',
     'MESSAGE_PASSINGS', 'MODELS', 'MODULES', 'NORMS', 'build_act_layer',

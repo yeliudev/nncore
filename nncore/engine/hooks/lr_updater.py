@@ -3,8 +3,8 @@
 from math import cos, pi
 
 import nncore
+from ..builder import HOOKS
 from .base import Hook
-from .builder import HOOKS
 
 POLICIES = nncore.Registry('policy')
 

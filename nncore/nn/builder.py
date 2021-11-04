@@ -16,8 +16,8 @@ MODULES = Registry('module', parent=MODELS)
 
 def build_model(cfg, *args, bundler=None, wrapper=None, **kwargs):
     """
-    Build a general model from a dict. This method searches for modules in
-    :obj:`MODELS` first, and then fall back to :obj:`torch.nn`.
+    Build a general model from a dict or str. This method searches for modules
+    in :obj:`MODELS` first, and then fall back to :obj:`torch.nn`.
 
     Args:
         cfg (dict | str): The config or name of the model.
@@ -52,8 +52,8 @@ def build_model(cfg, *args, bundler=None, wrapper=None, **kwargs):
 
 def build_act_layer(cfg, *args, **kwargs):
     """
-    Build an activation layer from a dict. This method searches for layers in
-    :obj:`ACTIVATIONS` first, and then fall back to :obj:`torch.nn`.
+    Build an activation layer from a dict or str. This method searches for
+    layers in :obj:`ACTIVATIONS` first, and then fall back to :obj:`torch.nn`.
 
     Args:
         cfg (dict | str): The config or name of the layer.
@@ -66,8 +66,8 @@ def build_act_layer(cfg, *args, **kwargs):
 
 def build_conv_layer(cfg, *args, **kwargs):
     """
-    Build a convolution layer from a dict. This method searches for layers in
-    :obj:`CONVS` first, and then fall back to :obj:`torch.nn`.
+    Build a convolution layer from a dict or str. This method searches for
+    layers in :obj:`CONVS` first, and then fall back to :obj:`torch.nn`.
 
     Args:
         cfg (dict | str): The config or name of the layer.
@@ -80,8 +80,9 @@ def build_conv_layer(cfg, *args, **kwargs):
 
 def build_msg_pass_layer(cfg, *args, **kwargs):
     """
-    Build a message passing layer from a dict. This method searches for layers
-    in :obj:`MESSAGE_PASSINGS` first, and then fall back to :obj:`torch.nn`.
+    Build a message passing layer from a dict or str. This method searches for
+    layers in :obj:`MESSAGE_PASSINGS` first, and then fall back to
+    :obj:`torch.nn`.
 
     Args:
         cfg (dict | str): The config or name of the layer.
@@ -94,8 +95,8 @@ def build_msg_pass_layer(cfg, *args, **kwargs):
 
 def build_norm_layer(cfg, *args, dims=None, **kwargs):
     """
-    Build a normalization layer from a dict. This method searches for layers
-    in :obj:`NORMS` first, and then fall back to :obj:`torch.nn`.
+    Build a normalization layer from a dict or str. This method searches for
+    layers in :obj:`NORMS` first, and then fall back to :obj:`torch.nn`.
 
     Args:
         cfg (dict | str): The config or name of the layer.
@@ -123,7 +124,7 @@ def build_norm_layer(cfg, *args, dims=None, **kwargs):
 
 def build_loss(cfg, *args, **kwargs):
     """
-    Build a loss module from a dict. This method searches for modules in
+    Build a loss module from a dict or str. This method searches for modules in
     :obj:`LOSSES` first, and then fall back to :obj:`torch.nn`.
 
     Args:

@@ -7,8 +7,9 @@ import torch
 
 import nncore
 from .buffer import Buffer
+from .builder import build_hook
 from .comm import gather, is_main_process, synchronize
-from .hooks import Hook, build_hook
+from .hooks import Hook
 from .utils import get_checkpoint, load_checkpoint
 
 _DEFAULT_STAGES = dict(

@@ -15,6 +15,8 @@ import nncore
 from nncore.nn import move_to_device
 from .comm import broadcast, is_main_process, synchronize
 
+DATASETS = nncore.Registry('dataset')
+
 
 def _load_url_dist(url, **kwargs):
     if is_main_process():
