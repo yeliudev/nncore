@@ -416,6 +416,7 @@ class Engine(object):
         self.logger.info('Validating...')
         self._mode = 'val'
         self.model.eval()
+        self.buffer.pop('_out')
         self.data_loader = self.data_loaders[self._mode]
         self._call_hook('before_val_epoch')
 
@@ -430,6 +431,7 @@ class Engine(object):
         self.logger.info('Evaluating...')
         self._mode = 'test'
         self.model.eval()
+        self.buffer.pop('_out')
         self.data_loader = self.data_loaders[self._mode]
 
         prog_bar = nncore.ProgressBar(len(self.data_loader))
@@ -467,16 +469,12 @@ class Engine(object):
         self._call_hook('after_stage')
         self._stage += 1
 
-    def evaluate(self, key='_out'):
+    def evaluate(self):
         """
         Perform evaluation. This methods is expected to be called after
         validation or testing.
-
-        Args:
-            key (str, optional): The buffer key of the values to be evaluated.
-                Default: ``'_out'``.
         """
-        blob = self.buffer.pop(key)
+        blob = self.buffer.pop('_out')
         blob = gather(blob)
 
         if is_main_process():
@@ -489,17 +487,17 @@ class Engine(object):
         synchronize()
         return output
 
-    def launch(self, eval_mode=False, **kwargs):
+    def launch(self, eval=False, **kwargs):
         """
         Launch the engine.
 
         Args:
-            eval_mode (bool, optional): Whether to run evaluation only.
-                Default: ``False``.
+            eval (bool, optional): Whether to run evaluation only. Default:
+                ``False``.
         """
         self._kwargs = kwargs
 
-        if eval_mode:
+        if eval:
             self.test_epoch()
             output = self.evaluate()
             self.logger.info(

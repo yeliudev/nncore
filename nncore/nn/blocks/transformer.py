@@ -10,14 +10,14 @@ from .bundle import Sequential
 
 
 @MODELS.register()
-@nncore.bind_getter('dims', 'k_dims', 'v_dims', 'h_dims', 'o_dims', 'heads',
-                    'p', 'bias')
+@nncore.bind_getter('dims', 'q_dims', 'k_dims', 'v_dims', 'h_dims', 'o_dims',
+                    'heads', 'p', 'bias')
 class MultiHeadAttention(nn.Module):
     """
     Multi-Head Attention introduced in [1].
 
     Args:
-        dims (int): The dimensions of query matrix.
+        dims (int): The input feature dimensions.
         k_dims (int | None, optional): The dimensions of key matrix. If not
             specified, it will be the same as ``q_dims``. Default: ``None``.
         v_dims (int | None, optional): The dimensions of value matrix. If not
@@ -45,7 +45,7 @@ class MultiHeadAttention(nn.Module):
                  bias=True):
         super(MultiHeadAttention, self).__init__()
 
-        self._dims = dims
+        self._q_dims = dims
         self._k_dims = k_dims or dims
         self._v_dims = v_dims or dims
         self._h_dims = h_dims or dims
@@ -55,47 +55,54 @@ class MultiHeadAttention(nn.Module):
         self._bias = bias
         self._head_dims = self._h_dims // heads
 
-        self.proj_q = nn.Linear(self._dims, self._h_dims, bias=bias)
-        self.proj_k = nn.Linear(self._k_dims, self._h_dims, bias=bias)
-        self.proj_v = nn.Linear(self._v_dims, self._h_dims, bias=bias)
-        self.proj_m = nn.Linear(self._h_dims, self._o_dims, bias=bias)
+        self.q = nn.Linear(self._q_dims, self._h_dims, bias=bias)
+        self.k = nn.Linear(self._k_dims, self._h_dims, bias=bias)
+        self.v = nn.Linear(self._v_dims, self._h_dims, bias=bias)
+        self.m = nn.Linear(self._h_dims, self._o_dims, bias=bias)
 
-        self.dropout = build_norm_layer('Drop', p=p)
+        self.dropout = build_norm_layer('drop', p=p)
         self.reset_parameters()
 
     def __repr__(self):
-        return ('{}(dims={}, k_dims={}, v_dims={}, h_dims={}, o_dims={}, '
+        return ('{}(q_dims={}, k_dims={}, v_dims={}, h_dims={}, o_dims={}, '
                 'heads={}, p={}, bias={})'.format(self.__class__.__name__,
-                                                  self._dims, self._k_dims,
+                                                  self._q_dims, self._k_dims,
                                                   self._v_dims, self._h_dims,
                                                   self._o_dims, self._heads,
                                                   self._p, self._bias))
 
     def reset_parameters(self):
-        for m in (self.proj_q, self.proj_k, self.proj_v, self.proj_m):
+        for m in (self.q, self.k, self.v, self.m):
             kaiming_init_(m)
 
     def forward(self, q, k=None, v=None, mask=None):
         v = v if torch.is_tensor(v) else k if torch.is_tensor(k) else q
         k = k if torch.is_tensor(k) else q
 
-        q = self.proj_q(q).view(-1, q.size(1), self._head_dims)
-        k = self.proj_k(k).view(-1, k.size(1), self._head_dims)
-        v = self.proj_v(v).view(-1, v.size(1), self._head_dims)
+        q = q.transpose(0, 1).contiguous()
+        k = k.transpose(0, 1).contiguous()
+        v = v.transpose(0, 1).contiguous()
+
+        b = q.size(1) * self._heads
+
+        q = self.q(q).view(-1, b, self._head_dims).transpose(0, 1)
+        k = self.k(k).view(-1, b, self._head_dims).transpose(0, 1)
+        v = self.v(v).view(-1, b, self._head_dims).transpose(0, 1)
 
         att = torch.bmm(q, k.transpose(1, 2)) / self._h_dims**0.5
 
         if mask is not None:
             mask = torch.where(mask > 0, .0, float('-inf'))
-            att += mask.repeat_interleave(self._heads, dim=0)
+            mask = mask.repeat_interleave(self._heads, dim=0)
+            att += mask.unsqueeze(1).expand(-1, att.size(1), -1)
 
         att = att.softmax(-1)
 
         if self.dropout is not None:
             att = self.dropout(att)
 
-        m = torch.bmm(att, v).view(-1, att.size(1), self._h_dims)
-        m = self.proj_m(m)
+        m = torch.bmm(att, v).transpose(0, 1).contiguous()
+        m = self.m(m).view(m.size(0), -1, self._h_dims).transpose(0, 1)
 
         return m
 
@@ -107,9 +114,9 @@ class FeedForwardNetwork(nn.Module):
     Feed Forward Network introduced in [1].
 
     Args:
-        dims (int): The input dimensions.
-        ratio (int, optional): The ratio of hidden layer dimensions. Default:
-            ``1``.
+        dims (int): The input feature dimensions.
+        ratio (int | float, optional): The ratio of hidden layer dimensions
+            with respect to the input dimensions. Default: ``1``.
         p (float, optional): The dropout probability. Default: ``0.1``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
@@ -128,11 +135,11 @@ class FeedForwardNetwork(nn.Module):
         self._dims = dims
         self._ratio = ratio
         self._p = p
-        self._h_dims = dims * ratio
+        self._h_dims = int(dims * ratio)
 
         self.mapping = Sequential(
             nn.Linear(dims, self._h_dims), build_act_layer(act_cfg),
-            build_norm_layer('Drop', p=p), nn.Linear(self._h_dims, dims))
+            build_norm_layer('drop', p=p), nn.Linear(self._h_dims, dims))
 
     def __repr__(self):
         return '{}(dims={}, ratio={}, p={})'.format(self.__class__.__name__,
@@ -151,13 +158,13 @@ class TransformerEncoderLayer(nn.Module):
     Transformer Encoder Layer introduced in [1].
 
     Args:
-        dims (int): The input dimensions.
+        dims (int): The input feature dimensions.
         heads (int, optional): The number of attention heads. Default: ``1``.
-        ratio (int, optional): The ratio of hidden layer dimensions in the
-            feed forward network. Default: ``1``.
+        ratio (int | float, optional): The ratio of hidden layer dimensions in
+            the feed forward network. Default: ``1``.
         p (float, optional): The dropout probability. Default: ``0.1``.
         norm_first (bool, optional): Whether to apply the normalization before
-            instead of after each layer. Default: ``True``.
+            instead of after each layer. Default: ``False``.
         norm_cfg (dict | str | None, optional): The config or name of the
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
@@ -172,7 +179,7 @@ class TransformerEncoderLayer(nn.Module):
                  heads=1,
                  ratio=1,
                  p=0.1,
-                 norm_first=True,
+                 norm_first=False,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='ReLU', inplace=True)):
         super(TransformerEncoderLayer, self).__init__()
@@ -189,8 +196,8 @@ class TransformerEncoderLayer(nn.Module):
         self.norm1 = build_norm_layer(norm_cfg, dims=dims)
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
 
-        self.drop1 = build_norm_layer('Drop', p=p)
-        self.drop2 = build_norm_layer('Drop', p=p)
+        self.drop1 = build_norm_layer('drop', p=p)
+        self.drop2 = build_norm_layer('drop', p=p)
 
     def forward(self, x, mask=None):
         if self._norm_first:
@@ -220,13 +227,13 @@ class TransformerDecoderLayer(nn.Module):
     Transformer Decoder Layer introduced in [1].
 
     Args:
-        dims (int): The input dimensions.
+        dims (int): The input feature dimensions.
         heads (int, optional): The number of attention heads. Default: ``1``.
         ratio (int, optional): The ratio of hidden layer dimensions in the
             feed forward network. Default: ``1``.
         p (float, optional): The dropout probability. Default: ``0.1``.
         norm_first (bool, optional): Whether to apply the normalization before
-            instead of after each layer. Default: ``True``.
+            instead of after each layer. Default: ``False``.
         norm_cfg (dict | str | None, optional): The config or name of the
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
@@ -241,7 +248,7 @@ class TransformerDecoderLayer(nn.Module):
                  heads=1,
                  ratio=1,
                  p=0.1,
-                 norm_first=True,
+                 norm_first=False,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='ReLU', inplace=True)):
         super(TransformerDecoderLayer, self).__init__()
@@ -260,18 +267,18 @@ class TransformerDecoderLayer(nn.Module):
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
         self.norm3 = build_norm_layer(norm_cfg, dims=dims)
 
-        self.drop1 = build_norm_layer('Drop', p=p)
-        self.drop2 = build_norm_layer('Drop', p=p)
-        self.drop3 = build_norm_layer('Drop', p=p)
+        self.drop1 = build_norm_layer('drop', p=p)
+        self.drop2 = build_norm_layer('drop', p=p)
+        self.drop3 = build_norm_layer('drop', p=p)
 
-    def forward(self, x, m, mask=None):
+    def forward(self, x, mem, mask=None):
         if self._norm_first:
             d = self.norm1(x)
             d = self.att1(d, mask=mask)
             x = x + self.drop1(d)
 
             d = self.norm2(x)
-            d = self.att2(d, m, mask=mask)
+            d = self.att2(d, mem, mask=mask)
             x = x + self.drop2(d)
 
             d = self.norm3(x)
@@ -282,7 +289,7 @@ class TransformerDecoderLayer(nn.Module):
             d = self.drop1(d)
             x = self.norm1(d + x)
 
-            d = self.att2(x, m, mask=mask)
+            d = self.att2(x, mem, mask=mask)
             d = self.drop2(d)
             x = self.norm2(d + x)
 

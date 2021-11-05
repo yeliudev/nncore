@@ -86,7 +86,7 @@ def _scatter(inputs, target_gpus, dim=0):
             return list(map(list, zip(*map(_scatter_map, obj))))
         elif isinstance(obj, dict) and len(obj) > 0:
             return list(map(type(obj), zip(*map(_scatter_map, obj.items()))))
-        return [obj for targets in target_gpus]
+        return [obj for _ in target_gpus]
 
     try:
         return _scatter_map(inputs)

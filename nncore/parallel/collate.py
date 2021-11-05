@@ -65,8 +65,8 @@ def collate(batch, samples_per_gpu=-1):
         return [collate(samples, samples_per_gpu) for samples in transposed]
     elif isinstance(batch[0], dict):
         return {
-            key: collate([d[key] for d in batch], samples_per_gpu)
-            for key in batch[0]
+            k: collate([b[k] for b in batch], samples_per_gpu)
+            for k in batch[0]
         }
     else:
         return default_collate(batch)
