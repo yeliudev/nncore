@@ -455,7 +455,7 @@ class Engine(object):
 
         self._call_hook('before_stage')
 
-        while self.epoch_in_stage < self.cur_stage['epochs']:
+        for _ in range(self.cur_stage['epochs']):
             self.train_epoch()
             cfg = self.cur_stage.get('validation')
             if cfg is not None and 'val' in self.data_loaders:
