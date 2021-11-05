@@ -1,13 +1,14 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 from collections import OrderedDict
-from itertools import permutations
 
 import torch
+from torch.utils.data import DataLoader
 
 import nncore
+from nncore.nn import build_model
 from .buffer import Buffer
-from .builder import build_hook
+from .builder import build_dataloader, build_hook
 from .comm import gather, is_main_process, synchronize
 from .hooks import Hook
 from .utils import get_checkpoint, load_checkpoint
@@ -35,17 +36,18 @@ class Engine(object):
     writing, etc.) done automatically.
 
     Args:
-        model (:obj:`nn.Module`): The model to be trained or tested. The
-            :obj:`forward` method of the model should return a dict containing
-            a ``_num_samples`` field indicating the number of samples in the
-            current batch, and optionally a ``_out`` field denoting the model
-            outputs to be collected and evaluated.
-        data_loaders (dict): The data loaders for training, validation, and
-            testing. It should be in the format of
+        model (:obj:`nn.Module` | cfg | str): The model or config of the model.
+            The :obj:`forward` method of the model should return a dict
+            containing a ``_num_samples`` field indicating the number of
+            samples in the current batch, and optionally a ``_out`` field
+            denoting the model outputs to be collected and evaluated.
+        data_loader (:obj:`DataLoader` | dict | str): The data loader or config
+            of data loader for training, validation, and testing. The dict
+            should be in the format of
             ``dict(train=train_loader, val=val_loader, test=test_loader)``.
-        stages (list[dict] | dict, optional): The stage config or list of
-            stage configs to be scheduled. Each stage config should be a dict
-            containing the following fields:
+        stages (list[dict] | dict | None, optional): The stage config or list
+            of stage configs to be scheduled. Each stage config should be a
+            dict containing the following fields:
 
             - `epochs` (int): Number of epochs in the stage.
             - `optimizer` (:obj:`optim.Optimizer` | dict): The optimizer or \
@@ -90,10 +92,10 @@ class Engine(object):
                 - `offset` (int, optional): The number of epochs to skip \
                     before counting the interval. Default: ``0``.
 
-            Default: ``_DEFAULT_STAGES``.
-        hooks (list[:obj:`Hook` | dict | str], optional): The list of hooks to
-            be registered. Each hook can be represented as a :obj:`Hook`, a
-            dict or a str. Default: ``_DEFAULT_HOOKS``.
+            Default: ``None``.
+        hooks (list[:obj:`Hook` | dict | str] | None, optional): The list of
+            extra hooks to be registered. Each hook can be represented as a
+            :obj:`Hook`, a dict or a str. Default: ``None``.
         buffer_size (int, optional): Maximum size of the buffer. Default:
             ``100000``.
         logger (:obj:`logging.Logger` | str | None, optional): The logger or
@@ -136,29 +138,37 @@ class Engine(object):
 
     def __init__(self,
                  model,
-                 data_loaders,
-                 stages=_DEFAULT_STAGES,
-                 hooks=_DEFAULT_HOOKS,
+                 data_loader,
+                 stages=None,
+                 hooks=None,
                  buffer_size=100000,
                  logger=None,
                  work_dir=None,
+                 seed=None,
                  **kwargs):
-        self.model = model
+        self.model = build_model(model, **kwargs)
 
-        for a, b in permutations(('val', 'test')):
-            if a in data_loaders and b not in data_loaders:
-                data_loaders[b] = data_loaders[a]
-        self.data_loaders = data_loaders
+        if isinstance(data_loader, DataLoader) or isinstance(
+                data_loader, str) or 'type' in data_loader:
+            data_loader = dict(train=data_loader)
 
-        if isinstance(stages, (list, tuple)):
-            for stage in stages:
-                stage.update(kwargs)
-            self.stages = stages
-        else:
-            stages.update(kwargs)
+        if 'val' not in data_loader:
+            data_loader['val'] = data_loader.get('test', data_loader['train'])
+
+        if 'test' not in data_loader:
+            data_loader['test'] = data_loader.get('val', data_loader['train'])
+
+        self.data_loaders = {
+            k: build_dataloader(v, seed=seed)
+            for k, v in data_loader.items()
+        }
+
+        if isinstance(stages, dict):
             self.stages = [stages]
+        else:
+            self.stages = stages or _DEFAULT_STAGES
 
-        self.hooks = OrderedDict()
+        self.register_hook(_DEFAULT_HOOKS)
         if hooks is not None:
             self.register_hook(hooks)
 
@@ -234,6 +244,9 @@ class Engine(object):
             raise TypeError(
                 "hook must be a Hook, a dict or a str, but got '{}'".format(
                     type(hook)))
+
+        if not hasattr(self, 'hooks'):
+            self.hooks = OrderedDict()
 
         if hook.name in self.hooks:
             if overwrite:
@@ -404,6 +417,11 @@ class Engine(object):
         self._mode = 'train'
         self.model.train()
         self.data_loader = self.data_loaders[self._mode]
+
+        dataset = self.data_loader.dataset
+        if hasattr(dataset, 'set_state') and callable(dataset.set_state):
+            dataset.set_state(self._mode)
+
         self._call_hook('before_train_epoch')
 
         for data in self.data_loader:
@@ -416,8 +434,13 @@ class Engine(object):
         self.logger.info('Validating...')
         self._mode = 'val'
         self.model.eval()
-        self.buffer.pop('_out')
+        self.buffer.pop('_out', None)
         self.data_loader = self.data_loaders[self._mode]
+
+        dataset = self.data_loader.dataset
+        if hasattr(dataset, 'set_state') and callable(dataset.set_state):
+            dataset.set_state(self._mode)
+
         self._call_hook('before_val_epoch')
 
         prog_bar = nncore.ProgressBar(len(self.data_loader))
@@ -431,8 +454,12 @@ class Engine(object):
         self.logger.info('Evaluating...')
         self._mode = 'test'
         self.model.eval()
-        self.buffer.pop('_out')
+        self.buffer.pop('_out', None)
         self.data_loader = self.data_loaders[self._mode]
+
+        dataset = self.data_loader.dataset
+        if hasattr(dataset, 'set_state') and callable(dataset.set_state):
+            dataset.set_state(self._mode)
 
         prog_bar = nncore.ProgressBar(len(self.data_loader))
         for data in self.data_loader:

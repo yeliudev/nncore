@@ -21,6 +21,8 @@ def build_dataloader(cfg, seed=None, **kwargs):
     Returns:
         :obj:`nn.Module`: The constructed module.
     """
+    if isinstance(cfg, DataLoader):
+        return cfg
 
     def _init_fn(worker_id):
         set_random_seed(seed=seed + worker_id)
@@ -29,7 +31,10 @@ def build_dataloader(cfg, seed=None, **kwargs):
 
     dataset = DATASETS.build(cfg, **kwargs)
     data_loader = DataLoader(
-        dataset, collate_fn=collate, worker_init_fn=_init_fn, **_cfg)
+        dataset,
+        collate_fn=collate,
+        worker_init_fn=None if seed is None else _init_fn,
+        **_cfg)
 
     return data_loader
 

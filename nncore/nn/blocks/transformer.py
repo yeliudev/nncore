@@ -79,15 +79,15 @@ class MultiHeadAttention(nn.Module):
         v = v if torch.is_tensor(v) else k if torch.is_tensor(k) else q
         k = k if torch.is_tensor(k) else q
 
-        q = q.transpose(0, 1).contiguous()
-        k = k.transpose(0, 1).contiguous()
-        v = v.transpose(0, 1).contiguous()
+        q = self.q(q).transpose(0, 1).contiguous()
+        k = self.k(k).transpose(0, 1).contiguous()
+        v = self.v(v).transpose(0, 1).contiguous()
 
         b = q.size(1) * self._heads
 
-        q = self.q(q).view(-1, b, self._head_dims).transpose(0, 1)
-        k = self.k(k).view(-1, b, self._head_dims).transpose(0, 1)
-        v = self.v(v).view(-1, b, self._head_dims).transpose(0, 1)
+        q = q.view(-1, b, self._head_dims).transpose(0, 1)
+        k = k.view(-1, b, self._head_dims).transpose(0, 1)
+        v = v.view(-1, b, self._head_dims).transpose(0, 1)
 
         att = torch.bmm(q, k.transpose(1, 2)) / self._h_dims**0.5
 
@@ -102,7 +102,8 @@ class MultiHeadAttention(nn.Module):
             att = self.dropout(att)
 
         m = torch.bmm(att, v).transpose(0, 1).contiguous()
-        m = self.m(m).view(m.size(0), -1, self._h_dims).transpose(0, 1)
+        m = m.view(m.size(0), -1, self._h_dims).transpose(0, 1)
+        m = self.m(m)
 
         return m
 
