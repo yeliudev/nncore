@@ -10,7 +10,7 @@ Data Container
 Data Parallel
 --------------------
 
-.. automodule:: nncore.parallel.data_parallel
+.. automodule:: nncore.parallel.parallel
    :members:
 
 Collate

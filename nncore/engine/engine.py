@@ -380,8 +380,7 @@ class Engine(object):
         for key, value in output.items():
             self.buffer.update(
                 key,
-                value.detach().cpu()
-                if isinstance(value, torch.Tensor) else value)
+                value.detach().cpu() if torch.is_tensor(value) else value)
 
         self._call_hook('after_train_iter')
         self._iter += 1
@@ -398,8 +397,7 @@ class Engine(object):
         for key, value in output.items():
             self.buffer.update(
                 key,
-                value.detach().cpu()
-                if isinstance(value, torch.Tensor) else value)
+                value.detach().cpu() if torch.is_tensor(value) else value)
 
         self._call_hook('after_val_iter')
 
@@ -410,8 +408,7 @@ class Engine(object):
         for key, value in output.items():
             self.buffer.update(
                 key,
-                value.detach().cpu()
-                if isinstance(value, torch.Tensor) else value)
+                value.detach().cpu() if torch.is_tensor(value) else value)
 
     def train_epoch(self):
         self._mode = 'train'

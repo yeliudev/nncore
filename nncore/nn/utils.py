@@ -27,7 +27,7 @@ def move_to_device(data, device):
         return {k: move_to_device(v, device) for k, v in data.items()}
     elif isinstance(data, (list, tuple)):
         return type(data)([move_to_device(d, device) for d in data])
-    elif isinstance(data, torch.Tensor):
+    elif torch.is_tensor(data):
         return data.to(device)
     else:
         return data
