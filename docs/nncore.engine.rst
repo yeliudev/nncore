@@ -25,6 +25,12 @@ Hooks
 .. automodule:: nncore.engine.hooks
    :members:
 
+Builder
+--------------------
+
+.. automodule:: nncore.engine.builder
+   :members:
+
 Utils
 --------------------
 

@@ -3,10 +3,10 @@
 from torch.utils.data import DataLoader
 
 from nncore import Registry
+from nncore.dataset import build_dataset
 from nncore.parallel import collate
 from .utils import set_random_seed
 
-DATASETS = Registry('dataset')
 HOOKS = Registry('hook')
 
 
@@ -17,9 +17,10 @@ def build_dataloader(cfg, seed=None, **kwargs):
 
     Args:
         cfg (dict): The config of the data loader.
+        seed (int | None, optional): The random seed to use. Default: ``None``.
 
     Returns:
-        :obj:`nn.Module`: The constructed module.
+        :obj:`DataLoader`: The constructed data loader.
     """
     if isinstance(cfg, DataLoader):
         return cfg
@@ -29,7 +30,7 @@ def build_dataloader(cfg, seed=None, **kwargs):
 
     _cfg = cfg.pop('loader', dict())
 
-    dataset = DATASETS.build(cfg, **kwargs)
+    dataset = build_dataset(cfg, **kwargs)
     data_loader = DataLoader(
         dataset,
         collate_fn=collate,

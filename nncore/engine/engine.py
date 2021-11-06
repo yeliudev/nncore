@@ -415,9 +415,8 @@ class Engine(object):
         self.model.train()
         self.data_loader = self.data_loaders[self._mode]
 
-        dataset = self.data_loader.dataset
-        if hasattr(dataset, 'set_state') and callable(dataset.set_state):
-            dataset.set_state(self._mode)
+        if callable(getattr(self.data_loader.dataset, 'set_state', None)):
+            self.data_loader.dataset.set_state(self._mode)
 
         self._call_hook('before_train_epoch')
 
@@ -434,9 +433,8 @@ class Engine(object):
         self.buffer.pop('_out', None)
         self.data_loader = self.data_loaders[self._mode]
 
-        dataset = self.data_loader.dataset
-        if hasattr(dataset, 'set_state') and callable(dataset.set_state):
-            dataset.set_state(self._mode)
+        if callable(getattr(self.data_loader.dataset, 'set_state', None)):
+            self.data_loader.dataset.set_state(self._mode)
 
         self._call_hook('before_val_epoch')
 
@@ -454,9 +452,8 @@ class Engine(object):
         self.buffer.pop('_out', None)
         self.data_loader = self.data_loaders[self._mode]
 
-        dataset = self.data_loader.dataset
-        if hasattr(dataset, 'set_state') and callable(dataset.set_state):
-            dataset.set_state(self._mode)
+        if callable(getattr(self.data_loader.dataset, 'set_state', None)):
+            self.data_loader.dataset.set_state(self._mode)
 
         prog_bar = nncore.ProgressBar(len(self.data_loader))
         for data in self.data_loader:

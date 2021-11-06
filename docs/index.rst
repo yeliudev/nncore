@@ -20,6 +20,7 @@ Note that some methods in the library work with PyTorch 1.8+, but the installati
    :caption: API Reference
    :maxdepth: 2
 
+   nncore.dataset
    nncore.engine
    nncore.image
    nncore.io
