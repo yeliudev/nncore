@@ -3,7 +3,6 @@
 from collections import OrderedDict
 
 import torch
-from torch.utils.data import DataLoader
 
 import nncore
 from nncore.nn import build_model
@@ -146,20 +145,17 @@ class Engine(object):
                  work_dir=None,
                  seed=None,
                  **kwargs):
-        self.model = build_model(model, **kwargs)
+        self.model = build_model(model)
 
-        if isinstance(data_loader, DataLoader) or isinstance(
-                data_loader, str) or 'type' in data_loader:
+        if not isinstance(data_loader, dict) or 'type' in data_loader:
             data_loader = dict(train=data_loader)
 
-        if 'val' not in data_loader:
-            data_loader['val'] = data_loader.get('test', data_loader['train'])
-
-        if 'test' not in data_loader:
-            data_loader['test'] = data_loader.get('val', data_loader['train'])
+        for a, b in (('val', 'test'), ('test', 'val')):
+            if a not in data_loader:
+                data_loader[a] = data_loader.get(b, data_loader['train'])
 
         self.data_loaders = {
-            k: build_dataloader(v, seed=seed)
+            k: build_dataloader(v, key=k, seed=seed, **kwargs)
             for k, v in data_loader.items()
         }
 

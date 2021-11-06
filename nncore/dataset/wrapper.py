@@ -11,7 +11,7 @@ from .builder import DATASETS, build_dataset
 @nncore.bind_method('_dataset', ['set_state', 'evaluate'])
 class RepeatDataset(Dataset):
     """
-    A wrapper of repeated dataset.
+    A dataset wrapper for repeated samples.
 
     The length of repeated dataset will be ``times`` larger than the original
     dataset. This is useful when the data loading time is long but the dataset
@@ -20,17 +20,18 @@ class RepeatDataset(Dataset):
     Args:
         dataset (:obj:`Dataset` | cfg | str): The dataset or config of dataset
             to be repeated.
-        times (int): Repeat times.
+        times (int): The number of repeat times.
     """
 
     def __init__(self, dataset, times):
         if not isinstance(dataset, Dataset):
             dataset = build_dataset(dataset)
 
+        if hasattr(dataset, 'CLASSES'):
+            self.CLASSES = dataset.CLASSES
+
         self._dataset = dataset
         self._times = times
-
-        self.CLASSES = getattr(dataset, 'CLASSES', None)
 
     def __getitem__(self, idx):
         return self.dataset[idx % len(self._dataset)]
