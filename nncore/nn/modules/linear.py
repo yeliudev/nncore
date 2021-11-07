@@ -44,12 +44,14 @@ class LinearModule(nn.Module):
         _map = dict(linear=True, norm=norm_cfg, act=act_cfg)
         self._order = tuple(o for o in order if _map[o] is not None)
 
+        if self.with_norm:
+            _pos = self._order.index('norm') - self._order.index('linear')
+
         if bias != 'auto':
             self._bias = bias
         elif self.with_norm:
-            _t = norm_cfg['type'] if isinstance(norm_cfg, dict) else norm_cfg
-            _d = self._order.index('norm') - self._order.index('linear')
-            self._bias = _t in NORMS.group('drop') or _d != 1
+            _typ = norm_cfg['type'] if isinstance(norm_cfg, dict) else norm_cfg
+            self._bias = _typ in NORMS.group('drop') or _pos != 1
         else:
             self._bias = True
 
@@ -58,7 +60,8 @@ class LinearModule(nn.Module):
                 self.linear = nn.Linear(
                     in_features, out_features, bias=self._bias)
             elif layer == 'norm':
-                self.norm = build_norm_layer(norm_cfg, dims=out_features)
+                self.norm = build_norm_layer(
+                    norm_cfg, dims=out_features if _pos > 0 else in_features)
             else:
                 self.act = build_act_layer(act_cfg)
 
