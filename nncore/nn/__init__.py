@@ -2,8 +2,9 @@
 
 from .blocks import (GAT, GCN, SGC, Clamp, EffMish, EffSwish,
                      FeedForwardNetwork, Mish, ModuleDict, ModuleList,
-                     MultiHeadAttention, Parameter, Sequential, Swish,
-                     TransformerDecoderLayer, TransformerEncoderLayer)
+                     MultiHeadAttention, Parameter, PositionalEncoding,
+                     Sequential, Swish, TransformerDecoderLayer,
+                     TransformerEncoderLayer)
 from .builder import (ACTIVATIONS, CONVS, LOSSES, MESSAGE_PASSINGS, MODELS,
                       MODULES, NORMS, build_act_layer, build_conv_layer,
                       build_loss, build_model, build_msg_pass_layer,
@@ -21,7 +22,7 @@ from .utils import fuse_bn_, move_to_device, publish_model, update_bn_stats_
 __all__ = [
     'GAT', 'GCN', 'SGC', 'Clamp', 'EffMish', 'EffSwish', 'FeedForwardNetwork',
     'Mish', 'ModuleDict', 'ModuleList', 'MultiHeadAttention', 'Parameter',
-    'Sequential', 'Swish', 'TransformerDecoderLayer',
+    'PositionalEncoding', 'Sequential', 'Swish', 'TransformerDecoderLayer',
     'TransformerEncoderLayer', 'ACTIVATIONS', 'CONVS', 'LOSSES',
     'MESSAGE_PASSINGS', 'MODELS', 'MODULES', 'NORMS', 'build_act_layer',
     'build_conv_layer', 'build_loss', 'build_model', 'build_msg_pass_layer',

@@ -30,6 +30,11 @@ class Sequential(nn.Sequential):
                 self.add_module(str(idx), mod)
                 idx += 1
 
+    def forward(self, x, **kwargs):
+        for mod in self:
+            x = mod(x, **kwargs)
+        return x
+
 
 class ModuleList(nn.ModuleList):
     """

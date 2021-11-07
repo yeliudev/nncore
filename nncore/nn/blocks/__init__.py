@@ -6,11 +6,12 @@ from .conv import *  # noqa
 from .msg_pass import GAT, GCN, SGC
 from .norm import *  # noqa
 from .transformer import (FeedForwardNetwork, MultiHeadAttention,
-                          TransformerDecoderLayer, TransformerEncoderLayer)
+                          PositionalEncoding, TransformerDecoderLayer,
+                          TransformerEncoderLayer)
 
 __all__ = [
     'Clamp', 'EffMish', 'EffSwish', 'Mish', 'Swish', 'ModuleDict',
     'ModuleList', 'Parameter', 'Sequential', 'GAT', 'GCN', 'SGC',
-    'FeedForwardNetwork', 'MultiHeadAttention', 'TransformerDecoderLayer',
-    'TransformerEncoderLayer'
+    'FeedForwardNetwork', 'MultiHeadAttention', 'PositionalEncoding',
+    'TransformerDecoderLayer', 'TransformerEncoderLayer'
 ]
