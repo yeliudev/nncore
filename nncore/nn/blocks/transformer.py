@@ -7,6 +7,7 @@ import torch.nn as nn
 
 import nncore
 from ..builder import MODELS, build_act_layer, build_norm_layer
+from ..init import kaiming_init_, xavier_init_
 from .bundle import Sequential
 
 
@@ -61,7 +62,7 @@ class PositionalEncoding(nn.Module):
 
 @MODELS.register()
 @nncore.bind_getter('dims', 'q_dims', 'k_dims', 'v_dims', 'h_dims', 'o_dims',
-                    'heads', 'p', 'bias', 'residual')
+                    'heads', 'p', 'bias')
 class MultiHeadAttention(nn.Module):
     """
     Multi-Head Attention introduced in [1].
@@ -113,6 +114,8 @@ class MultiHeadAttention(nn.Module):
         self.drop1 = build_norm_layer('drop', p=p)
         self.drop2 = build_norm_layer('drop', p=p)
 
+        self.reset_parameters()
+
     def __repr__(self):
         return ('{}(q_dims={}, k_dims={}, v_dims={}, h_dims={}, o_dims={}, '
                 'heads={}, p={}, bias={})'.format(self.__class__.__name__,
@@ -120,6 +123,10 @@ class MultiHeadAttention(nn.Module):
                                                   self._v_dims, self._h_dims,
                                                   self._o_dims, self._heads,
                                                   self._p, self._bias))
+
+    def reset_parameters(self):
+        for m in (self.q, self.k, self.v, self.m):
+            xavier_init_(m)
 
     def forward(self, q, k=None, v=None, mask=None):
         v = v if torch.is_tensor(v) else k if torch.is_tensor(k) else q
@@ -192,10 +199,17 @@ class FeedForwardNetwork(nn.Module):
             build_norm_layer('drop', p=p), nn.Linear(self._h_dims, dims),
             build_norm_layer('drop', p=p))
 
+        self.reset_parameters()
+
     def __repr__(self):
         return '{}(dims={}, ratio={}, p={})'.format(self.__class__.__name__,
                                                     self._dims, self._ratio,
                                                     self._p)
+
+    def reset_parameters(self):
+        for m in self.mapping:
+            if isinstance(m, nn.Linear):
+                kaiming_init_(m)
 
     def forward(self, x):
         x = self.mapping(x)
