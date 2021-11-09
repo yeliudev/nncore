@@ -37,8 +37,9 @@ class LeNet(nn.Module):
         x = self.backbone(x).squeeze()
         x = self.head(x)
 
-        pred = torch.argmax(x, dim=1)
-        acc = torch.eq(pred, y).sum().float() / x.size(0)
+        out = torch.argmax(x, dim=1)
+        acc = torch.eq(out, y).sum().float() / x.size(0)
+
         loss = self.loss(x, y)
 
         return dict(_num_samples=x.size(0), acc=acc, loss=loss)

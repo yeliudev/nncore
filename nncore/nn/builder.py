@@ -4,6 +4,7 @@ import torch.nn as nn
 
 from nncore import Registry, build_object
 from nncore.parallel import NNDataParallel, NNDistributedDataParallel
+from .bundle import ModuleList, Sequential
 
 MODELS = Registry('model')
 ACTIVATIONS = Registry('activation', parent=MODELS)
@@ -43,9 +44,9 @@ def build_model(cfg, *args, bundler=None, wrapper=None, **kwargs):
         if all(o is None for o in obj):
             return
         elif bundler == 'sequential':
-            obj = nn.Sequential(*obj)
+            obj = Sequential(*obj)
         elif bundler == 'modulelist':
-            obj = nn.ModuleList(obj)
+            obj = ModuleList(obj)
 
     if wrapper == 'dp':
         obj = NNDataParallel(obj)

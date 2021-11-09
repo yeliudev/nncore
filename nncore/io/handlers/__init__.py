@@ -3,12 +3,13 @@
 from .base import FileHandler
 from .hdf5 import HDF5Handler
 from .json import JSONHandler, JSONLHandler
+from .numpy import NPYHandler
 from .pickle import PickleHandler
 from .txt import TXTHandler
 from .xml import XMLHandler
 from .yaml import YAMLHandler
 
 __all__ = [
-    'FileHandler', 'HDF5Handler', 'JSONHandler', 'JSONLHandler',
+    'FileHandler', 'HDF5Handler', 'JSONHandler', 'JSONLHandler', 'NPYHandler',
     'PickleHandler', 'TXTHandler', 'XMLHandler', 'YAMLHandler'
 ]

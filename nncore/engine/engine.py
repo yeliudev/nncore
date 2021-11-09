@@ -40,9 +40,8 @@ class Engine(object):
             containing a ``_num_samples`` field indicating the number of
             samples in the current batch, and optionally a ``_out`` field
             denoting the model outputs to be collected and evaluated.
-        data_loader (:obj:`DataLoader` | dict | str): The data loader or config
-            of data loader for training, validation, and testing. The dict
-            should be in the format of
+        data_loaders (dict | str): The configs of data loaders for training,
+            validation, and testing. The dict should be in the format of
             ``dict(train=train_loader, val=val_loader, test=test_loader)``.
         stages (list[dict] | dict | None, optional): The stage config or list
             of stage configs to be scheduled. Each stage config should be a
@@ -137,7 +136,7 @@ class Engine(object):
 
     def __init__(self,
                  model,
-                 data_loader,
+                 data_loaders,
                  stages=None,
                  hooks=None,
                  buffer_size=100000,
@@ -145,18 +144,22 @@ class Engine(object):
                  work_dir=None,
                  seed=None,
                  **kwargs):
-        self.model = build_model(model)
+        self.model = build_model(model, **kwargs)
 
-        if not isinstance(data_loader, dict) or 'type' in data_loader:
-            data_loader = dict(train=data_loader)
+        _data_loaders = data_loaders.copy()
+        if 'train' not in _data_loaders:
+            _data_loaders = dict(train=_data_loaders)
 
         for a, b in (('val', 'test'), ('test', 'val')):
-            if a not in data_loader:
-                data_loader[a] = data_loader.get(b, data_loader['train'])
+            if a not in _data_loaders:
+                if b in _data_loaders:
+                    _data_loaders[a] = _data_loaders[b].copy()
+                else:
+                    _data_loaders[a] = _data_loaders['train'].copy()
 
         self.data_loaders = {
-            k: build_dataloader(v, key=k, seed=seed, **kwargs)
-            for k, v in data_loader.items()
+            k: build_dataloader(v, seed=seed)
+            for k, v in _data_loaders.items()
         }
 
         if isinstance(stages, dict):

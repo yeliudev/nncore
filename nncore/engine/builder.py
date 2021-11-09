@@ -10,36 +10,29 @@ from .utils import set_random_seed
 HOOKS = Registry('hook')
 
 
-def build_dataloader(cfg, loader_cfg=None, key=None, seed=None, **kwargs):
+def build_dataloader(cfg, seed=None, **kwargs):
     """
     Build a data loader from a dict. The dataset should be registered in
     :obj:`DATASETS`.
 
     Args:
         cfg (dict): The config of the dataset.
-        loader_cfg (dict | None, optional): The config of the data loader.
-            Default: ``None``.
-        key (str | None, optional): The key for of the data loader config.
-            Default: ``None``.
         seed (int | None, optional): The random seed to use. Default: ``None``.
 
     Returns:
         :obj:`DataLoader`: The constructed data loader.
     """
-    if isinstance(cfg, DataLoader):
-        return cfg
+    _cfg = cfg.copy()
 
     def _init_fn(worker_id):
         set_random_seed(seed=seed + worker_id)
 
-    if loader_cfg is not None:
-        loader_cfg = loader_cfg.get(key, dict())
-    elif isinstance(cfg, dict):
-        loader_cfg = cfg.pop('loader', dict())
+    if isinstance(_cfg, dict):
+        loader_cfg = _cfg.pop('loader', dict())
     else:
         loader_cfg = dict()
 
-    dataset = build_dataset(cfg, **kwargs)
+    dataset = build_dataset(_cfg, **kwargs)
     data_loader = DataLoader(
         dataset,
         collate_fn=collate,

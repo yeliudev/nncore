@@ -9,6 +9,8 @@ from tempfile import TemporaryDirectory
 
 import nncore
 from .binder import bind_getter
+from .data import is_seq_of
+from .path import abs_path, cp, dir_name, is_file, join, pure_ext
 
 
 class CfgNode(OrderedDict):
@@ -135,7 +137,7 @@ class CfgNode(OrderedDict):
         def _insert(ori, value, cfg):
             assert isinstance(cfg, (dict, int))
             if isinstance(cfg, dict):
-                assert nncore.is_seq_of(cfg['index'], int) or isinstance(
+                assert is_seq_of(cfg['index'], int) or isinstance(
                     cfg['index'], int)
                 if isinstance(cfg['index'], (list, tuple)):
                     assert isinstance(cfg['value'], (list, tuple)) and len(
@@ -154,7 +156,7 @@ class CfgNode(OrderedDict):
         def _update(ori, value, cfg):
             assert isinstance(cfg, (dict, int))
             if isinstance(cfg, dict):
-                assert nncore.is_seq_of(cfg['index'], int) or isinstance(
+                assert is_seq_of(cfg['index'], int) or isinstance(
                     cfg['index'], int)
                 if isinstance(cfg['index'], (list, tuple)):
                     assert isinstance(cfg['value'], (list, tuple)) and len(
@@ -267,14 +269,14 @@ class Config(CfgNode):
         Returns:
             :obj:`Config`: The constructed config object.
         """
-        filename = nncore.abs_path(filename)
-        nncore.is_file(filename, raise_error=True)
+        filename = abs_path(filename)
+        is_file(filename, raise_error=True)
 
-        format = nncore.pure_ext(filename)
+        format = pure_ext(filename)
         if format == 'py':
             with TemporaryDirectory() as tmp:
                 mod_name = str(int.from_bytes(os.urandom(2), 'big'))
-                nncore.cp(filename, nncore.join(tmp, '{}.py'.format(mod_name)))
+                cp(filename, join(tmp, '{}.py'.format(mod_name)))
                 sys.path.insert(0, tmp)
                 mod = import_module(mod_name)
                 sys.path.pop(0)
@@ -296,7 +298,7 @@ class Config(CfgNode):
             _cfg = CfgNode()
             for name in base:
                 if name.endswith(('.py', '.json', '.yml', '.yaml')):
-                    path = nncore.join(nncore.dir_name(filename), name)
+                    path = join(dir_name(filename), name)
                     _cfg.merge_from(Config.from_file(path))
                 else:
                     curr_path = os.getcwd()

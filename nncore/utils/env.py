@@ -13,7 +13,7 @@ from socket import gethostname
 
 from tabulate import tabulate
 
-import nncore
+from .path import dir_name, is_dir, join
 
 
 def get_host_info():
@@ -33,9 +33,9 @@ def _collect_cuda_env():
         import torch
         from torch.utils.cpp_extension import CUDA_HOME
         cuda_arch_list = os.environ.get('TORCH_CUDA_ARCH_LIST')
-        if CUDA_HOME is not None and nncore.is_dir(CUDA_HOME):
+        if CUDA_HOME is not None and is_dir(CUDA_HOME):
             try:
-                nvcc = nncore.join(CUDA_HOME, 'bin', 'nvcc')
+                nvcc = join(CUDA_HOME, 'bin', 'nvcc')
                 nvcc = subprocess.check_output(
                     "'{}' -V | tail -n1".format(nvcc), shell=True)
                 nvcc = nvcc.decode('utf-8').strip()
@@ -58,7 +58,7 @@ def _collect_torch_env():
     try:
         import torch
         version = torch.__version__
-        root = nncore.dir_name(torch.__file__)
+        root = dir_name(torch.__file__)
         return '{} @ {}'.format(version, root), torch.version.debug
     except ImportError:
         return None, None
@@ -100,8 +100,8 @@ def _collect_torchvision_env():
         import torch
         import torchvision
         from torch.utils.cpp_extension import CUDA_HOME
-        torchvision_env = '{} @ {}'.format(
-            torchvision.__version__, nncore.dir_name(torchvision.__file__))
+        torchvision_env = '{} @ {}'.format(torchvision.__version__,
+                                           dir_name(torchvision.__file__))
         if torch.cuda.is_available():
             try:
                 torchvision_C = importlib.util.find_spec(

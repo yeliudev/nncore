@@ -5,7 +5,7 @@ import sys
 
 from termcolor import colored
 
-import nncore
+from .path import abs_path, dir_name, mkdir
 
 _COLOR_MAP = {
     0: 'white',
@@ -91,7 +91,7 @@ def get_logger(logger_or_name=None,
         pass
 
     if log_file is not None:
-        nncore.mkdir(nncore.dir_name(nncore.abs_path(log_file)))
+        mkdir(dir_name(abs_path(log_file)))
         fh = logging.FileHandler(log_file, mode='w')
         formatter = logging.Formatter(fmt=fmt, datefmt=datefmt)
         fh.setFormatter(formatter)

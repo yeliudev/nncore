@@ -7,8 +7,8 @@ import torch.nn as nn
 
 import nncore
 from ..builder import MODELS, build_act_layer, build_norm_layer
+from ..bundle import Sequential
 from ..init import kaiming_init_, xavier_init_
-from .bundle import Sequential
 
 
 @MODELS.register()

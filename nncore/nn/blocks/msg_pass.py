@@ -5,7 +5,7 @@ import torch.nn as nn
 
 import nncore
 from ..builder import MESSAGE_PASSINGS
-from .bundle import Parameter
+from ..bundle import Parameter
 
 
 @MESSAGE_PASSINGS.register()

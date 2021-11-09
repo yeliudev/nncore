@@ -14,14 +14,14 @@ class EmptyCacheHook(Hook):
     Empty cache periodically during training.
 
     Args:
-        names (list[str]): The list of hook names to empty cache. Expected
-            values include ``'before_launch'``, ``'after_launch'``,
+        names (list[str], optional): The list of hook names to empty cache.
+            Expected values include ``'before_launch'``, ``'after_launch'``,
             ``'before_stage'``, ``'after_stage'``, ``'before_epoch'``,
             ``'after_epoch'``, ``'before_iter'``, ``'after_iter'``,
             ``'before_train_epoch'``, ``'after_train_epoch'``,
             ``'before_val_epoch'``, ``'after_val_epoch'``,
             ``'before_train_iter'``, ``'after_train_iter'``,
-            ``'before_val_iter'``, and ``'after_val_iter'``
+            ``'before_val_iter'``, and ``'after_val_iter'``. Default: ``[]``.
     """
 
     def __init__(self, names=[]):
