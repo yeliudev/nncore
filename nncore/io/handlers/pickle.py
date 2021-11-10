@@ -24,9 +24,9 @@ class PickleHandler(FileHandler):
     def dump_to_str(self, obj, protocol=2, **kwargs):
         return pickle.dumps(obj, protocol=protocol, **kwargs)
 
-    def load_from_path(self, file, **kwargs):
+    def load_from_path(self, path, **kwargs):
         return super(PickleHandler, self).load_from_path(
-            file, mode='rb', **kwargs)
+            path, mode='rb', **kwargs)
 
-    def dump_to_path(self, obj, file, **kwargs):
-        super(PickleHandler, self).dump_to_path(obj, file, mode='wb', **kwargs)
+    def dump_to_path(self, obj, path, **kwargs):
+        super(PickleHandler, self).dump_to_path(obj, path, mode='wb', **kwargs)

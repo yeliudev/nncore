@@ -39,10 +39,10 @@ class JSONLHandler(FileHandler):
         else:
             file.write(obj)
 
-    def load_from_path(self, file, mode='r'):
-        with jsonlines.open(file, mode) as f:
+    def load_from_path(self, path, mode='r'):
+        with jsonlines.open(path, mode) as f:
             return self.load_from_file(f)
 
-    def dump_to_path(self, obj, file, mode='w'):
-        with jsonlines.open(file, mode) as f:
+    def dump_to_path(self, obj, path, mode='w'):
+        with jsonlines.open(path, mode) as f:
             self.dump_to_file(obj, f)

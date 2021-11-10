@@ -31,10 +31,10 @@ class HDF5Handler(FileHandler):
                 kwargs.setdefault('maxshape', [None] + list(obj.shape)[1:])
             file.create_dataset(dataset, data=obj, **kwargs)
 
-    def load_from_path(self, file, mode='r', **kwargs):
-        with h5py.File(file, mode=mode) as f:
+    def load_from_path(self, path, mode='r', **kwargs):
+        with h5py.File(path, mode=mode) as f:
             return self.load_from_file(f, **kwargs)
 
-    def dump_to_path(self, obj, file, mode='a', **kwargs):
-        with h5py.File(file, mode=mode) as f:
+    def dump_to_path(self, obj, path, mode='a', **kwargs):
+        with h5py.File(path, mode=mode) as f:
             self.dump_to_file(obj, f, **kwargs)

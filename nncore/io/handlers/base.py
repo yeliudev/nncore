@@ -20,10 +20,10 @@ class FileHandler(object):
     def dump_to_str(self):
         raise NotImplementedError
 
-    def load_from_path(self, file, mode='r', **kwargs):
-        with open(file, mode) as f:
+    def load_from_path(self, path, mode='r', **kwargs):
+        with open(path, mode) as f:
             return self.load_from_file(f, **kwargs)
 
-    def dump_to_path(self, obj, file, mode='w', **kwargs):
-        with open(file, mode) as f:
+    def dump_to_path(self, obj, path, mode='w', **kwargs):
+        with open(path, mode) as f:
             self.dump_to_file(obj, f, **kwargs)

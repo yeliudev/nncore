@@ -7,7 +7,7 @@ import h5py
 import jsonlines
 
 import nncore
-from .handlers import (HDF5Handler, JSONHandler, JSONLHandler, NPYHandler,
+from .handlers import (HDF5Handler, JSONHandler, JSONLHandler, NumPyHandler,
                        PickleHandler, TXTHandler, XMLHandler, YAMLHandler)
 
 _FILE_HANDLERS = {
@@ -19,7 +19,8 @@ _FILE_HANDLERS = {
     'pkl': PickleHandler(),
     'hdf5': HDF5Handler(),
     'h5': HDF5Handler(),
-    'npy': NPYHandler(),
+    'npy': NumPyHandler(),
+    'npz': NumPyHandler(),
     'xml': XMLHandler(),
     'txt': TXTHandler()
 }
@@ -43,7 +44,7 @@ def load(name_or_file, format=None, **kwargs):
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json/jsonl``, ``yaml/yml``,
-            ``pickle/pkl``, ``hdf5/h5``, ``npy``, ``xml``, and ``txt``.
+            ``pickle/pkl``, ``hdf5/h5``, ``npy/npz``, ``xml``, and ``txt``.
             Default: ``None``.
 
     Returns:
@@ -75,7 +76,7 @@ def dump(obj, name_or_file, format=None, overwrite=True, **kwargs):
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json/jsonl``, ``yaml/yml``,
-            ``pickle/pkl``, ``hdf5/h5``, ``npy``, ``xml``, and ``txt``.
+            ``pickle/pkl``, ``hdf5/h5``, ``npy/npz``, ``xml``, and ``txt``.
             Default: ``None``.
         overwrite (bool, optional): Whether to overwrite it if the file exists.
             Default: ``True``.

@@ -24,8 +24,8 @@ class XMLHandler(FileHandler):
     def dump_to_str(self, obj, **kwargs):
         return ET.tostring(obj, **kwargs)
 
-    def load_from_path(self, file, **kwargs):
-        return self.load_from_file(file, **kwargs)
+    def load_from_path(self, path, **kwargs):
+        return self.load_from_file(path, **kwargs)
 
-    def dump_to_path(self, obj, file, **kwargs):
-        self.dump_to_file(obj, file, **kwargs)
+    def dump_to_path(self, obj, path, **kwargs):
+        self.dump_to_file(obj, path, **kwargs)
