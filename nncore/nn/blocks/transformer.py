@@ -7,7 +7,7 @@ import torch.nn as nn
 
 import nncore
 from ..builder import MODELS, build_act_layer, build_norm_layer
-from ..bundle import Sequential
+from ..bundle import Parameter, Sequential
 from ..init import kaiming_init_, xavier_init_
 
 
@@ -38,7 +38,7 @@ class PositionalEncoding(nn.Module):
         self._max_len = max_len
 
         if learnable:
-            self.pe = nn.Parameter(torch.randn(1, max_len, dims) / dims**0.5)
+            self.pe = Parameter(1, max_len, dims)
         else:
             pos = torch.arange(max_len).unsqueeze(1)
             div = (torch.arange(0, dims, 2) * (-log(10000.0) / dims)).exp()
@@ -172,8 +172,8 @@ class FeedForwardNetwork(nn.Module):
 
     Args:
         dims (int): The input feature dimensions.
-        ratio (int | float, optional): The ratio of hidden layer dimensions
-            with respect to the input dimensions. Default: ``1``.
+        ratio (float, optional): The ratio of hidden layer dimensions with
+            respect to the input dimensions. Default: ``1``.
         p (float, optional): The dropout probability. Default: ``0.1``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
@@ -225,8 +225,8 @@ class TransformerEncoderLayer(nn.Module):
     Args:
         dims (int): The input feature dimensions.
         heads (int, optional): The number of attention heads. Default: ``1``.
-        ratio (int | float, optional): The ratio of hidden layer dimensions in
-            the feed forward network. Default: ``1``.
+        ratio (float, optional): The ratio of hidden layer dimensions in the
+            feed forward network. Default: ``1``.
         p (float, optional): The dropout probability. Default: ``0.1``.
         pre_norm (bool, optional): Whether to apply the normalization before
             instead of after each layer. Default: ``True``.

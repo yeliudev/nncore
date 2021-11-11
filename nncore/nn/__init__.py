@@ -12,8 +12,10 @@ from .bundle import ModuleDict, ModuleList, Parameter, Sequential
 from .init import (constant_init_, init_module_, kaiming_init_, normal_init_,
                    uniform_init_, xavier_init_)
 from .losses import (BalancedL1Loss, DynamicBCELoss, FocalLoss, FocalLossStar,
-                     GHMCLoss, L1Loss, SmoothL1Loss, balanced_l1_loss,
-                     focal_loss, focal_loss_star, l1_loss, smooth_l1_loss)
+                     GaussianFocalLoss, GHMCLoss, L1Loss, SmoothL1Loss,
+                     balanced_l1_loss, focal_loss, focal_loss_star,
+                     gaussian_focal_loss, l1_loss, smooth_l1_loss,
+                     weighted_loss)
 from .modules import (ConvModule, LinearModule, MsgPassModule,
                       build_conv_modules, build_linear_modules,
                       build_msg_pass_modules)
@@ -29,9 +31,10 @@ __all__ = [
     'Parameter', 'Sequential', 'constant_init_', 'init_module_',
     'kaiming_init_', 'normal_init_', 'uniform_init_', 'xavier_init_',
     'BalancedL1Loss', 'DynamicBCELoss', 'FocalLoss', 'FocalLossStar',
-    'GHMCLoss', 'L1Loss', 'SmoothL1Loss', 'balanced_l1_loss', 'focal_loss',
-    'focal_loss_star', 'l1_loss', 'smooth_l1_loss', 'ConvModule',
-    'LinearModule', 'MsgPassModule', 'build_conv_modules',
-    'build_linear_modules', 'build_msg_pass_modules', 'fuse_bn_',
-    'move_to_device', 'publish_model', 'update_bn_stats_'
+    'GaussianFocalLoss', 'GHMCLoss', 'L1Loss', 'SmoothL1Loss',
+    'balanced_l1_loss', 'focal_loss', 'focal_loss_star', 'gaussian_focal_loss',
+    'l1_loss', 'smooth_l1_loss', 'weighted_loss', 'ConvModule', 'LinearModule',
+    'MsgPassModule', 'build_conv_modules', 'build_linear_modules',
+    'build_msg_pass_modules', 'fuse_bn_', 'move_to_device', 'publish_model',
+    'update_bn_stats_'
 ]

@@ -60,15 +60,16 @@ class ModuleDict(nn.ModuleDict):
 
 class Parameter(nn.Parameter):
     """
-    An :obj:`nn.Parameter` class that supports multiple inputs.
+    An :obj:`nn.Parameter` class that supports multiple inputs initializes the
+    parameters using a scaled normal distribution.
     """
 
     def __new__(cls, *args, requires_grad=True, **kwargs):
         if torch.is_tensor(args[0]):
             data = args[0]
         elif isinstance(args[0], (list, tuple)):
-            data = torch.empty(args[0], **kwargs)
+            data = torch.randn(args[0], **kwargs) / args[0][-1]**0.5
         else:
-            data = torch.empty(args, **kwargs)
+            data = torch.randn(args, **kwargs) / args[-1]**0.5
 
         return torch.Tensor._make_subclass(cls, data, requires_grad)

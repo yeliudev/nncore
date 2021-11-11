@@ -6,18 +6,17 @@ import torch.nn as nn
 
 import nncore
 from ..builder import LOSSES
+from .utils import weighted_loss
 
 
-def l1_loss(pred, target, reduction='mean'):
+@weighted_loss
+def l1_loss(pred, target):
     """
     L1 Loss.
 
     Args:
         pred (:obj:`torch.Tensor`): The predictions.
         target (:obj:`torch.Tensor`): The learning targets.
-        reduction (str, optional): Reduction method. Currently supported
-            values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
-            ``'mean'``.
 
     Returns:
         :obj:`torch.Tensor`: The loss tensor.
@@ -28,15 +27,11 @@ def l1_loss(pred, target, reduction='mean'):
     assert pred.size() == target.size()
     loss = (pred - target).abs()
 
-    if reduction == 'mean':
-        loss = loss.mean()
-    elif reduction == 'sum':
-        loss = loss.sum()
-
     return loss
 
 
-def smooth_l1_loss(pred, target, beta=1.0, reduction='mean'):
+@weighted_loss
+def smooth_l1_loss(pred, target, beta=1.0):
     """
     Smooth L1 Loss introduced in [1].
 
@@ -45,9 +40,6 @@ def smooth_l1_loss(pred, target, beta=1.0, reduction='mean'):
         target (:obj:`torch.Tensor`): The learning targets.
         beta (float, optional): The threshold in the piecewise function.
             Default: ``1.0``.
-        reduction (str, optional): Reduction method. Currently supported
-            values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
-            ``'mean'``.
 
     Returns:
         :obj:`torch.Tensor`: The loss tensor.
@@ -65,20 +57,11 @@ def smooth_l1_loss(pred, target, beta=1.0, reduction='mean'):
     loss = torch.where(diff < beta, 0.5 * diff * diff / beta,
                        diff - 0.5 * beta)
 
-    if reduction == 'mean':
-        loss = loss.mean()
-    elif reduction == 'sum':
-        loss = loss.sum()
-
     return loss
 
 
-def balanced_l1_loss(pred,
-                     target,
-                     beta=1.0,
-                     alpha=0.5,
-                     gamma=1.5,
-                     reduction='mean'):
+@weighted_loss
+def balanced_l1_loss(pred, target, beta=1.0, alpha=0.5, gamma=1.5):
     """
     Balanced L1 Loss introduced in [1].
 
@@ -90,9 +73,6 @@ def balanced_l1_loss(pred,
         alpha (float, optional): The dominator of the loss. Default: ``0.5``.
         gamma (float, optional): The promotion controller of the loss. Default:
             ``1.5``.
-        reduction (str, optional): Reduction method. Currently supported
-            values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
-            ``'mean'``.
 
     Returns:
         :obj:`torch.Tensor`: The loss tensor.
@@ -112,11 +92,6 @@ def balanced_l1_loss(pred,
         diff < beta, alpha / b * (b * diff + 1) * (b * diff / beta + 1).log() -
         alpha * diff, gamma * diff + gamma / b - alpha * beta)
 
-    if reduction == 'mean':
-        loss = loss.mean()
-    elif reduction == 'sum':
-        loss = loss.sum()
-
     return loss
 
 
@@ -127,9 +102,8 @@ class L1Loss(nn.Module):
     L1 Loss.
 
     Args:
-        reduction (str, optional): Reduction method. Currently supported
-            values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
-            ``'mean'``.
+        reduction (str, optional): Reduction method. Currently supported values
+            include ``'mean'``, ``'sum'``, and ``'none'``. Default: ``'mean'``.
         loss_weight (float, optional): Weight of the loss. Default: ``1.0``.
     """
 
@@ -138,9 +112,17 @@ class L1Loss(nn.Module):
         self._reduction = reduction
         self._loss_weight = loss_weight
 
-    def forward(self, pred, target):
+    def extra_repr(self):
+        return 'reduction={}, loss_weight={}'.format(self._reduction,
+                                                     self._loss_weight)
+
+    def forward(self, pred, target, weight=None, avg_factor=None):
         return l1_loss(
-            pred, target, reduction=self._reduction) * self._loss_weight
+            pred,
+            target,
+            weight=weight,
+            reduction=self._reduction,
+            avg_factor=avg_factor) * self._loss_weight
 
 
 @LOSSES.register()
@@ -152,9 +134,8 @@ class SmoothL1Loss(nn.Module):
     Args:
         beta (float, optional): The threshold in the piecewise function.
             Default: ``1.0``.
-        reduction (str, optional): Reduction method. Currently supported
-            values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
-            ``'mean'``.
+        reduction (str, optional): Reduction method. Currently supported values
+            include ``'mean'``, ``'sum'``, and ``'none'``. Default: ``'mean'``.
         loss_weight (float, optional): Weight of the loss. Default: ``1.0``.
 
     References:
@@ -167,10 +148,18 @@ class SmoothL1Loss(nn.Module):
         self._reduction = reduction
         self._loss_weight = loss_weight
 
-    def forward(self, pred, target):
+    def extra_repr(self):
+        return 'beta={}, reduction={}, loss_weight={}'.format(
+            self._beta, self._reduction, self._loss_weight)
+
+    def forward(self, pred, target, weight=None, avg_factor=None):
         return smooth_l1_loss(
-            pred, target, beta=self._beta,
-            reduction=self._reduction) * self._loss_weight
+            pred,
+            target,
+            beta=self._beta,
+            weight=weight,
+            reduction=self._reduction,
+            avg_factor=avg_factor) * self._loss_weight
 
 
 @LOSSES.register()
@@ -185,9 +174,8 @@ class BalancedL1Loss(nn.Module):
         alpha (float, optional): The dominator of the loss. Default: ``0.5``.
         gamma (float, optional): The promotion controller of the loss. Default:
             ``1.5``.
-        reduction (str, optional): Reduction method. Currently supported
-            values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
-            ``'mean'``.
+        reduction (str, optional): Reduction method. Currently supported values
+            include ``'mean'``, ``'sum'``, and ``'none'``. Default: ``'mean'``.
 
     References:
         1. Pang et al. (https://arxiv.org/abs/1904.02701)
@@ -206,11 +194,18 @@ class BalancedL1Loss(nn.Module):
         self._reduction = reduction
         self._loss_weight = loss_weight
 
-    def forward(self, pred, target):
+    def extra_repr(self):
+        return ('beta={}, alpha={}, gamma={}, reduction={}, '
+                'loss_weight={}'.format(self._beta, self._alpha, self._gamma,
+                                        self._reduction, self._loss_weight))
+
+    def forward(self, pred, target, weight=None, avg_factor=None):
         return balanced_l1_loss(
             pred,
             target,
             beta=self._beta,
             alpha=self._alpha,
             gamma=self._gamma,
-            reduction=self._reduction) * self._loss_weight
+            weight=weight,
+            reduction=self._reduction,
+            avg_factor=avg_factor) * self._loss_weight

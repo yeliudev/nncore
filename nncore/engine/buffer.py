@@ -154,7 +154,7 @@ class Buffer(object):
 
         return sum
 
-    def avg(self, key, by='_num_samples', window_size=None):
+    def avg(self, key, factor='_avg_factor', window_size=None):
         """
         Return the average of the latest ``window_size`` values in the buffer.
         Note that since not all the values in the buffer are count from the
@@ -163,8 +163,8 @@ class Buffer(object):
 
         Args:
             key (str): The key of the values.
-            by (str, optional): The key of number of samples. Default:
-                ``'_num_samples'``.
+            factor (str, optional): The key of average factor. Default:
+                ``'_avg_factor'``.
             window_size (int | None, optional): The window size of the values
                 to be computed. If not specified, all the values will be taken
                 into account. Default: ``None``.
@@ -175,7 +175,7 @@ class Buffer(object):
         if window_size is None or window_size > len(self._data[key]):
             window_size = len(self._data[key])
 
-        num_samples = torch.Tensor(self._data[by][-window_size:])
+        num_samples = torch.Tensor(self._data[factor][-window_size:])
 
         if isinstance(self._data[key][0], dict):
             data = nncore.to_dict_of_list(self._data[key][-window_size:])

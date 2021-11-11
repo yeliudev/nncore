@@ -114,18 +114,22 @@ def build_norm_layer(cfg, *args, dims=None, **kwargs):
     """
     if isinstance(cfg, str):
         cfg = dict(type=cfg)
+    elif not isinstance(cfg, dict):
+        return cfg
 
-    if dims is not None and cfg['type'] not in NORMS.group('drop'):
-        if cfg['type'] == 'LN':
+    _cfg = cfg.copy()
+
+    if dims is not None and _cfg['type'] not in NORMS.group('drop'):
+        if _cfg['type'] == 'LN':
             key = 'normalized_shape'
-        elif cfg['type'] == 'GN':
+        elif _cfg['type'] == 'GN':
             key = 'num_channels'
         else:
             key = 'num_features'
 
-        cfg.setdefault(key, dims)
+        _cfg.setdefault(key, dims)
 
-    return build_object(cfg, [NORMS, nn], args=args, **kwargs)
+    return build_object(_cfg, [NORMS, nn], args=args, **kwargs)
 
 
 def build_loss(cfg, *args, **kwargs):

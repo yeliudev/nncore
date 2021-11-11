@@ -42,7 +42,7 @@ class LeNet(nn.Module):
 
         loss = self.loss(x, y)
 
-        return dict(_num_samples=x.size(0), acc=acc, loss=loss)
+        return dict(_avg_factor=x.size(0), acc=acc, loss=loss)
 
 
 def main():

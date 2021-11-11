@@ -37,7 +37,7 @@ class Engine(object):
     Args:
         model (:obj:`nn.Module` | cfg | str): The model or config of the model.
             The :obj:`forward` method of the model should return a dict
-            containing a ``_num_samples`` field indicating the number of
+            containing a ``_avg_factor`` field indicating the number of
             samples in the current batch, and optionally a ``_out`` field
             denoting the model outputs to be collected and evaluated.
         data_loaders (dict | str): The configs of data loaders for training,

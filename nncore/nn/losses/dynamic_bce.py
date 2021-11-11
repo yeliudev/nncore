@@ -15,9 +15,8 @@ class DynamicBCELoss(nn.Module):
     during training.
 
     Args:
-        reduction (str, optional): Reduction method. Currently supported
-            values include ``'mean'``, ``'sum'``, and ``'none'``. Default:
-            ``'mean'``.
+        reduction (str, optional): Reduction method. Currently supported values
+            include ``'mean'``, ``'sum'``, and ``'none'``. Default: ``'mean'``.
         pos_weight (float | None, optional): Weight of the positive examples.
             Default: ``None``.
         loss_weight (float, optional): Weight of the loss. Default: ``1.0``.
@@ -30,6 +29,10 @@ class DynamicBCELoss(nn.Module):
         self._reduction = reduction
         self._pos_weight = pos_weight
         self._loss_weight = loss_weight
+
+    def extra_repr(self):
+        return 'reduction={}, pos_weight={}, loss_weight={}'.format(
+            self._reduction, self._pos_weight, self._loss_weight)
 
     def forward(self, pred, target, weight=None):
         if self._pos_weight is not None:
