@@ -92,7 +92,7 @@ def gaussian_focal_loss(pred, target, alpha=2.0, gamma=4.0):
         :obj:`torch.Tensor`: The loss tensor.
 
     References:
-        1. Lin et al. (https://arxiv.org/abs/1708.02002)
+        1. Law et al. (https://arxiv.org/abs/1808.01244)
     """
     eps = 1e-12
 

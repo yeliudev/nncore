@@ -90,9 +90,10 @@ class OptimizerHook(Hook):
 
         cfg = engine.cur_stage.get('grad_clip')
         if cfg is not None:
-            params_with_grad = filter(
-                lambda p: p.requires_grad and p.grad is not None,
-                engine.model.parameters())
+            params_with_grad = [
+                p for p in engine.model.parameters()
+                if p.requires_grad and p.grad is not None
+            ]
             if len(params_with_grad) > 0:
                 clip_grad.clip_grad_norm_(params_with_grad, **cfg)
 
