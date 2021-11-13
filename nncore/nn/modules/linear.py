@@ -86,7 +86,11 @@ class LinearModule(nn.Module):
         return x
 
 
-def build_linear_modules(dims, last_norm=False, last_act=False, **kwargs):
+def build_linear_modules(dims,
+                         last_norm=False,
+                         last_act=False,
+                         default=None,
+                         **kwargs):
     """
     Build a multi-layer perceptron (MLP).
 
@@ -96,10 +100,15 @@ def build_linear_modules(dims, last_norm=False, last_act=False, **kwargs):
             the last linear layer. Default: ``False``.
         last_act (bool, optional): Whether to add an activation layer after
             the last linear layer. Default: ``False``.
+        default (any, optional): The default value when the ``dims`` is not
+            valid. Default: ``None``.
 
     Returns:
         :obj:`nn.Sequential` | :obj:`LinearModule`: The constructed module.
     """
+    if not nncore.is_seq_of(dims, int):
+        return default
+
     _kwargs = kwargs.copy()
     _layers = [last_norm or 'norm', last_act or 'act']
     layers = []

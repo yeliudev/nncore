@@ -123,6 +123,7 @@ def build_conv_modules(dims,
                        kernels,
                        last_norm=False,
                        last_act=False,
+                       default=None,
                        **kwargs):
     """
     Build a sequential module list containing convolution, normalization, and
@@ -136,10 +137,15 @@ def build_conv_modules(dims,
             the last convolution layer. Default: ``False``.
         last_act (bool, optional): Whether to add an activation layer after
             the last convolution layer. Default: ``False``.
+        default (any, optional): The default value when the ``dims`` is not
+            valid. Default: ``None``.
 
     Returns:
         :obj:`nn.Sequential` | :obj:`ConvModule`: The constructed module.
     """
+    if not nncore.is_seq_of(dims, int):
+        return default
+
     _kwargs = kwargs.copy()
     _layers = [last_norm or 'norm', last_act or 'act']
     layers = []

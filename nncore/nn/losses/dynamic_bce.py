@@ -31,7 +31,7 @@ class DynamicBCELoss(nn.Module):
         self._loss_weight = loss_weight
 
     def extra_repr(self):
-        return 'reduction={}, pos_weight={}, loss_weight={}'.format(
+        return "reduction='{}', pos_weight={}, loss_weight={}".format(
             self._reduction, self._pos_weight, self._loss_weight)
 
     def forward(self, pred, target, weight=None):

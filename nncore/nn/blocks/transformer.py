@@ -217,7 +217,7 @@ class FeedForwardNetwork(nn.Module):
 
 
 @MODELS.register()
-@nncore.bind_getter('dims', 'heads', 'p', 'ratio', 'pre_norm')
+@nncore.bind_getter('dims', 'heads', 'ratio', 'p', 'pre_norm')
 class TransformerEncoderLayer(nn.Module):
     """
     Transformer Encoder Layer introduced in [1].
@@ -281,7 +281,7 @@ class TransformerEncoderLayer(nn.Module):
 
 
 @MODELS.register()
-@nncore.bind_getter('dims', 'heads', 'p', 'ratio', 'pre_norm')
+@nncore.bind_getter('dims', 'heads', 'ratio', 'p', 'pre_norm')
 class TransformerDecoderLayer(nn.Module):
     """
     Transformer Decoder Layer introduced in [1].

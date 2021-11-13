@@ -113,8 +113,8 @@ class L1Loss(nn.Module):
         self._loss_weight = loss_weight
 
     def extra_repr(self):
-        return 'reduction={}, loss_weight={}'.format(self._reduction,
-                                                     self._loss_weight)
+        return "reduction='{}', loss_weight={}".format(self._reduction,
+                                                       self._loss_weight)
 
     def forward(self, pred, target, weight=None, avg_factor=None):
         return l1_loss(
@@ -149,7 +149,7 @@ class SmoothL1Loss(nn.Module):
         self._loss_weight = loss_weight
 
     def extra_repr(self):
-        return 'beta={}, reduction={}, loss_weight={}'.format(
+        return "beta={}, reduction='{}', loss_weight={}".format(
             self._beta, self._reduction, self._loss_weight)
 
     def forward(self, pred, target, weight=None, avg_factor=None):
@@ -195,8 +195,8 @@ class BalancedL1Loss(nn.Module):
         self._loss_weight = loss_weight
 
     def extra_repr(self):
-        return ('beta={}, alpha={}, gamma={}, reduction={}, '
-                'loss_weight={}'.format(self._beta, self._alpha, self._gamma,
+        return ("beta={}, alpha={}, gamma={}, reduction='{}', "
+                "loss_weight={}".format(self._beta, self._alpha, self._gamma,
                                         self._reduction, self._loss_weight))
 
     def forward(self, pred, target, weight=None, avg_factor=None):

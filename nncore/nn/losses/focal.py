@@ -134,7 +134,7 @@ class FocalLoss(nn.Module):
         self._loss_weight = loss_weight
 
     def extra_repr(self):
-        return 'alpha={}, gamma={}, reduction={}, loss_weight={}'.format(
+        return "alpha={}, gamma={}, reduction='{}', loss_weight={}".format(
             self._alpha, self._gamma, self._reduction, self._loss_weight)
 
     def forward(self, pred, target, weight=None, avg_factor=None):

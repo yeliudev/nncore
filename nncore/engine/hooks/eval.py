@@ -45,11 +45,15 @@ class EvalHook(Hook):
             engine.buffer.update(key, value)
 
         for key in self._high_keys:
+            if key not in output:
+                continue
             if output[key] > self._high_values[key]:
                 self._high_values[key] = output[key]
             engine.buffer.update('best_{}'.format(key), self._high_values[key])
 
         for key in self._low_keys:
+            if key not in output:
+                continue
             if output[key] < self._low_values[key]:
                 self._low_values[key] = output[key]
             engine.buffer.update('best_{}'.format(key), self._low_values[key])

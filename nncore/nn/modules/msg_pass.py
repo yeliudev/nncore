@@ -107,7 +107,11 @@ class MsgPassModule(nn.Module):
         return x
 
 
-def build_msg_pass_modules(dims, last_norm=False, last_act=False, **kwargs):
+def build_msg_pass_modules(dims,
+                           last_norm=False,
+                           last_act=False,
+                           default=None,
+                           **kwargs):
     """
     Build a module list containing message passing, normalization, and
     activation layers.
@@ -118,10 +122,15 @@ def build_msg_pass_modules(dims, last_norm=False, last_act=False, **kwargs):
             the last message passing layer. Default: ``False``.
         last_act (bool, optional): Whether to add an activation layer after
             the last message passing layer. Default: ``False``.
+        default (any, optional): The default value when the ``dims`` is not
+            valid. Default: ``None``.
 
     Returns:
         :obj:`nn.ModuleList`: The constructed module list.
     """
+    if not nncore.is_seq_of(dims, int):
+        return default
+
     _kwargs = kwargs.copy()
     _layers = [last_norm or 'norm', last_act or 'act']
     cfg, layers = [], []
