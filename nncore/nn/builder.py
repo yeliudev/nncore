@@ -37,16 +37,15 @@ def build_model(cfg, *args, bundler=None, wrapper=None, **kwargs):
 
     obj = build_object(cfg, [MODELS, nn], args=args, **kwargs)
 
-    if obj is None:
+    if isinstance(obj, (list, tuple)):
+        obj = [o for o in obj if o is not None]
+        if bundler == 'sequential' and len(obj) > 1:
+            obj = Sequential(obj)
+    elif obj is None:
         return
 
-    if isinstance(cfg, (list, tuple)):
-        if all(o is None for o in obj):
-            return
-        elif bundler == 'sequential':
-            obj = Sequential(*obj)
-        elif bundler == 'modulelist':
-            obj = ModuleList(obj)
+    if bundler == 'modulelist':
+        obj = ModuleList(obj)
 
     if wrapper == 'dp':
         obj = NNDataParallel(obj)
