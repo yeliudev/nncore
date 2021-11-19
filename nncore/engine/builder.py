@@ -22,6 +22,9 @@ def build_dataloader(cfg, seed=None, **kwargs):
     Returns:
         :obj:`DataLoader`: The constructed data loader.
     """
+    if isinstance(cfg, DataLoader):
+        return cfg
+
     _cfg = cfg.copy()
 
     def _init_fn(worker_id):

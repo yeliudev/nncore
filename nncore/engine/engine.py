@@ -12,12 +12,14 @@ from .comm import gather, is_main_process, synchronize
 from .hooks import Hook
 from .utils import get_checkpoint, load_checkpoint
 
-_DEFAULT_STAGES = dict(
-    epochs=5,
-    optimizer=dict(type='SGD', lr=1e-2, momentum=0.9, weight_decay=1e-4),
-    lr_schedule=dict(type='iter', policy='cosine'),
-    warmup=dict(type='iter', policy='linear', steps=500, ratio=0.001),
-    validation=dict(interval=1))
+_DEFAULT_STAGES = [
+    dict(
+        epochs=5,
+        optimizer=dict(type='SGD', lr=1e-2, momentum=0.9, weight_decay=1e-4),
+        lr_schedule=dict(type='iter', policy='cosine'),
+        warmup=dict(type='iter', policy='linear', steps=500, ratio=0.001),
+        validation=dict(interval=1))
+]
 
 _DEFAULT_HOOKS = [
     'TimerHook', 'LrUpdaterHook', 'OptimizerHook', 'CheckpointHook',
@@ -146,20 +148,20 @@ class Engine(object):
                  **kwargs):
         self.model = build_model(model, **kwargs)
 
-        _data_loaders = data_loaders.copy()
-        if 'train' not in _data_loaders:
-            _data_loaders = dict(train=_data_loaders)
+        if 'train' not in data_loaders:
+            data_loaders = dict(train=data_loaders)
 
         for a, b in (('val', 'test'), ('test', 'val')):
-            if a not in _data_loaders:
-                if b in _data_loaders:
-                    _data_loaders[a] = _data_loaders[b].copy()
+            if a not in data_loaders:
+                loader = data_loaders[b if b in data_loaders else 'train']
+                if isinstance(loader, dict):
+                    data_loaders[a] = loader.copy()
                 else:
-                    _data_loaders[a] = _data_loaders['train'].copy()
+                    data_loaders[a] = loader
 
         self.data_loaders = {
             k: build_dataloader(v, seed=seed)
-            for k, v in _data_loaders.items()
+            for k, v in data_loaders.items()
         }
 
         if isinstance(stages, dict):
@@ -342,7 +344,9 @@ class Engine(object):
 
         if self.stages != checkpoint['meta']['stages']:
             self.logger.warn(
-                'Stages in the engine and checkpoint are mismatch')
+                'Stages in the engine and checkpoint are mismatch:'
+                '\n\nCurrent stages: {}\n\nCheckpoint stages: {}'.format(
+                    self.stages, checkpoint['meta']['stages']))
 
         load_checkpoint(
             self.model, checkpoint, strict=strict, logger=self.logger)
@@ -477,7 +481,7 @@ class Engine(object):
 
         self._call_hook('before_stage')
 
-        for _ in range(self.cur_stage['epochs']):
+        for _ in range(self.cur_stage['epochs'] - self.epoch_in_stage):
             self.train_epoch()
             cfg = self.cur_stage.get('validation')
             if cfg is not None and 'val' in self.data_loaders:
