@@ -55,9 +55,9 @@ class PositionalEncoding(nn.Module):
             self._max_len))
 
     def forward(self, x):
-        x = x + self.pe[:, :x.size(1)].repeat(x.size(0), 1, 1)
-        x = self.dropout(x)
-        return x
+        pe = self.pe[:, :x.size(1)].repeat(x.size(0), 1, 1)
+        pe = self.dropout(pe)
+        return pe
 
 
 @MODELS.register()
@@ -261,17 +261,19 @@ class TransformerEncoderLayer(nn.Module):
         self.norm1 = build_norm_layer(norm_cfg, dims=dims)
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
 
-    def forward(self, x, mask=None):
+    def forward(self, x, pe=None, mask=None):
         if self._pre_norm:
-            d = self.norm1(x)
-            d = self.att(d, mask=mask)
+            v = self.norm1(x)
+            q = k = v if pe is None else v + pe
+            d = self.att(q, k, v, mask=mask)
             x = x + d
 
             d = self.norm2(x)
             d = self.ffn(d)
             x = x + d
         else:
-            d = self.att(x, mask=mask)
+            q = k = x if pe is None else x + pe
+            d = self.att(q, k, x, mask=mask)
             x = self.norm1(x + d)
 
             d = self.ffn(x)
@@ -327,24 +329,30 @@ class TransformerDecoderLayer(nn.Module):
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
         self.norm3 = build_norm_layer(norm_cfg, dims=dims)
 
-    def forward(self, x, mem, mask=None):
+    def forward(self, x, mem, q_pe=None, k_pe=None, mask=None):
         if self._pre_norm:
-            d = self.norm1(x)
-            d = self.att1(d, mask=mask)
+            v = self.norm1(x)
+            q = k = v if q_pe is None else v + q_pe
+            d = self.att1(q, k, v, mask=mask)
             x = x + d
 
-            d = self.norm2(x)
-            d = self.att2(d, mem, mask=mask)
+            q = self.norm2(x)
+            q = q if q_pe is None else q + q_pe
+            k = mem if k_pe is None else mem + k_pe
+            d = self.att2(q, k, mem, mask=mask)
             x = x + d
 
             d = self.norm3(x)
             d = self.ffn(d)
             x = x + d
         else:
-            d = self.att1(x, mask=mask)
+            q = k = x if q_pe is None else x + q_pe
+            d = self.att1(q, k, x, mask=mask)
             x = self.norm1(x + d)
 
-            d = self.att2(x, mem, mask=mask)
+            q = x if q_pe is None else x + q_pe
+            k = mem if k_pe is None else mem + k_pe
+            d = self.att2(q, k, mem, mask=mask)
             x = self.norm2(x + d)
 
             d = self.ffn(x)
