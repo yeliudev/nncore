@@ -5,12 +5,13 @@ from torch.utils.data import DataLoader
 from nncore import Registry
 from nncore.dataset import build_dataset
 from nncore.parallel import collate
+from .comm import get_rank
 from .utils import set_random_seed
 
 HOOKS = Registry('hook')
 
 
-def build_dataloader(cfg, seed=None, **kwargs):
+def build_dataloader(cfg, seed=None, group=None, **kwargs):
     """
     Build a data loader from a dict. The dataset should be registered in
     :obj:`DATASETS`.
@@ -18,6 +19,9 @@ def build_dataloader(cfg, seed=None, **kwargs):
     Args:
         cfg (dict): The config of the dataset.
         seed (int | None, optional): The random seed to use. Default: ``None``.
+        group (:obj:`dist.ProcessGroup` | None, optional): The process group
+            to use. If not specified, the default process group will be used.
+            Default: ``None``.
 
     Returns:
         :obj:`DataLoader`: The constructed data loader.
@@ -27,13 +31,16 @@ def build_dataloader(cfg, seed=None, **kwargs):
 
     _cfg = cfg.copy()
 
-    def _init_fn(worker_id):
-        set_random_seed(seed=seed + worker_id)
-
     if isinstance(_cfg, dict):
         loader_cfg = _cfg.pop('loader', dict())
     else:
         loader_cfg = dict()
+
+    rank = get_rank(group=group)
+    num_workers = loader_cfg.get('num_workers', 0)
+
+    def _init_fn(worker_id):
+        set_random_seed(seed=seed + worker_id + rank * num_workers)
 
     dataset = build_dataset(_cfg, **kwargs)
     data_loader = DataLoader(

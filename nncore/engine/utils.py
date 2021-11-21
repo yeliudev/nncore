@@ -65,13 +65,13 @@ def _load_state_dict(module, state_dict, strict=False, logger=None):
         nncore.log_or_print(err_msg, logger, log_level='WARNING')
 
 
-def generate_random_seed(sync=False, src=0, group=None):
+def generate_random_seed(sync=True, src=0, group=None):
     """
     Generate a random seed.
 
     Args:
         sync (bool, optional): Whether to synchronize the random seed among the
-            processes in the group in distributed settings. Default: ``False``.
+            processes in the group in distributed settings. Default: ``True``.
         src (int, optional): The source rank of the process in distributed
             settings. This argument is valid only when ``sync==True``. Default:
             ``0``.
