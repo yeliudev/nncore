@@ -19,31 +19,10 @@ def _bind_cuda_device():
     torch.cuda.set_device(local_rank)
 
 
-def _init_dist_pytorch(backend, **kwargs):
-    _bind_cuda_device()
-    dist.init_process_group(backend, **kwargs)
-
-
-def _init_dist_slurm(backend, **kwargs):
-    nodes = os.environ.get('SLURM_NODELIST', os.environ['SLURM_JOB_NODELIST'])
-    master_addr = getoutput(
-        'scontrol show hostname {} | head -n1'.format(nodes))
-
-    os.environ.setdefault('MASTER_ADDR', master_addr)
-    os.environ.setdefault('MASTER_PORT', '29500')
-
-    os.environ['WORLD_SIZE'] = os.environ['SLURM_NTASKS']
-    os.environ['RANK'] = os.environ['SLURM_PROCID']
-    os.environ['LOCAL_RANK'] = os.environ['SLURM_LOCALID']
-
-    _bind_cuda_device()
-    dist.init_process_group(backend, **kwargs)
-
-
 def _get_default_device(group=None):
     backend = dist.get_backend(group)
-    assert backend in ('gloo', 'nccl')
-    device = torch.device('cpu' if backend == 'gloo' else 'cuda')
+    assert backend in ('nccl', 'gloo')
+    device = torch.device('cuda' if backend == 'nccl' else 'cpu')
     return device
 
 
@@ -63,34 +42,54 @@ def _pad_tensor(data_tensor, pad_size):
     return data_tensor
 
 
-def init_dist(launcher='pytorch', backend='gloo', **kwargs):
+def init_dist(launcher='torch', backend='nccl', **kwargs):
     """
     Initialize a distributed process group.
 
     Args:
         launcher (str, optional): Launcher for the process group. Currently
-            supported launchers include ``pytorch`` and ``slurm``, Default:
-            ``'pytorch'``.
+            supported launchers include ``torch`` and ``slurm``, Default:
+            ``'torch'``.
         backend (:obj:`dist.Backend` | str, optional): The distribution
             backend to use. This field should be given as a :obj:`dist.Backend`
             object or a str which can be accessed via :obj:`dist.Backend`
             attributes. Depending on build-time configurations, valid values
-            are ``'gloo'`` and ``'nccl'``. If using multiple processes per
+            are ``'nccl'`` and ``'gloo'``. If using multiple processes per
             machine with ``nccl`` backend, each process must have exclusive
             access to every GPU it uses, as sharing GPUs between processes can
-            result in deadlocks. Default: ``'gloo'``.
+            result in deadlocks. Default: ``'nccl'``.
     """
-    assert backend in ('gloo', 'nccl')
+    assert launcher in ('torch', 'slurm')
+    assert backend in ('nccl', 'gloo')
 
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method('spawn')
 
-    if launcher == 'pytorch':
-        _init_dist_pytorch(backend, **kwargs)
-    elif launcher == 'slurm':
-        _init_dist_slurm(backend, **kwargs)
-    else:
-        raise TypeError("unsupported launcher: '{}'".format(launcher))
+    if launcher == 'slurm':
+        node_list = os.environ.get('SLURM_JOB_NODELIST',
+                                   os.environ['SLURM_NODELIST'])
+        master_addr = getoutput(
+            'scontrol show hostname {} | head -n1'.format(node_list))
+
+        os.environ.setdefault('MASTER_ADDR', master_addr)
+        os.environ.setdefault('MASTER_PORT', '29500')
+
+        os.environ['WORLD_SIZE'] = os.environ['SLURM_NTASKS']
+        os.environ['RANK'] = os.environ['SLURM_PROCID']
+        os.environ['LOCAL_RANK'] = os.environ['SLURM_LOCALID']
+
+    _bind_cuda_device()
+    dist.init_process_group(backend, **kwargs)
+
+
+def is_elastic():
+    """
+    Check whether the current process was launched with ``dist.elastic``.
+
+    Returns:
+        bool: Whether the current process is distributed.
+    """
+    return os.getenv('TORCHELASTIC_RUN_ID') is not None
 
 
 def is_distributed():

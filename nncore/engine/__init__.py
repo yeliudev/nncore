@@ -3,8 +3,8 @@
 from .buffer import Buffer
 from .builder import HOOKS, build_dataloader, build_hook
 from .comm import (all_gather, broadcast, gather, get_dist_info, get_rank,
-                   get_world_size, init_dist, is_distributed, is_main_process,
-                   master_only, synchronize)
+                   get_world_size, init_dist, is_distributed, is_elastic,
+                   is_main_process, master_only, synchronize)
 from .engine import Engine
 from .hooks import (CheckpointHook, ClosureHook, CommandLineWriter,
                     EmptyCacheHook, EvalHook, EventWriterHook, Hook,
@@ -16,8 +16,8 @@ from .utils import (generate_random_seed, get_checkpoint, load_checkpoint,
 __all__ = [
     'Buffer', 'HOOKS', 'build_dataloader', 'build_hook', 'all_gather',
     'broadcast', 'gather', 'get_dist_info', 'get_rank', 'get_world_size',
-    'init_dist', 'is_distributed', 'is_main_process', 'master_only',
-    'synchronize', 'Engine', 'CheckpointHook', 'ClosureHook',
+    'init_dist', 'is_distributed', 'is_elastic', 'is_main_process',
+    'master_only', 'synchronize', 'Engine', 'CheckpointHook', 'ClosureHook',
     'CommandLineWriter', 'EmptyCacheHook', 'EvalHook', 'EventWriterHook',
     'Hook', 'JSONWriter', 'LrUpdaterHook', 'OptimizerHook', 'PreciseBNHook',
     'SamplerSeedHook', 'TensorboardWriter', 'TimerHook',

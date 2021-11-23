@@ -115,13 +115,16 @@ def _scatter_kwargs(inputs, kwargs, target_gpus, dim=0):
 
 class NNDataParallel(DataParallel):
     """
-    A :obj:`nn.DataParallel` class with :obj:`DataContainer` support and uses
-    single GPU by default.
+    A :obj:`nn.DataParallel` class with :obj:`DataContainer` support. This
+    class only bundles single-device modules.
     """
 
-    def __init__(self, *args, device_ids=[0], dim=0, **kwargs):
+    def __init__(self, module, device_ids=None, dim=0, **kwargs):
+        assert device_ids is None or len(device_ids) <= 1
         super(NNDataParallel, self).__init__(
-            *args, device_ids=device_ids, dim=dim, **kwargs)
+            module,
+            device_ids=[0] if device_ids is None else device_ids,
+            **kwargs)
         self.dim = dim
 
     def scatter(self, inputs, kwargs, device_ids):
@@ -138,8 +141,20 @@ class NNDataParallel(DataParallel):
 class NNDistributedDataParallel(DistributedDataParallel):
     """
     A :obj:`nn.DistributedDataParallel` class with :obj:`DataContainer`
-    support.
+    support. This class only bundles single-device modules.
     """
+
+    def __init__(self,
+                 module,
+                 device_ids=None,
+                 broadcast_buffers=False,
+                 **kwargs):
+        assert device_ids is None or len(device_ids) == 1
+        super(NNDistributedDataParallel, self).__init__(
+            module,
+            device_ids=device_ids or [torch.cuda.current_device()],
+            broadcast_buffers=broadcast_buffers,
+            **kwargs)
 
     def scatter(self, inputs, kwargs, device_ids):
         return _scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
