@@ -32,7 +32,7 @@ def _collect_cuda_env():
     try:
         import torch
         from torch.utils.cpp_extension import CUDA_HOME
-        cuda_arch_list = os.environ.get('TORCH_CUDA_ARCH_LIST')
+        cuda_arch_list = os.getenv('TORCH_CUDA_ARCH_LIST')
         if CUDA_HOME is not None and is_dir(CUDA_HOME):
             try:
                 nvcc = join(CUDA_HOME, 'bin', 'nvcc')
