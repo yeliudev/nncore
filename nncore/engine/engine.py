@@ -8,7 +8,7 @@ import nncore
 from nncore.nn import build_model
 from .buffer import Buffer
 from .builder import build_dataloader, build_hook
-from .comm import gather, is_main_process, synchronize
+from .comm import gather, is_distributed, is_main_process, synchronize
 from .hooks import Hook
 from .utils import get_checkpoint, load_checkpoint
 
@@ -170,6 +170,8 @@ class Engine(object):
             self.stages = stages or _DEFAULT_STAGES
 
         self.register_hook(_DEFAULT_HOOKS)
+        if is_distributed():
+            self.register_hook('SamplerSeedHook', before='OptimizerHook')
         if hooks is not None:
             self.register_hook(hooks)
 
@@ -484,11 +486,11 @@ class Engine(object):
         for _ in range(self.cur_stage['epochs'] - self.epoch_in_stage):
             self.train_epoch()
             cfg = self.cur_stage.get('validation')
-            if cfg is not None and 'val' in self.data_loaders:
-                interval, offset = cfg.get('interval', 0), cfg.get('offset', 0)
-                epoch = self.epoch_in_stage
-                if interval > 0 and epoch > offset and epoch % interval == 0:
-                    self.val_epoch()
+            if (cfg is not None and 'val' in self.data_loaders
+                    and cfg.get('interval', 0) > 0
+                    and self.epoch_in_stage > cfg.get('offset', 0)
+                    and self.epoch_in_stage % cfg.get('interval', 0) == 0):
+                self.val_epoch()
 
         self._call_hook('after_stage')
         self._stage += 1

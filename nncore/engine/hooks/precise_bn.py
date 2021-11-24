@@ -27,8 +27,8 @@ class PreciseBNHook(Hook):
         self._num_iters = num_iters
 
     def after_train_epoch(self, engine):
-        if not self.every_n_epochs(
-                engine, self._interval) and not self.last_epoch(engine):
+        if (not self.every_n_epochs(engine, self._interval)
+                and not self.last_epoch(engine)):
             return
 
         if any(m for m in engine.model.modules()

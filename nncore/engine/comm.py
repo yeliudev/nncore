@@ -39,9 +39,9 @@ def init_dist(launcher=None, backend='nccl', **kwargs):
     Initialize a distributed process group.
 
     Args:
-        launcher (str, optional): Launcher for the process group. Expected
-            values include ``'torch'``, ``'slurm'``, and ``None``. If not
-            specified, this method will try to determine the launcher
+        launcher (str | None, optional): Launcher for the process group.
+            Expected values include ``'torch'``, ``'slurm'``, and ``None``. If
+            not specified, this method will try to determine the launcher
             automatically. Default: ``None``.
         backend (:obj:`dist.Backend` | str, optional): The distribution
             backend to use. This field should be given as a :obj:`dist.Backend`

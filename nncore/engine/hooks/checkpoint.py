@@ -45,8 +45,8 @@ class CheckpointHook(Hook):
 
     @master_only
     def after_train_epoch(self, engine):
-        if not self.last_epoch(engine) and not self.every_n_epochs(
-                engine, self._interval):
+        if (not self.last_epoch(engine)
+                and not self.every_n_epochs(engine, self._interval)):
             return
 
         filename = 'epoch_{}.pth'.format(engine.epoch + 1)

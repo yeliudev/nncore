@@ -32,8 +32,8 @@ class EvalHook(Hook):
         self._low_values = {k: float('inf') for k in low_keys}
 
     def after_val_epoch(self, engine):
-        if not self.every_n_epochs(engine, self._interval) or not hasattr(
-                engine.data_loaders['test'].dataset, 'evaluate'):
+        if (not self.every_n_epochs(engine, self._interval) or
+                not hasattr(engine.data_loaders['test'].dataset, 'evaluate')):
             return
 
         if self._run_test:

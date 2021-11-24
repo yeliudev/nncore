@@ -164,7 +164,7 @@ def publish_model(in_file,
     weights to the specified device, and hashing the output checkpoint file.
 
     Args:
-        in_file (str): Path to the input checkpoint file.
+        in_file (dict | str): The checkpoint or path to the checkpoint.
         out_file (str): Path to the output checkpoint file. It is expected to
             end with ``'.pth'``.
         keys_to_remove (list[str], optional): The list of keys to be removed
@@ -179,12 +179,20 @@ def publish_model(in_file,
             ``'sha256'``.
     """
     assert out_file.endswith('.pth')
-    nncore.is_file(in_file, raise_error=True)
 
-    checkpoint = torch.load(in_file, map_location='cpu')
-    for key in keys_to_remove:
-        if key in checkpoint:
-            del checkpoint[key]
+    if isinstance(in_file, str):
+        nncore.is_file(in_file, raise_error=True)
+        data = torch.load(in_file, map_location='cpu')
+    elif isinstance(in_file, dict):
+        data = in_file
+    else:
+        raise TypeError("in_file must be a dict or str, but got '{}'".format(
+            type(in_file)))
+
+    checkpoint = dict()
+    for key, value in data.items():
+        if key not in keys_to_remove:
+            checkpoint[key] = value
 
     checkpoint = move_to_device(checkpoint, device)
     torch.save(checkpoint, out_file)

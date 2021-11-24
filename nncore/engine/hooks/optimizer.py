@@ -71,12 +71,11 @@ class OptimizerHook(Hook):
         engine.optimizer.zero_grad()
 
     def after_train_iter(self, engine):
-        loss_type = engine.cur_stage.get('loss', 'loss')
-        engine.losses[loss_type].backward()
+        key = engine.cur_stage.get('loss', 'loss')
+        engine.losses[key].backward()
 
-        if not self.every_n_iters_in_epoch(
-                engine,
-                self._interval) and not self.last_iter_in_epoch(engine):
+        if (not self.every_n_iters_in_epoch(engine, self._interval)
+                and not self.last_iter_in_epoch(engine)):
             return
 
         step_size = engine.iter_in_epoch - self._last_updated_iter + 1
