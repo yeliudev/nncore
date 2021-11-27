@@ -53,16 +53,16 @@ def init_dist(launcher=None, backend='nccl', **kwargs):
             result in deadlocks. Default: ``'nccl'``.
 
     Returns:
-        str | None: The launcher actually used.
+        str | None: The launcher and backend info.
     """
     assert launcher in ('torch', 'slurm', None)
     assert backend in ('nccl', 'gloo')
 
     if launcher is None:
-        if is_elastic():
-            launcher = 'torch'
-        elif is_slurm():
+        if int(os.getenv('SLURM_NTASKS', 0)) > 1:
             launcher = 'slurm'
+        elif int(os.getenv('WORLD_SIZE', 0)) > 1:
+            launcher = 'torch'
         else:
             return
 
@@ -70,8 +70,8 @@ def init_dist(launcher=None, backend='nccl', **kwargs):
         mp.set_start_method('spawn')
 
     if launcher == 'slurm':
-        node_list = os.environ.get('SLURM_JOB_NODELIST',
-                                   os.environ['SLURM_NODELIST'])
+        node_list = os.getenv('SLURM_JOB_NODELIST',
+                              os.environ['SLURM_NODELIST'])
         master_addr = getoutput(
             'scontrol show hostname {} | head -n1'.format(node_list))
 
@@ -84,9 +84,13 @@ def init_dist(launcher=None, backend='nccl', **kwargs):
 
     if torch.cuda.is_available():
         torch.cuda.set_device(int(os.environ['LOCAL_RANK']))
+    else:
+        backend = 'gloo'
 
     dist.init_process_group(backend, **kwargs)
-    return launcher
+    info = '{} ({})'.format(launcher, backend)
+
+    return info
 
 
 def is_elastic():
@@ -106,7 +110,7 @@ def is_slurm():
     Returns:
         bool: Whether the current process was launched with Slurm.
     """
-    return int(os.environ.get('SLURM_NTASKS', 0)) > 1
+    return os.getenv('SLURM_NTASKS') is not None
 
 
 def is_distributed():

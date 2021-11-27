@@ -3,6 +3,7 @@
 import torch.nn as nn
 
 from nncore import Registry, build_object
+from nncore.engine import comm
 from nncore.parallel import NNDataParallel, NNDistributedDataParallel
 from .bundle import ModuleList, Sequential
 
@@ -46,6 +47,9 @@ def build_model(cfg, *args, bundler=None, wrapper=None, **kwargs):
 
     if bundler == 'modulelist':
         obj = ModuleList(obj)
+
+    if wrapper == 'auto':
+        wrapper = 'ddp' if comm.is_distributed() else 'dp'
 
     if wrapper == 'dp':
         obj = NNDataParallel(obj)
