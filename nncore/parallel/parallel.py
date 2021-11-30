@@ -85,10 +85,10 @@ def _scatter(inputs, target_gpus, dim=0):
             else:
                 return _Scatter.forward(target_gpus, obj)
         elif isinstance(obj, DataContainer):
-            if obj.to_gpu:
-                return _Scatter.forward(target_gpus, obj.data)
-            else:
+            if obj.cpu_only:
                 return obj.data
+            else:
+                return _Scatter.forward(target_gpus, obj.data)
         elif isinstance(obj, tuple) and len(obj) > 0:
             return list(zip(*map(_scatter_map, obj)))
         elif isinstance(obj, list) and len(obj) > 0:

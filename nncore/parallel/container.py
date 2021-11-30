@@ -5,7 +5,7 @@ import torch
 import nncore
 
 
-@nncore.bind_getter('stack', 'pad_value', 'pad_dims', 'to_gpu')
+@nncore.bind_getter('stack', 'pad_value', 'pad_dims', 'cpu_only')
 @nncore.bind_method('_data', ['size', 'dim'])
 class DataContainer(object):
     """
@@ -21,8 +21,8 @@ class DataContainer(object):
         pad_dims (int, optional): Number of dimensions to be padded. Expected
             values include ``None``, ``-1``, ``1``, ``2``, and ``3``. Default:
             ``-1``.
-        to_gpu (bool, optional): Whether to move the data to GPU before
-            feeding it to the model. Default: ``True``.
+        cpu_only (bool, optional): Whether to keep the data on CPU only
+            Default: ``False``.
     """
 
     def __init__(self,
@@ -30,19 +30,23 @@ class DataContainer(object):
                  stack=True,
                  pad_value=0,
                  pad_dims=-1,
-                 to_gpu=True):
+                 cpu_only=False):
         assert pad_dims in (None, -1, 1, 2, 3)
+
+        if cpu_only:
+            stack = False
+            pad_dims = None
 
         self._data = data
         self._stack = stack
         self._pad_value = pad_value
         self._pad_dims = pad_dims if pad_dims != -1 else data.dim()
-        self._to_gpu = to_gpu
+        self._cpu_only = cpu_only
 
     def __repr__(self):
-        return ('{}(data={}, stack={}, pad_value={}, pad_dims={}, to_gpu={})'.
-                format(self.__class__.__name__, self._data, self._stack,
-                       self._pad_value, self._pad_dims, self._to_gpu))
+        return ('{}(data={}, stack={}, pad_value={}, pad_dims={}, cpu_only={})'
+                .format(self.__class__.__name__, self._data, self._stack,
+                        self._pad_value, self._pad_dims, self._cpu_only))
 
     @property
     def data(self):
