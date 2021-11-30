@@ -27,36 +27,36 @@ def build_model(cfg, *args, bundler=None, wrapper=None, **kwargs):
             models. Expected values include ``'sequential'``, ``'modulelist'``,
             and ``None``. Default: ``None``.
         wrapper (str | None, optional): The type of wrapper for the model.
-            Expected values include ``'dp'``, ``'ddp'``, and ``None``. Default:
-            ``None``.
+            Expected values include ``'auto'``, ``'dp'``, ``'ddp'``, and
+            ``None``. Default: ``None``.
 
     Returns:
         :obj:`nn.Module`: The constructed model.
     """
     assert bundler in ('sequential', 'modulelist', None)
-    assert wrapper in ('dp', 'ddp', None)
+    assert wrapper in ('auto', 'dp', 'ddp', None)
 
-    obj = build_object(cfg, [MODELS, nn], args=args, **kwargs)
+    model = build_object(cfg, [MODELS, nn], args=args, **kwargs)
 
-    if isinstance(obj, (list, tuple)):
-        obj = [o for o in obj if o is not None]
-        if bundler == 'sequential' and len(obj) > 1:
-            obj = Sequential(obj)
-    elif obj is None:
+    if isinstance(model, (list, tuple)):
+        model = [m for m in model if m is not None]
+        if bundler == 'sequential' and len(model) > 1:
+            model = Sequential(model)
+    elif model is None:
         return
 
     if bundler == 'modulelist':
-        obj = ModuleList(obj)
+        model = ModuleList(model)
 
     if wrapper == 'auto':
         wrapper = 'ddp' if comm.is_distributed() else 'dp'
 
     if wrapper == 'dp':
-        obj = NNDataParallel(obj)
+        model = NNDataParallel(model)
     elif wrapper == 'ddp':
-        obj = NNDistributedDataParallel(obj)
+        model = NNDistributedDataParallel(model)
 
-    return obj
+    return model
 
 
 def build_act_layer(cfg, *args, **kwargs):

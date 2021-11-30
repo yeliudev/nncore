@@ -149,10 +149,18 @@ class NNDistributedDataParallel(DistributedDataParallel):
                  device_ids=None,
                  broadcast_buffers=False,
                  **kwargs):
-        assert device_ids is None or len(device_ids) == 1
+        assert device_ids is None or len(device_ids) <= 1
+
+        if device_ids is None:
+            if torch.cuda.is_available():
+                device_ids = [torch.cuda.current_device()]
+                module = module.cuda()
+        elif len(device_ids) == 1:
+            module = module.to('cuda:{}'.format(device_ids[0]))
+
         super(NNDistributedDataParallel, self).__init__(
             module,
-            device_ids=device_ids or [torch.cuda.current_device()],
+            device_ids=device_ids,
             broadcast_buffers=broadcast_buffers,
             **kwargs)
 
@@ -161,3 +169,10 @@ class NNDistributedDataParallel(DistributedDataParallel):
 
     def to_kwargs(self, inputs, kwargs, device_id):
         return _scatter_kwargs(inputs, kwargs, [device_id], dim=self.dim)
+
+    def forward(self, *inputs, **kwargs):
+        if self.device_ids:
+            return super(NNDataParallel, self).forward(*inputs, **kwargs)
+        else:
+            inputs, kwargs = self.scatter(inputs, kwargs, [-1])
+            return self.module(*inputs[0], **kwargs[0])
