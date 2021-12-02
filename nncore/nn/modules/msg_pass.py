@@ -63,7 +63,7 @@ class MsgPassModule(nn.Module):
             self._bias = True
 
         for layer in self._order:
-            if layer == 'linear':
+            if layer == 'msg_pass':
                 self.msg_pass = build_msg_pass_layer(
                     msg_pass_cfg or 'GCN',
                     in_features=in_features,
