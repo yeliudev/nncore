@@ -3,7 +3,6 @@
 import torch.nn as nn
 
 from nncore import Registry, build_object
-from nncore.engine import comm
 from nncore.parallel import NNDataParallel, NNDistributedDataParallel
 from .bundle import ModuleList, Sequential
 
@@ -16,7 +15,7 @@ LOSSES = Registry('loss', parent=MODELS)
 MODULES = Registry('module', parent=MODELS)
 
 
-def build_model(cfg, *args, bundler=None, wrapper=None, **kwargs):
+def build_model(cfg, *args, bundler=None, dist=None, **kwargs):
     """
     Build a general model from a dict or str. This method searches for modules
     in :obj:`MODELS` first, and then fall back to :obj:`torch.nn`.
@@ -26,15 +25,13 @@ def build_model(cfg, *args, bundler=None, wrapper=None, **kwargs):
         bundler (str | None, optional): The type of bundler for multiple
             models. Expected values include ``'sequential'``, ``'modulelist'``,
             and ``None``. Default: ``None``.
-        wrapper (str | None, optional): The type of wrapper for the model.
-            Expected values include ``'auto'``, ``'dp'``, ``'ddp'``, and
-            ``None``. Default: ``None``.
+        dist (bool | None, optional): Whether the model is distributed. If not
+            specified, the model will not be wrapped. Default: ``None``.
 
     Returns:
         :obj:`nn.Module`: The constructed model.
     """
     assert bundler in ('sequential', 'modulelist', None)
-    assert wrapper in ('auto', 'dp', 'ddp', None)
 
     model = build_object(cfg, [MODELS, nn], args=args, **kwargs)
 
@@ -48,13 +45,10 @@ def build_model(cfg, *args, bundler=None, wrapper=None, **kwargs):
     if bundler == 'modulelist':
         model = ModuleList(model)
 
-    if wrapper == 'auto':
-        wrapper = 'ddp' if comm.is_distributed() else 'dp'
-
-    if wrapper == 'dp':
-        model = NNDataParallel(model)
-    elif wrapper == 'ddp':
+    if dist:
         model = NNDistributedDataParallel(model)
+    elif dist is not None:
+        model = NNDataParallel(model)
 
     return model
 
