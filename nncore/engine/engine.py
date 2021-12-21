@@ -6,6 +6,7 @@ import torch
 
 import nncore
 from nncore.nn import build_model
+from nncore.optim import build_optimizer
 from .buffer import Buffer
 from .builder import build_dataloader, build_hook
 from .comm import gather, is_distributed, is_main_process, synchronize
@@ -288,24 +289,6 @@ class Engine(object):
             hook = hook.name
         self.hooks.pop(hook)
 
-    def build_optimizer(self, optimizer):
-        """
-        Build an optimizer for the engine.
-
-        Args:
-            optimizer (:obj:`optim.Optimizer` | dict): The optimizer or an
-                optimizer config used for constructing the optimizer.
-        """
-        if isinstance(optimizer, torch.optim.Optimizer):
-            self.optimizer = optimizer
-        elif isinstance(optimizer, dict):
-            self.optimizer = nncore.build_object(
-                optimizer, torch.optim, params=self.model.parameters())
-        else:
-            raise TypeError(
-                "optimizer should be an optim.Optimizer object or a dict, but "
-                "got: '{}'".format(optimizer))
-
     def load_checkpoint(self, checkpoint, strict=False):
         """
         Load checkpoint from a file or an URL.
@@ -364,7 +347,8 @@ class Engine(object):
         self._stage = count
 
         if 'optimizer' in checkpoint:
-            self.build_optimizer(self.cur_stage['optimizer'])
+            self.optimizer = build_optimizer(
+                self.cur_stage['optimizer'], params=self.model.parameters())
             self.optimizer.load_state_dict(checkpoint['optimizer'])
         else:
             raise KeyError('optimizer not found in the checkpoint')
@@ -479,7 +463,8 @@ class Engine(object):
             self._stage + 1, self.cur_stage['epochs'], optim))
 
         if self.epoch_in_stage == 0:
-            self.build_optimizer(self.cur_stage['optimizer'])
+            self.optimizer = build_optimizer(
+                self.cur_stage['optimizer'], params=self.model.parameters())
 
         self._call_hook('before_stage')
 
