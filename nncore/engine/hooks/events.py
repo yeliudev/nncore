@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 import nncore
 from ..builder import HOOKS
-from ..comm import get_world_size, master_only
+from ..comm import get_world_size, is_main_process, master_only
 from .base import Hook
 
 WRITERS = nncore.Registry('writer')
@@ -72,7 +72,7 @@ class CommandLineWriter(Writer):
         metrics = self._collect_metrics(engine, window_size)
 
         if engine.mode == 'train':
-            log = 'Epoch [{}][{}/{}] lr: {:.5f}, '.format(
+            log = 'Epoch [{}][{}/{}] lr: {:.5f}'.format(
                 metrics['epoch'], metrics['iter'], len(engine.data_loader),
                 metrics['lr'])
 
@@ -83,21 +83,24 @@ class CommandLineWriter(Writer):
                 eta = timedelta(
                     seconds=int(num_iters_left * total_time /
                                 num_iters_passed))
-                log += 'eta: {}, '.format(eta)
+                log += ', eta: {}'.format(eta)
 
             for key in ('time', 'data_time'):
                 if key in metrics:
-                    log += '{}: {:.3f}, '.format(key, metrics[key])
+                    log += ', {}: {:.3f}'.format(key, metrics[key])
 
             if next(engine.model.parameters()).device != torch.device('cpu'):
                 mem = torch.cuda.max_memory_allocated()
                 mem_mb = torch.IntTensor([mem / (1024 * 1024)]).cuda()
                 if get_world_size() > 1:
                     dist.reduce(mem_mb, 0, op=dist.ReduceOp.MAX)
-                log += 'memory: {}, '.format(mem_mb.item())
+                log += ', memory: {}'.format(mem_mb.item())
         else:
             log = 'Epoch({}) [{}][{}] '.format(engine.mode, metrics['epoch'],
                                                len(engine.data_loader))
+
+        if not is_main_process():
+            return
 
         ext = []
         for key in engine.buffer.keys():
@@ -112,7 +115,7 @@ class CommandLineWriter(Writer):
                 ext.append('{}: {:.4f}'.format(
                     key, engine.buffer.avg(key, window_size=window_size)))
 
-        log += ', '.join(ext)
+        log += '' if log.endswith(' ') else ', ' + ', '.join(ext)
         engine.logger.info(log)
 
 
@@ -136,6 +139,7 @@ class JSONWriter(Writer):
     def open(self, engine):
         nncore.mkdir(engine.work_dir)
 
+    @master_only
     def write(self, engine, window_size):
         metrics = self._collect_metrics(engine, window_size)
 
@@ -197,6 +201,7 @@ class TensorboardWriter(Writer):
     def close(self, engine):
         self._writer.close()
 
+    @master_only
     def write(self, engine, window_size):
         for key in engine.buffer.keys():
             if key.startswith('_'):
@@ -271,7 +276,6 @@ class EventWriterHook(Hook):
         for w in self._writers:
             w.close(engine)
 
-    @master_only
     def after_train_iter(self, engine):
         if (not self.every_n_iters_in_epoch(engine, self._interval)
                 and not self.last_iter_in_epoch(engine)):

@@ -136,10 +136,10 @@ class VideoReader(object):
 
     def get_frame(self, idx=None):
         if idx is None:
-            if self._position == 0:
-                return None
-            else:
+            if self._position != 0:
                 return self._cache.get(self._position - 1)
+            else:
+                return
 
         if idx < 0 or idx >= self._num_frames:
             raise IndexError(

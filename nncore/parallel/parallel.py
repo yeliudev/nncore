@@ -172,7 +172,8 @@ class NNDistributedDataParallel(DistributedDataParallel):
 
     def forward(self, *inputs, **kwargs):
         if self.device_ids:
-            return super(NNDataParallel, self).forward(*inputs, **kwargs)
+            return super(NNDistributedDataParallel,
+                         self).forward(*inputs, **kwargs)
         else:
             inputs, kwargs = self.scatter(inputs, kwargs, [-1])
             return self.module(*inputs[0], **kwargs[0])

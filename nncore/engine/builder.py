@@ -1,14 +1,23 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
+import random
+from functools import partial
+
+import numpy as np
 from torch.utils.data import DataLoader, DistributedSampler
 
 from nncore import Registry
 from nncore.dataset import build_dataset
 from nncore.parallel import collate
-from .comm import get_rank, get_world_size, is_distributed
-from .utils import set_random_seed
+from .comm import get_dist_info, is_distributed
 
 HOOKS = Registry('hook')
+
+
+def _init_fn(worker_id, num_workers, rank, seed):
+    worker_seed = seed + worker_id + rank * num_workers
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
 
 
 def build_dataloader(cfg, seed=None, dist=None, group=None, **kwargs):
@@ -39,31 +48,25 @@ def build_dataloader(cfg, seed=None, dist=None, group=None, **kwargs):
     else:
         loader_cfg = dict()
 
-    rank = get_rank(group=group)
-    num_workers = loader_cfg.get('num_workers', 0)
-
-    def _init_fn(worker_id):
-        set_random_seed(seed=seed + worker_id + rank * num_workers)
-
     dataset = build_dataset(_cfg, **kwargs)
 
-    if is_distributed() if dist is None else dist:
-        shuffle = loader_cfg.pop('shuffle', False)
-        drop_last = loader_cfg.pop('drop_last', False)
+    rank, world_size = get_dist_info(group=group)
+    num_workers = loader_cfg.get('num_workers', 0)
 
-        world_size = get_world_size(group=group)
+    if is_distributed() if dist is None else dist:
         loader_cfg['sampler'] = DistributedSampler(
             dataset,
             num_replicas=world_size,
             rank=rank,
-            shuffle=shuffle,
+            shuffle=loader_cfg.pop('shuffle', False),
             seed=seed,
-            drop_last=drop_last)
+            drop_last=loader_cfg.pop('drop_last', False))
 
     data_loader = DataLoader(
         dataset,
         collate_fn=collate,
-        worker_init_fn=None if seed is None else _init_fn,
+        worker_init_fn=None if seed is None else partial(
+            _init_fn, num_workers=num_workers, rank=rank, seed=seed),
         **loader_cfg)
 
     return data_loader
