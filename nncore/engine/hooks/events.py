@@ -96,7 +96,7 @@ class CommandLineWriter(Writer):
                     dist.reduce(mem_mb, 0, op=dist.ReduceOp.MAX)
                 log += ', memory: {}'.format(mem_mb.item())
         else:
-            log = 'Epoch({}) [{}][{}] '.format(engine.mode, metrics['epoch'],
+            log = 'Epoch ({}) [{}][{}]'.format(engine.mode, metrics['epoch'],
                                                len(engine.data_loader))
 
         if not is_main_process():
@@ -115,7 +115,9 @@ class CommandLineWriter(Writer):
                 ext.append('{}: {:.4f}'.format(
                     key, engine.buffer.avg(key, window_size=window_size)))
 
-        log += '' if log.endswith(' ') else ', ' + ', '.join(ext)
+        if len(ext) > 0:
+            log += (' ' if log.endswith(']') else ', ') + ', '.join(ext)
+
         engine.logger.info(log)
 
 
