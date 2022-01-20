@@ -182,7 +182,7 @@ class Engine(object):
         log_file = nncore.join(self.work_dir, time_str + '.log')
         self.logger = nncore.get_logger(logger, log_file=log_file)
 
-        self.buffer = Buffer(max_size=buffer_size, logger=logger)
+        self.buffer = Buffer(max_size=buffer_size, logger=self.logger)
         self.reset_states()
 
     @property

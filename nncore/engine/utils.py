@@ -48,19 +48,19 @@ def _load_state_dict(module, state_dict, strict=False, logger=None):
     _load = None
 
     if len(unexpected_keys) > 0:
-        err_msg.append('unexpected keys in source state_dict: {}\n'.format(
+        err_msg.append('unexpected keys in source state dict: {}\n'.format(
             ', '.join(unexpected_keys)))
     if len(missing_keys) > 0:
-        err_msg.append('missing keys in source state_dict: {}\n'.format(
+        err_msg.append('missing keys in source state dict: {}\n'.format(
             ', '.join(missing_keys)))
 
     if is_main_process() and len(err_msg) > 0:
         err_msg.insert(
-            0, 'The model and loaded state_dict do not match exactly\n')
+            0, 'The model and loaded state dict do not match exactly\n')
         err_msg = '\n'.join(err_msg)
         if strict:
             raise RuntimeError(
-                'error in loading state_dict for {}:\n\t{}'.format(
+                'error in loading state dict for {}:\n\t{}'.format(
                     module.__class__.__name__, "\n\t".join(err_msg)))
         nncore.log_or_print(err_msg, logger, log_level='WARNING')
 
@@ -185,7 +185,7 @@ def load_checkpoint(model,
     if isinstance(checkpoint, dict):
         state_dict = checkpoint.get('state_dict', checkpoint)
     else:
-        raise RuntimeError('no state_dict found in the checkpoint file')
+        raise RuntimeError('no state dict found in the checkpoint file')
 
     if list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}

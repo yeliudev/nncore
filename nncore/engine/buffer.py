@@ -27,7 +27,7 @@ class Buffer(object):
         self._logger = logger
         self._data = OrderedDict()
 
-    def update(self, key, value, warning=False):
+    def update(self, key, value, warning=True):
         """
         Add a new value. If the length of the buffer exceeds
         :obj:`self._max_size`, the oldest element will be removed from the
@@ -37,7 +37,7 @@ class Buffer(object):
             key (str): The key of the values.
             value (any): The new value.
             warning (bool, optional): Whether to display warning when removing
-                values. Default: ``False``.
+                values. Default: ``True``.
         """
         if key not in self._data:
             self._data[key] = []

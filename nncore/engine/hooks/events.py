@@ -251,7 +251,9 @@ class EventWriterHook(Hook):
             :obj:`TensorboardWriter`. Default: ``['CommandLineWriter']``.
     """
 
-    def __init__(self, interval=50, writers=['CommandLineWriter']):
+    def __init__(self,
+                 interval=50,
+                 writers=['CommandLineWriter', 'JSONWriter']):
         super(EventWriterHook, self).__init__()
         self._interval = interval
         self._writers = [
