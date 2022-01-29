@@ -30,7 +30,8 @@ def bbox_intersection(bboxes1, bboxes2, aligned=False):
             among aligned bounding boxes. Default: ``False``.
 
     Returns:
-        :obj:`nn.Tensor[N, M]`: The computed intersection values.
+        :obj:`nn.Tensor[N]` | :obj:`nn.Tensor[N, M]`: The computed \
+            intersection values.
     """
     if aligned:
         lt = torch.max(bboxes1[:, :2], bboxes2[:, :2])
@@ -61,13 +62,18 @@ def bbox_iou(bboxes1, bboxes2, aligned=False):
             aligned bounding boxes. Default: ``False``.
 
     Returns:
-        :obj:`nn.Tensor[N, M]`: The computed pairwise IoU values.
+        :obj:`nn.Tensor[N]` | :obj:`nn.Tensor[N, M]`: The computed pairwise \
+            IoU values.
     """
     area1 = bbox_area(bboxes1)
     area2 = bbox_area(bboxes2)
 
     inter = bbox_intersection(bboxes1, bboxes2, aligned=aligned)
-    iou = inter / (area1[:, None] + area2 - inter)
+
+    if aligned:
+        iou = inter / (area1 + area2 - inter)
+    else:
+        iou = inter / (area1[:, None] + area2 - inter)
 
     return iou
 
@@ -85,12 +91,17 @@ def bbox_iof(bboxes1, bboxes2, aligned=False):
             aligned bounding boxes. Default: ``False``.
 
     Returns:
-        :obj:`nn.Tensor[N, M]`: The computed pairwise IoF values.
+        :obj:`nn.Tensor[N]` | :obj:`nn.Tensor[N, M]`: The computed pairwise \
+            IoF values.
     """
     area_forground = bbox_area(bboxes1)
 
     inter = bbox_intersection(bboxes1, bboxes2, aligned=aligned)
-    iof = inter / area_forground[:, None]
+
+    if aligned:
+        iof = inter / area_forground
+    else:
+        iof = inter / area_forground[:, None]
 
     return iof
 

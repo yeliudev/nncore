@@ -48,10 +48,10 @@ def _load_state_dict(module, state_dict, strict=False, logger=None):
     _load = None
 
     if len(unexpected_keys) > 0:
-        err_msg.append('unexpected keys in source state dict: {}\n'.format(
+        err_msg.append('Unexpected keys in source state dict: {}\n'.format(
             ', '.join(unexpected_keys)))
     if len(missing_keys) > 0:
-        err_msg.append('missing keys in source state dict: {}\n'.format(
+        err_msg.append('Missing keys in source state dict: {}\n'.format(
             ', '.join(missing_keys)))
 
     if is_main_process() and len(err_msg) > 0:

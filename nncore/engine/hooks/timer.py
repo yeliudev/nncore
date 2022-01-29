@@ -48,7 +48,7 @@ class TimerHook(Hook):
 
         if num_iters > 0 and train_time > 0:
             engine.logger.info(
-                'Overall training speed: {} iterations in {} ({:.4f} s / it)'.
+                'Overall training speed: {} iterations in {} ({:.4f} s/it)'.
                 format(num_iters, timedelta(seconds=int(train_time)),
                        train_time / num_iters))
 
