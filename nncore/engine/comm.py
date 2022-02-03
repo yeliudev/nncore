@@ -67,7 +67,7 @@ def init_dist(launcher=None, backend='nccl', **kwargs):
             return
 
     if mp.get_start_method(allow_none=True) is None:
-        mp.set_start_method('spawn')
+        mp.set_start_method(kwargs.pop('method', 'spawn'))
 
     if launcher == 'slurm':
         node_list = os.getenv('SLURM_JOB_NODELIST',
@@ -288,6 +288,10 @@ def gather(data, dst=0, group=None):
     rank, world_size = get_dist_info(group=group)
     if world_size == 1:
         return [data]
+
+    # TODO: Fix the walkaround for gather on NCCL
+    if dist.get_backend(group=group) == 'nccl':
+        return all_gather(data, group=group) if rank == dst else None
 
     device = _get_default_device(group=group)
     data_tensor, size_tensor = _serialize_to_tensor(data, device)
