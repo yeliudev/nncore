@@ -291,7 +291,8 @@ def gather(data, dst=0, group=None):
 
     # TODO: Fix the walkaround for gather on NCCL
     if dist.get_backend(group=group) == 'nccl':
-        return all_gather(data, group=group) if rank == dst else None
+        gathered = all_gather(data, group=group)
+        return gathered if rank == dst else None
 
     device = _get_default_device(group=group)
     data_tensor, size_tensor = _serialize_to_tensor(data, device)
