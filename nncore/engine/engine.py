@@ -9,7 +9,7 @@ from nncore.nn import build_model
 from nncore.optim import build_optimizer
 from .buffer import Buffer
 from .builder import build_dataloader, build_hook
-from .comm import gather, is_distributed, is_main_process, synchronize
+from .comm import gather, is_distributed, is_main_process, sync
 from .hooks import Hook
 from .utils import get_checkpoint, load_checkpoint
 
@@ -289,39 +289,33 @@ class Engine(object):
             hook = hook.name
         self.hooks.pop(hook)
 
-    def load_checkpoint(self, checkpoint, strict=False):
+    def load_checkpoint(self, checkpoint, **kwargs):
         """
         Load checkpoint from a file or an URL.
 
         Args:
             checkpoint (dict | str): A dict, a filename, an URL or a
                 ``torchvision://<model_name>`` str indicating the checkpoint.
-            strict (bool, optional): Whether to allow different params for the
-                model and checkpoint. If ``True``, raise an error when the
-                params do not match exactly. Default: ``False``.
         """
         load_checkpoint(
             self.model,
             checkpoint,
             map_location=next(self.model.parameters()).device,
-            strict=strict,
-            logger=self.logger)
+            logger=self.logger,
+            **kwargs)
 
         if isinstance(checkpoint, str):
             self.logger.info('Loaded checkpoint from {}'.format(checkpoint))
         else:
             self.logger.info('Loaded checkpoint')
 
-    def resume(self, checkpoint, strict=False):
+    def resume(self, checkpoint, **kwargs):
         """
         Resume from a checkpoint file.
 
         Args:
             checkpoint (dict | str): A dict, a filename or an URL indicatin
                 the checkpoint.
-            strict (bool, optional): Whether to allow different params for the
-                model and checkpoint. If ``True``, raise an error when the
-                params do not match exactly. Default: ``False``.
         """
         if isinstance(checkpoint, str):
             checkpoint = get_checkpoint(
@@ -333,8 +327,7 @@ class Engine(object):
                 '\n\nCurrent stages: {}\n\nCheckpoint stages: {}'.format(
                     self.stages, checkpoint['meta']['stages']))
 
-        load_checkpoint(
-            self.model, checkpoint, strict=strict, logger=self.logger)
+        load_checkpoint(self.model, checkpoint, logger=self.logger, **kwargs)
 
         self._epoch = checkpoint['meta']['epoch']
         self._iter = self._start_iter = checkpoint['meta']['iter']
@@ -495,7 +488,7 @@ class Engine(object):
         else:
             output = dict()
 
-        synchronize()
+        sync()
         return output
 
     def launch(self, eval=False, **kwargs):

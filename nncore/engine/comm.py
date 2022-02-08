@@ -185,7 +185,7 @@ def is_main_process():
     return get_rank() == 0
 
 
-def synchronize(group=None):
+def sync(group=None):
     """
     Synchronize all processes in a process group.
     """

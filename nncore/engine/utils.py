@@ -13,7 +13,7 @@ from torch.hub import load_state_dict_from_url
 
 import nncore
 from nncore.nn import move_to_device
-from .comm import broadcast, is_main_process, synchronize
+from .comm import broadcast, is_main_process, sync
 
 DATASETS = nncore.Registry('dataset')
 
@@ -21,8 +21,22 @@ DATASETS = nncore.Registry('dataset')
 def _load_url_dist(url, **kwargs):
     if is_main_process():
         load_state_dict_from_url(url, **kwargs)
-    synchronize()
-    return load_state_dict_from_url(url, **kwargs)
+
+    sync()
+    state_dict = load_state_dict_from_url(url, **kwargs)
+
+    return state_dict
+
+
+def _match_keys(keys, cand):
+    keys = [k.split('.') for k in keys]
+    cand = cand.split('.')
+
+    for key in keys:
+        if cand[:len(key)] == key:
+            return True
+
+    return False
 
 
 def _load_state_dict(module, state_dict, strict=False, logger=None):
@@ -157,6 +171,7 @@ def load_checkpoint(model,
                     checkpoint,
                     map_location=None,
                     strict=False,
+                    keys=None,
                     logger=None,
                     **kwargs):
     """
@@ -171,6 +186,8 @@ def load_checkpoint(model,
         strict (bool, optional): Whether to allow different params for the
             model and checkpoint. If ``True``, raise an error when the params
             do not match exactly. Default: ``False``.
+        keys (list[str] | None, optional): The list of parameter keys to load.
+            Default: ``None``.
         logger (:obj:`logging.Logger` | str | None, optional): The logger or
             name of the logger for displaying error messages. Default:
             ``None``.
@@ -189,6 +206,12 @@ def load_checkpoint(model,
 
     if list(state_dict.keys())[0].startswith('module.'):
         state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
+
+    if keys is not None:
+        state_dict = {
+            k: v
+            for k, v in state_dict.items() if _match_keys(keys, k)
+        }
 
     _load_state_dict(
         getattr(model, 'module', model),
