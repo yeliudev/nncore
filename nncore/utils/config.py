@@ -185,6 +185,7 @@ class CfgNode(OrderedDict):
 
             if isinstance(value, dict):
                 refine = value.pop('_refine_', None)
+                repeat = value.pop('_repeat_', None)
                 delete = value.pop('_delete_', None)
                 insert = value.pop('_insert_', None)
                 update = value.pop('_update_', None)
@@ -193,6 +194,10 @@ class CfgNode(OrderedDict):
                 do_update = type(update) is int or update
 
                 if key not in self and refine:
+                    continue
+
+                if key in self and isinstance(repeat, int):
+                    self[key] = [self[key] for _ in range(repeat)]
                     continue
 
                 if key in self and isinstance(self[key], dict):
