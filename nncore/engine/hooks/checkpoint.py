@@ -2,7 +2,7 @@
 
 import nncore
 from ..builder import HOOKS
-from ..comm import master_only
+from ..comm import main_only
 from ..utils import save_checkpoint
 from .base import Hook
 
@@ -37,13 +37,13 @@ class CheckpointHook(Hook):
         self._create_symlink = create_symlink
         self._out = out
 
-    @master_only
+    @main_only
     def before_launch(self, engine):
         if self._out is None:
             self._out = engine.work_dir
         nncore.mkdir(self._out)
 
-    @master_only
+    @main_only
     def after_train_epoch(self, engine):
         if (not self.last_epoch(engine)
                 and not self.every_n_epochs(engine, self._interval)):

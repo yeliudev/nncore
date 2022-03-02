@@ -10,7 +10,7 @@ from torch.utils.data import DataLoader
 
 import nncore
 from ..builder import HOOKS
-from ..comm import get_world_size, is_main_process, master_only
+from ..comm import get_world_size, is_main_process, main_only
 from .base import Hook
 
 WRITERS = nncore.Registry('writer')
@@ -141,7 +141,7 @@ class JSONWriter(Writer):
     def open(self, engine):
         nncore.mkdir(engine.work_dir)
 
-    @master_only
+    @main_only
     def write(self, engine, window_size):
         metrics = self._collect_metrics(engine, window_size)
 
@@ -203,7 +203,7 @@ class TensorboardWriter(Writer):
     def close(self, engine):
         self._writer.close()
 
-    @master_only
+    @main_only
     def write(self, engine, window_size):
         for key in engine.buffer.keys():
             if key.startswith('_'):
@@ -270,12 +270,12 @@ class EventWriterHook(Hook):
             if not key.startswith('_'):
                 engine.buffer.pop(key)
 
-    @master_only
+    @main_only
     def before_launch(self, engine):
         for w in self._writers:
             w.open(engine)
 
-    @master_only
+    @main_only
     def after_launch(self, engine):
         for w in self._writers:
             w.close(engine)
@@ -291,7 +291,7 @@ class EventWriterHook(Hook):
             if self.last_iter_in_epoch(engine) else self._interval)
         self._clear_buffer(engine)
 
-    @master_only
+    @main_only
     def after_val_epoch(self, engine):
         self._write(engine, len(engine.data_loader))
         self._clear_buffer(engine)

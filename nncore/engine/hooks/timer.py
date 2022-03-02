@@ -4,7 +4,7 @@ from datetime import timedelta
 
 import nncore
 from ..builder import HOOKS
-from ..comm import master_only
+from ..comm import main_only
 from .base import Hook
 
 
@@ -28,7 +28,7 @@ class TimerHook(Hook):
                 '_{}_time'.format(key),
                 getattr(self, '_{}_timer'.format(key)).seconds())
 
-    @master_only
+    @main_only
     def before_launch(self, engine):
         self._total_timer.reset()
         self._data_timer.reset()
@@ -37,7 +37,7 @@ class TimerHook(Hook):
         self._val_timer.reset()
         self._val_timer.pause()
 
-    @master_only
+    @main_only
     def after_launch(self, engine):
         total_time = self._total_timer.seconds()
         train_time = self._train_timer.seconds()
@@ -56,31 +56,31 @@ class TimerHook(Hook):
             timedelta(seconds=int(total_time)),
             timedelta(seconds=int(hook_time))))
 
-    @master_only
+    @main_only
     def before_epoch(self, engine):
         for key in list(engine.buffer.keys()):
             if key in ('total', 'iter', 'data', 'train', 'val'):
                 engine.buffer.pop('_{}_time'.format(key))
 
-    @master_only
+    @main_only
     def before_train_iter(self, engine):
         self._iter_timer.reset()
         self._train_timer.resume()
         self._update_time(engine, ['data'])
 
-    @master_only
+    @main_only
     def after_train_iter(self, engine):
         self._data_timer.reset()
         self._train_timer.pause()
         self._update_time(engine, ['total', 'iter', 'train'])
 
-    @master_only
+    @main_only
     def before_val_iter(self, engine):
         self._iter_timer.reset()
         self._val_timer.resume()
         self._update_time(engine, ['data'])
 
-    @master_only
+    @main_only
     def after_val_iter(self, engine):
         self._data_timer.reset()
         self._val_timer.pause()

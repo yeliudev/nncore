@@ -34,7 +34,7 @@ def _pad_tensor(data_tensor, pad_size):
     return data_tensor
 
 
-def init_dist(launcher=None, backend='nccl', **kwargs):
+def init_dist(launcher=None, backend='nccl', method='spawn', **kwargs):
     """
     Initialize a distributed process group.
 
@@ -51,6 +51,9 @@ def init_dist(launcher=None, backend='nccl', **kwargs):
             machine with ``nccl`` backend, each process must have exclusive
             access to every GPU it uses, as sharing GPUs between processes can
             result in deadlocks. Default: ``'nccl'``.
+        method (str, optional): The method used to start subprocesses. Expected
+            values include ``'spawn'``, ``'fork'``, and ``'forkserver'``.
+            Default: ``'spawn'``.
 
     Returns:
         str | None: The launcher and backend info.
@@ -67,7 +70,7 @@ def init_dist(launcher=None, backend='nccl', **kwargs):
             return
 
     if mp.get_start_method(allow_none=True) is None:
-        mp.set_start_method(kwargs.pop('method', 'spawn'))
+        mp.set_start_method(method)
 
     if launcher == 'slurm':
         node_list = os.getenv('SLURM_JOB_NODELIST',
@@ -319,7 +322,7 @@ def gather(data, dst=0, group=None):
     return gathered
 
 
-def master_only(func):
+def main_only(func):
     """
     A decorator that makes a function can only be executed in the main process.
     """
