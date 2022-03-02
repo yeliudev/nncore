@@ -11,4 +11,4 @@ try:
 except ImportError:
     warnings.warn("Please install opencv-python to enable 'nncore.image'")
 
-__version__ = '0.3.3'
+__version__ = '0.3.4'
