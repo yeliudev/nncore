@@ -7,6 +7,7 @@ import torch
 import nncore
 from nncore.nn import build_model
 from nncore.optim import build_optimizer
+from nncore.utils import CfgNode
 from .buffer import Buffer
 from .builder import build_dataloader, build_hook
 from .comm import gather, is_distributed, is_main_process, sync
@@ -324,8 +325,10 @@ class Engine(object):
         if self.stages != checkpoint['meta']['stages']:
             self.logger.warn(
                 'Stages in the engine and checkpoint are mismatch:'
-                '\n\nCurrent stages: {}\n\nCheckpoint stages: {}'.format(
-                    self.stages, checkpoint['meta']['stages']))
+                '\n\nCurrent stages: {}\n\nCheckpoint stages: {}'.format([
+                    c.to_dict() if isinstance(c, CfgNode) else c
+                    for c in self.stages
+                ], checkpoint['meta']['stages']))
 
         load_checkpoint(self.model, checkpoint, logger=self.logger, **kwargs)
 
