@@ -38,7 +38,7 @@ Note that some methods in the library work with PyTorch 1.9+, but the installati
 
 ## Continuous Integration
 
-| Platform / Python Version | 3.6 | 3.7 | 3.8 | 3.9 |
+| Platform / Python Version | 3.7 | 3.8 | 3.9 | 3.10 |
 | :-: | :-: | :-: | :-: | :-: |
 | Ubuntu 18.04 | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/0?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/1?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/2?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/3?icon=github&cache=300)][link] |
 | Ubuntu 20.04 | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/4?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/5?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/6?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/7?icon=github&cache=300)][link] |

@@ -91,7 +91,7 @@ class MultiHeadAttention(nn.Module):
                  v_dims=None,
                  h_dims=None,
                  o_dims=None,
-                 heads=1,
+                 heads=8,
                  p=0.1,
                  bias=True):
         super(MultiHeadAttention, self).__init__()
@@ -184,7 +184,7 @@ class FeedForwardNetwork(nn.Module):
 
     def __init__(self,
                  dims,
-                 ratio=1,
+                 ratio=4,
                  p=0.1,
                  act_cfg=dict(type='ReLU', inplace=True)):
         super(FeedForwardNetwork, self).__init__()
@@ -241,8 +241,8 @@ class TransformerEncoderLayer(nn.Module):
 
     def __init__(self,
                  dims,
-                 heads=1,
-                 ratio=1,
+                 heads=8,
+                 ratio=4,
                  p=0.1,
                  pre_norm=True,
                  norm_cfg=dict(type='LN'),
@@ -307,8 +307,8 @@ class TransformerDecoderLayer(nn.Module):
 
     def __init__(self,
                  dims,
-                 heads=1,
-                 ratio=1,
+                 heads=8,
+                 ratio=4,
                  p=0.1,
                  pre_norm=True,
                  norm_cfg=dict(type='LN'),
