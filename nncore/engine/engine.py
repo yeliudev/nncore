@@ -486,8 +486,16 @@ class Engine(object):
 
         if is_main_process():
             blob = nncore.concat(blob)
+
+            cfg = self.cur_stage.get('validation')
+            if cfg is not None:
+                cfg.pop('interval', None)
+                cfg.pop('offset', None)
+            else:
+                cfg = dict()
+
             output = self.data_loader.dataset.evaluate(
-                blob, logger=self.logger)
+                blob, logger=self.logger, **cfg)
         else:
             output = dict()
 
