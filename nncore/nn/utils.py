@@ -9,7 +9,7 @@ import torch.nn as nn
 import nncore
 
 
-def move_to_device(data, device):
+def move_to_device(data, device='cpu'):
     """
     Recursively move a tensor or a collection of tensors to the specific
     device.
@@ -17,16 +17,17 @@ def move_to_device(data, device):
     Args:
         data (dict | list | :obj:`torch.Tensor`): The tensor or collection of
             tensors to move.
-        device (:obj:`torch.device` | str): The destination device.
+        device (:obj:`torch.device` | str, optional): The destination device.
+            Default: ``'cpu'``.
 
     Returns:
         dict | list | :obj:`torch.Tensor`: The moved tensor or collection of \
             tensors.
     """
     if isinstance(data, dict):
-        return {k: move_to_device(v, device) for k, v in data.items()}
+        return {k: move_to_device(v, device=device) for k, v in data.items()}
     elif isinstance(data, (list, tuple)):
-        return type(data)([move_to_device(d, device) for d in data])
+        return type(data)([move_to_device(d, device=device) for d in data])
     elif torch.is_tensor(data):
         return data.to(device)
     else:
@@ -194,7 +195,7 @@ def publish_model(in_file,
         if key not in keys_to_remove:
             checkpoint[key] = value
 
-    checkpoint = move_to_device(checkpoint, device)
+    checkpoint = move_to_device(checkpoint, device=device)
     torch.save(checkpoint, out_file)
 
     with open(out_file, 'rb') as f:
