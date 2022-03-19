@@ -489,6 +489,7 @@ class Engine(object):
 
             cfg = self.cur_stage.get('validation')
             if cfg is not None:
+                cfg = cfg.copy()
                 cfg.pop('interval', None)
                 cfg.pop('offset', None)
             else:
