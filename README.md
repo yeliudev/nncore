@@ -1,16 +1,16 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/yeliudev/nncore/main/.github/nncore-logo.svg">
+  <img src="https://raw.githubusercontent.com/yeliudev/nncore/main/.github/logo.svg">
 </p>
 
 <h1 align="center">NNCore</h1>
 
 <p align="center">
-  <strong>A lightweight PyTorch code wrapper for ML researchers.</strong>
+  <strong>A lightweight machine learning toolkit for researchers.</strong>
 </p>
 
 <p align="center">
   <a href="https://pypi.org/project/nncore">
-    <img src="https://badgen.net/pypi/v/nncore?label=PyPI&icon=pypi&cache=300">
+    <img src="https://badgen.net/pypi/v/nncore?label=PyPI&cache=300">
   </a>
   <a href="https://pypistats.org/packages/nncore">
     <img src="https://badgen.net/runkit/yeliudev/pypi-downloads/nncore/month?cache=300">
@@ -22,11 +22,11 @@
     <img src="https://badgen.net/coveralls/c/github/yeliudev/nncore/main?label=Coverage&cache=300">
   </a>
   <a href="https://www.codacy.com/gh/yeliudev/nncore/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yeliudev/nncore&amp;utm_campaign=Badge_Grade">
-    <img src="https://badgen.net/codacy/grade/93d963e3247e43eb86d282cffacf0125?label=Code%20Quality&icon=codacy&cache=300">
+    <img src="https://badgen.net/codacy/grade/93d963e3247e43eb86d282cffacf0125?label=Code%20Quality&cache=300">
   </a>
 </p>
 
-NNCore is a library that provides common functionalities for Machine Learning and Deep Learning researchers. This project aims at helping users focus more on science but not engineering during researches. The essential functionalities include but are not limited to:
+NNCore is a library that provides common functionalities for Machine Learning and Deep Learning researchers. This project aims at helping users focus more on science but not engineering during research. The essential functionalities include but are not limited to:
 
 - Universal I/O APIs
 - Efficient implementations of layers and losses that are not included in PyTorch
@@ -64,7 +64,7 @@ pip install -e .
 
 ## Getting Started
 
-Please refer to our [documentation](https://nncore.readthedocs.io/) for how to incorperate nncore into your projects.
+Please refer to our [documentation](https://nncore.readthedocs.io/) for how to incorporate nncore into your projects.
 
 ## Acknowledgements
 

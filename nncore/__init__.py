@@ -9,6 +9,7 @@ try:
     from .image import *  # noqa
     from .video import *  # noqa
 except ImportError:
-    warnings.warn("Please install opencv-python to enable 'nncore.image'")
+    warnings.warn("Please install opencv-python to enable 'nncore.image' and "
+                  "'nncore.video'")
 
 __version__ = '0.3.6'
