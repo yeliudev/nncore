@@ -11,7 +11,7 @@ def bind_getter(*vars):
     Args:
         *vars: strings indicating the member variables to be binded with
             getters. The name of member variables are expected to start with an
-            underline (e.g. `_name` or `_epoch`).
+            underline (e.g. `'_name'` or `'_depth'`).
 
     Example:
         >>> @bind_getter('name', 'depth')
@@ -58,13 +58,11 @@ def bind_method(key, methods):
         >>> @bind_method('_cfg', ['get', 'pop'])
         >>> class Config:
         ...
-        ...     _name = 'model config'
         ...     _cfg = dict()
         ...
         >>> # Equals to:
         >>> class Config:
         ...
-        ...     _name = 'model config'
         ...     _cfg = dict()
         ...
         ...     def get(self, *args):
