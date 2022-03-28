@@ -77,7 +77,7 @@ class MultiHeadAttention(nn.Module):
             it will be the same as ``q_dims``. Default: ``None``.
         o_dims (int | None, optional): The output dimensions. If not specified,
             it will be the same as ``q_dims``. Default: ``None``.
-        heads (int, optional): The number of attention heads. Default: ``1``.
+        heads (int, optional): The number of attention heads. Default: ``8``.
         p (float, optional): The dropout probability. Default: ``0.1``.
         bias (bool, optional): Whether to add the bias term. Default: ``True``.
 
@@ -173,7 +173,7 @@ class FeedForwardNetwork(nn.Module):
     Args:
         dims (int): The input feature dimensions.
         ratio (float, optional): The ratio of hidden layer dimensions with
-            respect to the input dimensions. Default: ``1``.
+            respect to the input dimensions. Default: ``4``.
         p (float, optional): The dropout probability. Default: ``0.1``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
@@ -224,9 +224,9 @@ class TransformerEncoderLayer(nn.Module):
 
     Args:
         dims (int): The input feature dimensions.
-        heads (int, optional): The number of attention heads. Default: ``1``.
+        heads (int, optional): The number of attention heads. Default: ``8``.
         ratio (float, optional): The ratio of hidden layer dimensions in the
-            feed forward network. Default: ``1``.
+            feed forward network. Default: ``4``.
         p (float, optional): The dropout probability. Default: ``0.1``.
         pre_norm (bool, optional): Whether to apply the normalization before
             instead of after each layer. Default: ``True``.
@@ -290,9 +290,9 @@ class TransformerDecoderLayer(nn.Module):
 
     Args:
         dims (int): The input feature dimensions.
-        heads (int, optional): The number of attention heads. Default: ``1``.
+        heads (int, optional): The number of attention heads. Default: ``8``.
         ratio (int, optional): The ratio of hidden layer dimensions in the
-            feed forward network. Default: ``1``.
+            feed forward network. Default: ``4``.
         p (float, optional): The dropout probability. Default: ``0.1``.
         pre_norm (bool, optional): Whether to apply the normalization before
             instead of after each layer. Default: ``True``.
