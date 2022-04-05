@@ -19,7 +19,8 @@ from .losses import (BalancedL1Loss, DynamicBCELoss, FocalLoss, FocalLossStar,
 from .modules import (ConvModule, LinearModule, MsgPassModule,
                       build_conv_modules, build_linear_modules,
                       build_msg_pass_modules)
-from .utils import fuse_bn_, move_to_device, publish_model, update_bn_stats_
+from .utils import (fuse_bn_, model_soup, move_to_device, publish_model,
+                    update_bn_stats_)
 
 __all__ = [
     'GAT', 'GCN', 'SGC', 'Clamp', 'EffMish', 'EffSwish', 'FeedForwardNetwork',
@@ -35,6 +36,6 @@ __all__ = [
     'balanced_l1_loss', 'focal_loss', 'focal_loss_star', 'gaussian_focal_loss',
     'l1_loss', 'smooth_l1_loss', 'weighted_loss', 'ConvModule', 'LinearModule',
     'MsgPassModule', 'build_conv_modules', 'build_linear_modules',
-    'build_msg_pass_modules', 'fuse_bn_', 'move_to_device', 'publish_model',
-    'update_bn_stats_'
+    'build_msg_pass_modules', 'fuse_bn_', 'model_soup', 'move_to_device',
+    'publish_model', 'update_bn_stats_'
 ]

@@ -1,6 +1,7 @@
 # Copyright (c) Ye Liu. All rights reserved.
 
 import hashlib
+from collections import OrderedDict
 from itertools import islice
 
 import torch
@@ -16,7 +17,7 @@ def move_to_device(data, device='cpu'):
 
     Args:
         data (dict | list | :obj:`torch.Tensor`): The tensor or collection of
-            tensors to move.
+            tensors to be moved.
         device (:obj:`torch.device` | str, optional): The destination device.
             Default: ``'cpu'``.
 
@@ -155,52 +156,108 @@ def update_bn_stats_(model, data_loader, num_iters=200, **kwargs):
         bn.momentum = bn_mo[i]
 
 
-def publish_model(in_file,
-                  out_file,
-                  keys_to_remove=['optimizer'],
+def publish_model(checkpoint,
+                  out='model.pth',
+                  keys_to_keep=['state_dict', 'meta'],
                   device='cpu',
-                  hash_type='sha256'):
+                  meta=None,
+                  hash_type='sha256',
+                  hash_len=8):
     """
     Publish a model by removing needless data in the checkpoint, moving the
-    weights to the specified device, and hashing the output checkpoint file.
+    weights to the specified device, and hashing the output model file.
 
     Args:
-        in_file (dict | str): The checkpoint or path to the checkpoint.
-        out_file (str): Path to the output checkpoint file. It is expected to
-            end with ``'.pth'``.
-        keys_to_remove (list[str], optional): The list of keys to be removed
-            from the checkpoint. Default: ``['optimizer']``.
+        checkpoint (dict | str): The checkpoint or path to the checkpoint.
+        out (str, optional): Path to the output checkpoint file. Default:
+            ``'model.pth'``.
+        keys_to_keep (list[str], optional): The list of keys to be kept from
+            the checkpoint. Default: ``['state_dict', 'meta']``.
         device (:obj:`torch.device` | str): The destination device. Default:
             ``'cpu'``.
+        meta (dict | None, optional): The meta data to be saved. Note that the
+            key ``nncore_version`` and ``create_time`` are reserved by the
+            method. Default: ``None``.
         hash_type (str, optional): Type of the hash algorithm. Currently
             supported algorithms include ``'md5'``, ``'sha1'``, ``'sha224'``,
             ``'sha256'``, ``'sha384'``, ``'sha512'``, ``'blake2b'``,
             ``'blake2s'``, ``'sha3_224'``, ``'sha3_256'``, ``'sha3_384'``,
             ``'sha3_512'``, ``'shake_128'``, and ``'shake_256'``. Default:
             ``'sha256'``.
+        hash_len (int, optional): Length of the hash value. Default: ``8``.
     """
-    assert out_file.endswith('.pth')
+    if isinstance(checkpoint, str):
+        checkpoint = torch.load(checkpoint, map_location='cpu')
+    elif not isinstance(checkpoint, dict):
+        raise TypeError(
+            "checkpoint must be a dict or str, but got '{}'".format(
+                type(checkpoint)))
 
-    if isinstance(in_file, str):
-        nncore.is_file(in_file, raise_error=True)
-        data = torch.load(in_file, map_location='cpu')
-    elif isinstance(in_file, dict):
-        data = in_file
-    else:
-        raise TypeError("in_file must be a dict or str, but got '{}'".format(
-            type(in_file)))
+    model = {k: v for k, v in checkpoint.items() if k in keys_to_keep}
 
-    checkpoint = dict()
-    for key, value in data.items():
-        if key not in keys_to_remove:
-            checkpoint[key] = value
+    _meta = model.get('meta', dict())
+    _meta.update(
+        nncore_version=nncore.__version__,
+        create_time=nncore.get_time_str(),
+        **meta or dict())
+    model['meta'] = _meta
 
-    checkpoint = move_to_device(checkpoint, device=device)
-    torch.save(checkpoint, out_file)
+    model = move_to_device(model, device=device)
+    torch.save(model, out)
 
-    with open(out_file, 'rb') as f:
+    with open(out, 'rb') as f:
         hasher = hashlib.new(hash_type, data=f.read())
-        hash_value = hasher.hexdigest()
+        hash_value = hasher.hexdigest()[:hash_len]
 
-    hashed_file = '{}-{}.pth'.format(out_file[:-4], hash_value[:8])
-    nncore.rename(out_file, hashed_file)
+    name, ext = nncore.split_ext(out)
+    hashed = '{}-{}.{}'.format(name, hash_value, ext).rstrip('.')
+    nncore.rename(out, hashed)
+
+
+def model_soup(model1, model2, out='model.pth', device='cpu'):
+    """
+    Combine two models by calculating the element-wise average of their weight
+    matrices (i.e. cooking model soups [1]). The output model is expected to
+    have better performance compaired with the original ones.
+
+    Args:
+        model1 (dict | str): The checkpoint or path to the checkpoint of the
+            first model.
+        model2 (dict | str): The checkpoint or path to the checkpoint of the
+            second model.
+        out (str, optional): Path to the output checkpoint file. Default:
+            ``'model.pth'``.
+        device (:obj:`torch.device` | str): The destination device. Default:
+            ``'cpu'``.
+
+    References:
+        1. Wortsman et al. (https://arxiv.org/abs/2203.05482)
+    """
+    if isinstance(model1, str):
+        model1 = torch.load(model1, map_location=device)
+    elif not isinstance(model1, dict):
+        raise TypeError("model1 must be a dict or str, but got '{}'".format(
+            type(model1)))
+
+    if isinstance(model2, str):
+        model2 = torch.load(model2, map_location=device)
+    elif not isinstance(model2, dict):
+        raise TypeError("model2 must be a dict or str, but got '{}'".format(
+            type(model2)))
+
+    model1 = model1['state_dict']
+    model2 = model2['state_dict']
+    assert model1.keys() == model2.keys()
+
+    state_dict = OrderedDict()
+    for key in model1.keys():
+        state_dict[key] = (model1[key] + model2[key]) / 2
+
+    model = dict(
+        state_dict=state_dict,
+        meta=dict(
+            nncore_version=nncore.__version__,
+            create_time=nncore.get_time_str()))
+
+    model = move_to_device(model, device=device)
+    torch.save(model, out)
