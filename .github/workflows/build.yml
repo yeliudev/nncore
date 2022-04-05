@@ -20,9 +20,9 @@ jobs:
       run: pip install --upgrade setuptools wheel isort yapf flake8 coverage coveralls
     - name: Check code style
       run: |
-        isort --df nncore/ tests/ examples/ setup.py
-        yapf -dr nncore/ tests/ examples/ setup.py
-        flake8 nncore/ tests/ examples/ setup.py
+        isort --df nncore tests examples setup.py
+        yapf -dr nncore tests examples setup.py
+        flake8 nncore tests examples setup.py
     - name: Install NNCore
       run: pip install -e .
     - name: Run unit tests
