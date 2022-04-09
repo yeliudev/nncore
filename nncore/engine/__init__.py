@@ -9,7 +9,7 @@ from .engine import Engine
 from .hooks import (CheckpointHook, ClosureHook, CommandLineWriter,
                     EmptyCacheHook, EvalHook, EventWriterHook, Hook,
                     JSONWriter, LrUpdaterHook, OptimizerHook, PreciseBNHook,
-                    SamplerSeedHook, TensorboardWriter, TimerHook)
+                    SamplerSeedHook, TensorboardWriter, TimerHook, WandbWriter)
 from .utils import (generate_random_seed, get_checkpoint, load_checkpoint,
                     move_to_device, save_checkpoint, set_random_seed)
 
@@ -20,7 +20,7 @@ __all__ = [
     'main_only', 'sync', 'Engine', 'CheckpointHook', 'ClosureHook',
     'CommandLineWriter', 'EmptyCacheHook', 'EvalHook', 'EventWriterHook',
     'Hook', 'JSONWriter', 'LrUpdaterHook', 'OptimizerHook', 'PreciseBNHook',
-    'SamplerSeedHook', 'TensorboardWriter', 'TimerHook',
+    'SamplerSeedHook', 'TensorboardWriter', 'TimerHook', 'WandbWriter',
     'generate_random_seed', 'get_checkpoint', 'load_checkpoint',
     'move_to_device', 'save_checkpoint', 'set_random_seed'
 ]

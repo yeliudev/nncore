@@ -234,6 +234,35 @@ class TensorboardWriter(Writer):
                         tag, record, global_step=engine.iter)
 
 
+@WRITERS.register()
+class WandbWriter(Writer):
+    """
+    Write logs to Weight & Bias.
+    """
+
+    def __init__(self, **kwargs):
+        self._kwargs = kwargs
+
+    def open(self, engine):
+        import wandb
+        self._writer = wandb
+        self._writer.init(config=engine.meta, **self._kwargs)
+
+    def close(self, engine):
+        self._writer.close()
+
+    @main_only
+    def write(self, engine, window_size):
+        for key in engine.buffer.keys():
+            if key.startswith('_') or key.endswith('_'):
+                continue
+
+            tag = '{}/{}'.format(key, engine.mode)
+            record = engine.buffer.avg(key, window_size=window_size)
+
+            self._writer.log({tag: record})
+
+
 @HOOKS.register()
 class EventWriterHook(Hook):
     """

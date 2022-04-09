@@ -5,7 +5,7 @@ from .checkpoint import CheckpointHook
 from .closure import ClosureHook
 from .eval import EvalHook
 from .events import (CommandLineWriter, EventWriterHook, JSONWriter,
-                     TensorboardWriter)
+                     TensorboardWriter, WandbWriter)
 from .lr_updater import LrUpdaterHook
 from .memory import EmptyCacheHook
 from .optimizer import OptimizerHook
@@ -15,7 +15,7 @@ from .timer import TimerHook
 
 __all__ = [
     'Hook', 'CheckpointHook', 'ClosureHook', 'EvalHook', 'CommandLineWriter',
-    'EventWriterHook', 'JSONWriter', 'TensorboardWriter', 'LrUpdaterHook',
-    'EmptyCacheHook', 'OptimizerHook', 'PreciseBNHook', 'SamplerSeedHook',
-    'TimerHook'
+    'EventWriterHook', 'JSONWriter', 'TensorboardWriter', 'WandbWriter',
+    'LrUpdaterHook', 'EmptyCacheHook', 'OptimizerHook', 'PreciseBNHook',
+    'SamplerSeedHook', 'TimerHook'
 ]

@@ -102,9 +102,13 @@ class Engine(object):
             ``100000``.
         logger (:obj:`logging.Logger` | str | None, optional): The logger or
             name of the logger to use. Default: ``None``.
-        work_dir (str, optional): Path to the working directory. If not
+        work_dir (str | None, optional): Path to the working directory. If not
             specified, the default working directory will be used. Default:
             ``None``.
+        seed (int | None, optional): The random seed to use in data loaders.
+            Default: ``None``.
+        meta (any | None, optional): A dictionary-like object containing meta
+            data of this engine. Default: ``None``.
 
     Example:
         >>> # Build model
@@ -147,6 +151,7 @@ class Engine(object):
                  logger=None,
                  work_dir=None,
                  seed=None,
+                 meta=None,
                  **kwargs):
         self.model = build_model(model, **kwargs)
 
@@ -185,6 +190,8 @@ class Engine(object):
 
         self.buffer = Buffer(max_size=buffer_size, logger=self.logger)
         self.reset_states()
+
+        self.meta = meta
 
     @property
     def cur_stage(self):
