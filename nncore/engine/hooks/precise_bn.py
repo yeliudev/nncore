@@ -1,4 +1,4 @@
-# Copyright (c) Ye Liu. All rights reserved.
+# Copyright (c) Ye Liu. Licensed under the MIT License.
 
 from torch.nn.modules.batchnorm import _BatchNorm
 

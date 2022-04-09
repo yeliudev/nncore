@@ -1,4 +1,4 @@
-# Copyright (c) Ye Liu. All rights reserved.
+# Copyright (c) Ye Liu. Licensed under the MIT License.
 
 import h5py
 import numpy as np

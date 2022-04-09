@@ -1,4 +1,4 @@
-# Copyright (c) Ye Liu. All rights reserved.
+# Copyright (c) Ye Liu. Licensed under the MIT License.
 
 from .bbox import (bbox_area, bbox_intersection, bbox_iof, bbox_iou,
                    remove_small_bboxes)

@@ -1,4 +1,4 @@
-# Copyright (c) Ye Liu. All rights reserved.
+# Copyright (c) Ye Liu. Licensed under the MIT License.
 
 from .colorspace import (bgr2gray, bgr2hls, bgr2hsv, bgr2rgb, gray2bgr,
                          gray2rgb, hls2bgr, hsv2bgr, rgb2bgr, rgb2gray)

@@ -1,4 +1,4 @@
-# Copyright (c) Ye Liu. All rights reserved.
+# Copyright (c) Ye Liu. Licensed under the MIT License.
 
 from .blocks import (GAT, GCN, SGC, Clamp, EffMish, EffSwish,
                      FeedForwardNetwork, Mish, MultiHeadAttention,

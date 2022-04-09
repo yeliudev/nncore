@@ -1,4 +1,4 @@
-# Copyright (c) Ye Liu. All rights reserved.
+# Copyright (c) Ye Liu. Licensed under the MIT License.
 
 from .conv import ConvModule, build_conv_modules
 from .linear import LinearModule, build_linear_modules

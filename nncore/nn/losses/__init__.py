@@ -1,4 +1,4 @@
-# Copyright (c) Ye Liu. All rights reserved.
+# Copyright (c) Ye Liu. Licensed under the MIT License.
 
 from .dynamic_bce import DynamicBCELoss
 from .focal import (FocalLoss, FocalLossStar, GaussianFocalLoss, focal_loss,

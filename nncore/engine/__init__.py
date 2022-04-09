@@ -1,4 +1,4 @@
-# Copyright (c) Ye Liu. All rights reserved.
+# Copyright (c) Ye Liu. Licensed under the MIT License.
 
 from .buffer import Buffer
 from .builder import HOOKS, build_dataloader, build_hook

@@ -1,4 +1,4 @@
-# Copyright (c) Ye Liu. All rights reserved.
+# Copyright (c) Ye Liu. Licensed under the MIT License.
 
 from .activation import Clamp, EffMish, EffSwish, Mish, Swish
 from .conv import *  # noqa

@@ -1,4 +1,4 @@
-# Copyright (c) Ye Liu. All rights reserved.
+# Copyright (c) Ye Liu. Licensed under the MIT License.
 
 from .builder import OPTIMIZERS, build_optimizer
 from .lamb import Lamb
