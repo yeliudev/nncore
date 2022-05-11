@@ -47,21 +47,21 @@ class ProgressBar(object):
 
     def _get_time_str(self, second):
         if second >= 86400:
-            day = int(second / 86400)
+            day = second // 86400
             second -= (day * 86400)
             day = '{}d'.format(day)
         else:
             day = ''
 
         if second >= 3600:
-            hour = int(second / 3600)
+            hour = second // 3600
             second -= (hour * 3600)
             hour = '{}h'.format(hour)
         else:
             hour = ''
 
         if second >= 60:
-            minute = int(second / 60)
+            minute = second // 60
             second -= minute * 60
             minute = '{}m'.format(minute)
         else:

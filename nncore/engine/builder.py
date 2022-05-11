@@ -53,7 +53,8 @@ def build_dataloader(cfg, seed=None, dist=None, group=None, **kwargs):
     rank, world_size = get_dist_info(group=group)
     num_workers = loader_cfg.get('num_workers', 0)
 
-    if is_distributed() if dist is None else dist:
+    if 'sampler' not in loader_cfg and is_distributed(
+    ) if dist is None else dist:
         loader_cfg['sampler'] = DistributedSampler(
             dataset,
             num_replicas=world_size,
