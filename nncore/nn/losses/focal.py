@@ -20,8 +20,8 @@ def focal_loss(pred, target, alpha=-1, gamma=2.0):
         alpha (float, optional): Weighting factor in range ``(0, 1)`` to
             balance positive and negative examples. ``-1`` means no weighting.
             Default: ``-1``.
-        gamma (float, optional): Exponent of the modulating factor
-            ``(1 - p_t)`` to balance easy and hard examples. Default: ``2.0``.
+        gamma (float, optional): Exponent of the modulating factor to balance
+            easy and hard examples. Default: ``2.0``.
 
     Returns:
         :obj:`torch.Tensor`: The loss tensor.
@@ -54,8 +54,8 @@ def focal_loss_star(pred, target, alpha=-1, gamma=1.0):
         alpha (float, optional): Weighting factor in range ``(0, 1)`` to
             balance positive and negative examples. ``-1`` means no weighting.
             Default: ``-1``.
-        gamma (float, optional): Exponent of the modulating factor
-            ``(1 - p_t)`` to balance easy and hard examples. Default: ``1.0``.
+        gamma (float, optional): Exponent of the modulating factor to balance
+            easy and hard examples. Default: ``1.0``.
 
     Returns:
         :obj:`torch.Tensor`: The loss tensor.
@@ -82,11 +82,10 @@ def gaussian_focal_loss(pred, target, alpha=2.0, gamma=4.0):
         pred (:obj:`torch.Tensor`): The predictions.
         target (:obj:`torch.Tensor`): The learning targets in gaussian
             distribution.
-        alpha (float, optional): Weighting factor in range ``(0, 1)`` to
-            balance positive and negative examples. ``-1`` means no weighting.
-            Default: ``2.0``.
-        gamma (float, optional): Exponent of the modulating factor
-            ``(1 - p_t)`` to balance easy and hard examples. Default: ``4.0``.
+        alpha (float, optional): Weighting factor to balance positive and
+            negative examples. Default: ``2.0``.
+        gamma (float, optional): Exponent of the modulating factor to balance
+            easy and hard examples. Default: ``4.0``.
 
     Returns:
         :obj:`torch.Tensor`: The loss tensor.
@@ -116,8 +115,8 @@ class FocalLoss(nn.Module):
         alpha (float, optional): Weighting factor in range ``(0, 1)`` to
             balance positive and negative examples. ``-1`` means no weighting.
             Default: ``-1``.
-        gamma (float, optional): Exponent of the modulating factor
-            ``(1 - p_t)`` to balance easy and hard examples. Default: ``2.0``.
+        gamma (float, optional): Exponent of the modulating factor to balance
+            easy and hard examples. Default: ``2.0``.
         reduction (str, optional): Reduction method. Currently supported values
             include ``'mean'``, ``'sum'``, and ``'none'``. Default: ``'mean'``.
         loss_weight (float, optional): Weight of the loss. Default: ``1.0``.
@@ -158,8 +157,8 @@ class FocalLossStar(FocalLoss):
         alpha (float, optional): Weighting factor in range ``(0, 1)`` to
             balance positive and negative examples. ``-1`` means no weighting.
             Default: ``-1``.
-        gamma (float, optional): Exponent of the modulating factor
-            ``(1 - p_t)`` to balance easy and hard examples. Default: ``1.0``.
+        gamma (float, optional): Exponent of the modulating factor to balance
+            easy and hard examples. Default: ``1.0``.
         reduction (str, optional): Reduction method. Currently supported values
             include ``'mean'``, ``'sum'``, and ``'none'``. Default: ``'mean'``.
         loss_weight (float, optional): Weight of the loss. Default: ``1.0``.
@@ -193,11 +192,10 @@ class GaussianFocalLoss(FocalLoss):
     Focal Loss introduced in [1] for targets in gaussian distribution.
 
     Args:
-        alpha (float, optional): Weighting factor in range ``(0, 1)`` to
-            balance positive and negative examples. ``-1`` means no weighting.
-            Default: ``2.0``.
-        gamma (float, optional): Exponent of the modulating factor
-            ``(1 - p_t)`` to balance easy and hard examples. Default: ``4.0``.
+        alpha (float, optional): Weighting factor to balance positive and
+            negative examples. Default: ``2.0``.
+        gamma (float, optional): Exponent of the modulating factor to balance
+            easy and hard examples. Default: ``4.0``.
         reduction (str, optional): Reduction method. Currently supported values
             include ``'mean'``, ``'sum'``, and ``'none'``. Default: ``'mean'``.
         loss_weight (float, optional): Weight of the loss. Default: ``1.0``.
