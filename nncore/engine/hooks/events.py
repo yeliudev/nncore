@@ -246,10 +246,10 @@ class WandbWriter(Writer):
     def open(self, engine):
         import wandb
         self._writer = wandb
-        self._writer.init(config=engine.meta, **self._kwargs)
-
-    def close(self, engine):
-        self._writer.close()
+        self._writer.init(
+            name=nncore.base_name(engine.work_dir),
+            config=engine.meta,
+            **self._kwargs)
 
     @main_only
     def write(self, engine, window_size):
