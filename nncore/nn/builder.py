@@ -15,7 +15,7 @@ LOSSES = Registry('loss', parent=MODELS)
 MODULES = Registry('module', parent=MODELS)
 
 
-def build_model(cfg, *args, bundler=None, dist=None, **kwargs):
+def build_model(cfg, *args, bundler='sequential', dist=None, **kwargs):
     """
     Build a general model from a dict or str. This method searches for modules
     in :obj:`MODELS` first, and then fall back to :obj:`torch.nn`.
@@ -23,22 +23,22 @@ def build_model(cfg, *args, bundler=None, dist=None, **kwargs):
     Args:
         cfg (dict | str): The config or name of the model.
         bundler (str | None, optional): The type of bundler for multiple
-            models. Expected values include ``'sequential'``, ``'modulelist'``,
-            and ``None``. Default: ``None``.
+            models. Expected values include ``'sequential'`` and
+            ``'modulelist'``. Default: ``'sequential'``.
         dist (bool | None, optional): Whether the model is distributed. If not
             specified, the model will not be wrapped. Default: ``None``.
 
     Returns:
         :obj:`nn.Module`: The constructed model.
     """
-    assert bundler in ('sequential', 'modulelist', None)
+    assert bundler in ('sequential', 'modulelist')
 
     model = build_object(cfg, [MODELS, nn], args=args, **kwargs)
 
     if isinstance(model, (list, tuple)):
         model = [m for m in model if m is not None]
-        if bundler == 'sequential' and len(model) > 1:
-            model = Sequential(model)
+        if bundler == 'sequential':
+            model = Sequential(model) if len(model) > 1 else model[0]
     elif model is None:
         return
 

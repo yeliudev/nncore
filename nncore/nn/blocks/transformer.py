@@ -111,8 +111,7 @@ class MultiHeadAttention(nn.Module):
         self.v = nn.Linear(self._v_dims, self._h_dims, bias=bias)
         self.m = nn.Linear(self._h_dims, self._o_dims, bias=bias)
 
-        self.drop1 = build_norm_layer('drop', p=p)
-        self.drop2 = build_norm_layer('drop', p=p)
+        self.dropout = nn.Dropout(p=p)
 
         self.reset_parameters()
 
@@ -151,15 +150,15 @@ class MultiHeadAttention(nn.Module):
 
         att = att.softmax(-1)
 
-        if self.drop1 is not None:
-            att = self.drop1(att)
+        if self.dropout is not None:
+            att = self.dropout(att)
 
         m = torch.bmm(att, v).transpose(0, 1).contiguous()
         m = m.view(m.size(0), -1, self._h_dims).transpose(0, 1)
         m = self.m(m)
 
-        if self.drop2 is not None:
-            m = self.drop2(m)
+        if self.dropout is not None:
+            m = self.dropout(m)
 
         return m
 
@@ -196,8 +195,7 @@ class FeedForwardNetwork(nn.Module):
 
         self.mapping = Sequential(
             nn.Linear(dims, self._h_dims), build_act_layer(act_cfg),
-            build_norm_layer('drop', p=p), nn.Linear(self._h_dims, dims),
-            build_norm_layer('drop', p=p))
+            nn.Dropout(p=p), nn.Linear(self._h_dims, dims), nn.Dropout(p=p))
 
         self.reset_parameters()
 
