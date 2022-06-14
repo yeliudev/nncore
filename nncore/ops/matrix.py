@@ -1,7 +1,25 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
 import torch
+import torch.nn.functional as F
 from torch.distributions import Gumbel
+
+
+def cosine_similarity(x, y):
+    """
+    Compute the cosine similarities among two batches of tensors.
+
+    Args:
+        x (:obj:`torch.Tensor[*, N, F]`): The first batch of tensors.
+        y (:obj:`torch.Tensor[*, M, F]`): The second batch of tensors.
+
+    Returns:
+        :obj:`torch.Tensor[*, N, M]`: The computed pairwise cosine \
+            similarities.
+    """
+    x = F.normalize(x)
+    y = F.normalize(y)
+    return torch.matmul(x, y.transpose(-1, -2))
 
 
 def hard_softmax(x, dim=-1):
@@ -21,8 +39,8 @@ def hard_softmax(x, dim=-1):
     hard = torch.zeros_like(x, memory_format=torch.legacy_contiguous_format)
     hard.scatter_(dim, inds, 1.0)
 
-    x = hard + soft - soft.detach()
-    return x
+    ret = hard + soft - soft.detach()
+    return ret
 
 
 def gumbel_softmax(x, tau=1.0, hard_assign=True, dim=-1):
@@ -31,7 +49,7 @@ def gumbel_softmax(x, tau=1.0, hard_assign=True, dim=-1):
 
     Args:
         x (:obj:`torch.Tensor`): The input tensor.
-        tau (float, optional): The parameter of gumbel softmax. Default:
+        tau (float, optional): The temperature of gumbel softmax. Default:
             ``1.0``.
         hard_assign (bool, optional): Whether to apply hard assignment
             strategy. Default: ``True``.
@@ -44,15 +62,13 @@ def gumbel_softmax(x, tau=1.0, hard_assign=True, dim=-1):
     gumbel = dist.sample(x.shape)
 
     gumbel = (x + gumbel) / tau
-    soft = gumbel.softmax(dim)
+    ret = gumbel.softmax(dim)
 
     if hard_assign:
-        inds = soft.argmax(dim, keepdim=True)
+        inds = ret.argmax(dim, keepdim=True)
         hard = torch.zeros_like(
             x, memory_format=torch.legacy_contiguous_format)
         hard.scatter_(dim, inds, 1.0)
-        x = hard + soft - soft.detach()
-    else:
-        x = soft
+        ret = hard + ret - ret.detach()
 
-    return x
+    return ret
