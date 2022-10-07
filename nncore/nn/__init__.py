@@ -1,7 +1,7 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
-from .blocks import (GAT, GCN, SGC, Clamp, EffMish, EffSwish,
-                     FeedForwardNetwork, Mish, MultiHeadAttention,
+from .blocks import (GAT, GCN, SGC, Clamp, CrossAttentionLayer, EffMish,
+                     EffSwish, FeedForwardNetwork, Mish, MultiHeadAttention,
                      PositionalEncoding, Swish, TransformerDecoderLayer,
                      TransformerEncoderLayer)
 from .builder import (ACTIVATIONS, CONVS, LOSSES, MESSAGE_PASSINGS, MODELS,
@@ -23,13 +23,13 @@ from .utils import (fuse_bn_, model_soup, move_to_device, publish_model,
                     update_bn_stats_)
 
 __all__ = [
-    'GAT', 'GCN', 'SGC', 'Clamp', 'EffMish', 'EffSwish', 'FeedForwardNetwork',
-    'Mish', 'MultiHeadAttention', 'PositionalEncoding', 'Swish',
-    'TransformerDecoderLayer', 'TransformerEncoderLayer', 'ACTIVATIONS',
-    'CONVS', 'LOSSES', 'MESSAGE_PASSINGS', 'MODELS', 'MODULES', 'NORMS',
-    'build_act_layer', 'build_conv_layer', 'build_loss', 'build_model',
-    'build_msg_pass_layer', 'build_norm_layer', 'ModuleDict', 'ModuleList',
-    'Parameter', 'Sequential', 'constant_init_', 'init_module_',
+    'GAT', 'GCN', 'SGC', 'Clamp', 'CrossAttentionLayer', 'EffMish', 'EffSwish',
+    'FeedForwardNetwork', 'Mish', 'MultiHeadAttention', 'PositionalEncoding',
+    'Swish', 'TransformerDecoderLayer', 'TransformerEncoderLayer',
+    'ACTIVATIONS', 'CONVS', 'LOSSES', 'MESSAGE_PASSINGS', 'MODELS', 'MODULES',
+    'NORMS', 'build_act_layer', 'build_conv_layer', 'build_loss',
+    'build_model', 'build_msg_pass_layer', 'build_norm_layer', 'ModuleDict',
+    'ModuleList', 'Parameter', 'Sequential', 'constant_init_', 'init_module_',
     'kaiming_init_', 'normal_init_', 'uniform_init_', 'xavier_init_',
     'BalancedL1Loss', 'DynamicBCELoss', 'FocalLoss', 'FocalLossStar',
     'GaussianFocalLoss', 'GHMCLoss', 'L1Loss', 'SmoothL1Loss',

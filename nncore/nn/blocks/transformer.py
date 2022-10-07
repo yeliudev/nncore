@@ -357,3 +357,84 @@ class TransformerDecoderLayer(nn.Module):
             x = self.norm3(x + d)
 
         return x
+
+
+@MODELS.register()
+@nncore.bind_getter('dims', 'heads', 'ratio', 'p', 'pre_norm')
+class CrossAttentionLayer(nn.Module):
+    """
+    Cross Attention Layer.
+
+    Args:
+        dims (int): The input feature dimensions.
+        heads (int, optional): The number of attention heads. Default: ``8``.
+        ratio (int, optional): The ratio of hidden layer dimensions in the
+            feed forward network. Default: ``4``.
+        p (float, optional): The dropout probability. Default: ``0.1``.
+        pre_norm (bool, optional): Whether to apply the normalization before
+            instead of after each layer. Default: ``True``.
+        norm_cfg (dict | str | None, optional): The config or name of the
+            normalization layer. Default: ``dict(type='LN')``.
+        act_cfg (dict | str | None, optional): The config or name of the
+            activation layer. Default: ``dict(type='ReLU', inplace=True)``.
+    """
+
+    def __init__(self,
+                 dims,
+                 heads=8,
+                 ratio=4,
+                 p=0.1,
+                 pre_norm=True,
+                 norm_cfg=dict(type='LN'),
+                 act_cfg=dict(type='ReLU', inplace=True)):
+        super(CrossAttentionLayer, self).__init__()
+
+        self._dims = dims
+        self._heads = heads
+        self._ratio = ratio
+        self._p = p
+        self._pre_norm = pre_norm
+
+        self.att1 = MultiHeadAttention(dims, heads=heads, p=p)
+        self.att2 = MultiHeadAttention(dims, heads=heads, p=p)
+        self.ffn1 = FeedForwardNetwork(dims, ratio=ratio, p=p, act_cfg=act_cfg)
+        self.ffn2 = FeedForwardNetwork(dims, ratio=ratio, p=p, act_cfg=act_cfg)
+
+        self.norm1 = build_norm_layer(norm_cfg, dims=dims)
+        self.norm2 = build_norm_layer(norm_cfg, dims=dims)
+        self.norm3 = build_norm_layer(norm_cfg, dims=dims)
+        self.norm4 = build_norm_layer(norm_cfg, dims=dims)
+
+    def forward(self, a, b, a_mask=None, b_mask=None):
+        _a, _b = a, b
+
+        if self._pre_norm:
+            q = self.norm1(a)
+            d = self.att1(q, _b, _b, mask=b_mask)
+            a = a + d
+
+            q = self.norm2(b)
+            d = self.att2(q, _a, _a, mask=a_mask)
+            b = b + d
+
+            d = self.norm3(a)
+            d = self.ffn1(d)
+            a = a + d
+
+            d = self.norm4(b)
+            d = self.ffn2(d)
+            b = b + d
+        else:
+            d = self.att1(a, _b, _b, mask=b_mask)
+            a = self.norm1(a + d)
+
+            d = self.att2(b, _a, _a, mask=a_mask)
+            b = self.norm2(b + d)
+
+            d = self.ffn1(a)
+            a = self.norm3(a + d)
+
+            d = self.ffn2(b)
+            b = self.norm4(b + d)
+
+        return a, b
