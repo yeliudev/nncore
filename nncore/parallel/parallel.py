@@ -164,6 +164,15 @@ class NNDistributedDataParallel(DistributedDataParallel):
             broadcast_buffers=broadcast_buffers,
             **kwargs)
 
+    def _run_ddp_forward(self, *inputs, **kwargs):
+        module = self._replicated_tensor_module or self.module
+
+        if self.device_ids:
+            inputs, kwargs = self.to_kwargs(inputs, kwargs, self.device_ids[0])
+            return module(*inputs[0], **kwargs[0])
+        else:
+            return module(*inputs, **kwargs)
+
     def scatter(self, inputs, kwargs, device_ids):
         return _scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
