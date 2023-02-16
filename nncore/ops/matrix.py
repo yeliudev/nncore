@@ -10,15 +10,15 @@ def cosine_similarity(x, y):
     Compute the cosine similarities among two batches of tensors.
 
     Args:
-        x (:obj:`torch.Tensor[*, N, F]`): The first batch of tensors.
-        y (:obj:`torch.Tensor[*, M, F]`): The second batch of tensors.
+        x (:obj:`torch.Tensor[*, N, C]`): The first batch of tensors.
+        y (:obj:`torch.Tensor[*, M, C]`): The second batch of tensors.
 
     Returns:
         :obj:`torch.Tensor[*, N, M]`: The computed pairwise cosine \
             similarities.
     """
-    x = F.normalize(x)
-    y = F.normalize(y)
+    x = F.normalize(x, dim=-1)
+    y = F.normalize(y, dim=-1)
     return torch.matmul(x, y.transpose(-1, -2))
 
 
