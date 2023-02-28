@@ -1,6 +1,6 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
-from torch.utils.data.dataset import Dataset
+from torch.utils.data import Dataset
 
 import nncore
 from .builder import DATASETS, build_dataset

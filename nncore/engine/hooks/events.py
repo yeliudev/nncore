@@ -221,17 +221,17 @@ class TensorboardWriter(Writer):
                 tag = '{}/{}'.format(''.join(tokens[:-2]), engine.mode)
                 record = engine.buffer.latest(key)
                 add_func = getattr(self._writer, 'add_{}'.format(log_type))
-                add_func(tag, record, global_step=engine.iter)
+                add_func(tag, record, global_step=engine.iter + 1)
             else:
                 tag = '{}/{}'.format(key, engine.mode)
                 record = engine.buffer.avg(key, window_size=window_size)
 
                 if isinstance(record, dict):
                     self._writer.add_scalars(
-                        tag, record, global_step=engine.iter)
+                        tag, record, global_step=engine.iter + 1)
                 else:
                     self._writer.add_scalar(
-                        tag, record, global_step=engine.iter)
+                        tag, record, global_step=engine.iter + 1)
 
 
 @WRITERS.register()
