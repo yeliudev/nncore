@@ -52,7 +52,11 @@ class CfgNode(OrderedDict):
         super(CfgNode, self).__setitem__(key, self._parse_value(value))
 
     def __getattr__(self, key):
-        return self[key]
+        try:
+            return self[key]
+        except KeyError:
+            msg = "attribute '{}' is not found".format(key)
+            raise AttributeError(msg)
 
     def __setattr__(self, key, value):
         if hasattr(self.__class__, key):
