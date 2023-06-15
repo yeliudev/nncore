@@ -50,7 +50,7 @@ def test_dict():
         assert cfg.item2.a == 0
         assert cfg.item3 == cfg_dict['item3']
         assert cfg.item4 == cfg_dict['item4']
-        with pytest.raises(KeyError):
+        with pytest.raises(AttributeError):
             cfg.not_exist
         for name in ('item1', 'item2', 'item3', 'item4'):
             assert name in cfg

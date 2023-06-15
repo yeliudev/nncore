@@ -205,7 +205,7 @@ def load_checkpoint(model,
         raise RuntimeError('no state dict found in the checkpoint file')
 
     if list(state_dict.keys())[0].startswith('module.'):
-        state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
+        state_dict = {k[7:]: v for k, v in state_dict.items()}
 
     if keys is not None:
         state_dict = {

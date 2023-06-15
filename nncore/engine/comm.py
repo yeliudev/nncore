@@ -90,6 +90,9 @@ def init_dist(launcher=None, backend='nccl', method='spawn', **kwargs):
     else:
         backend = 'gloo'
 
+    if 'timeout' in kwargs:
+        os.environ['NCCL_BLOCKING_WAIT'] = '1'
+
     dist.init_process_group(backend, **kwargs)
     info = '{} ({})'.format(launcher, backend)
 
