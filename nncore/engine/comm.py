@@ -61,13 +61,9 @@ def init_dist(launcher=None, backend='nccl', method='spawn', **kwargs):
     assert launcher in ('torch', 'slurm', None)
     assert backend in ('nccl', 'gloo')
 
+    launcher = launcher or get_launcher()
     if launcher is None:
-        if int(os.getenv('SLURM_NTASKS', 0)) > 1:
-            launcher = 'slurm'
-        elif int(os.getenv('WORLD_SIZE', 0)) > 1:
-            launcher = 'torch'
-        else:
-            return
+        return
 
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method(method)
@@ -99,6 +95,16 @@ def init_dist(launcher=None, backend='nccl', method='spawn', **kwargs):
     return info
 
 
+def get_launcher():
+    """
+    Detect the launcher of the current process.
+
+    Returns:
+        str | None: The name of the launcher.
+    """
+    return 'elastic' if is_elastic() else 'slurm' if is_slurm() else None
+
+
 def is_elastic():
     """
     Check whether the current process was launched with ``dist.elastic``.
@@ -106,7 +112,7 @@ def is_elastic():
     Returns:
         bool: Whether the current process was launched with ``dist.elastic``.
     """
-    return os.getenv('TORCHELASTIC_RUN_ID') is not None
+    return int(os.getenv('WORLD_SIZE', 0)) > 1
 
 
 def is_slurm():
@@ -116,7 +122,7 @@ def is_slurm():
     Returns:
         bool: Whether the current process was launched with Slurm.
     """
-    return os.getenv('SLURM_NTASKS') is not None
+    return int(os.getenv('SLURM_NTASKS', 0)) > 1
 
 
 def is_distributed():
