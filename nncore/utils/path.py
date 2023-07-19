@@ -1,7 +1,6 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
 import os
-import os.path as osp
 from pathlib import Path
 from platform import system
 from shutil import copy2, copytree, move, rmtree
@@ -20,7 +19,7 @@ def expand_user(path):
     Returns:
         str: The expanded path.
     """
-    return osp.expanduser(path)
+    return os.path.expanduser(path)
 
 
 @recursive()
@@ -34,7 +33,7 @@ def abs_path(path):
     Returns:
         str: The parsed absolute path.
     """
-    return osp.abspath(expand_user(path))
+    return os.path.abspath(expand_user(path))
 
 
 @recursive()
@@ -48,21 +47,21 @@ def dir_name(path):
     Returns:
         str: The parsed directory name.
     """
-    return osp.dirname(expand_user(path))
+    return os.path.dirname(expand_user(path))
 
 
 @recursive()
 def base_name(path):
     """
-    Parse base name from a path.
+    Parse base filename from a path.
 
     Args:
         path (str): Path to the file or directory.
 
     Returns:
-        str: The parsed base name.
+        str: The parsed base filename.
     """
-    return osp.basename(path)
+    return os.path.basename(path)
 
 
 def join(*args):
@@ -75,9 +74,10 @@ def join(*args):
     Returns:
         str: The combined path.
     """
-    return osp.join(*args)
+    return os.path.join(*args)
 
 
+@recursive()
 def split_ext(path):
     """
     Split name and extension of a path.
@@ -88,7 +88,8 @@ def split_ext(path):
     Returns:
         tuple[str]: The splitted name and extension.
     """
-    return osp.splitext(base_name(path))
+    name, ext = os.path.splitext(path)
+    return name, ext[1:]
 
 
 @recursive()
@@ -116,7 +117,7 @@ def pure_ext(path):
     Returns:
         str: The parsed file extension.
     """
-    return split_ext(path)[1][1:]
+    return split_ext(path)[1]
 
 
 @recursive()
@@ -132,7 +133,7 @@ def is_file(path, raise_error=False):
     Returns:
         bool: Whether the file exists.
     """
-    is_file = osp.isfile(expand_user(path))
+    is_file = os.path.isfile(expand_user(path))
     if not is_file and raise_error:
         raise FileNotFoundError("file '{}' not found".format(path))
     return is_file
@@ -151,7 +152,7 @@ def is_dir(path, raise_error=False):
     Returns:
         bool: Whether the directory exists.
     """
-    is_dir = osp.isdir(expand_user(path))
+    is_dir = os.path.isdir(expand_user(path))
     if not is_dir and raise_error:
         raise NotADirectoryError("directory '{}' not found".format(path))
     return is_dir
@@ -339,7 +340,7 @@ def symlink(src, dst, overwrite=True, raise_error=False):
     if system() == 'Windows' and not raise_error:
         return
 
-    if osp.lexists(dst):
+    if os.path.lexists(dst):
         if not overwrite:
             raise FileExistsError("file '{}' exists".format(dst))
         os.remove(dst)

@@ -1,6 +1,6 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
-import os.path as osp
+import os
 
 import pytest
 
@@ -18,7 +18,7 @@ def test_construct():
 
 def test_build_config():
     for filename in ('a.py', 'a.b.py', 'b.json', 'c.yaml'):
-        cfg_file = osp.join(osp.dirname(__file__), 'data', filename)
+        cfg_file = os.path.join(os.path.dirname(__file__), 'data', filename)
         cfg = nncore.Config.from_file(cfg_file)
         assert isinstance(cfg, nncore.Config)
         assert cfg.filename == cfg_file
@@ -27,14 +27,14 @@ def test_build_config():
         nncore.Config.from_file('no_such_file.py')
     with pytest.raises(IOError):
         nncore.Config.from_file(
-            osp.join(osp.dirname(__file__), 'data', 'color.jpg'))
+            os.path.join(os.path.dirname(__file__), 'data', 'color.jpg'))
 
 
 def test_dict():
     cfg_dict = dict(item1=[1, 2], item2=dict(a=0), item3=True, item4='test')
 
     for filename in ('a.py', 'b.json', 'c.yaml'):
-        cfg_file = osp.join(osp.dirname(__file__), 'data', filename)
+        cfg_file = os.path.join(os.path.dirname(__file__), 'data', filename)
         cfg = nncore.Config.from_file(cfg_file)
 
         assert len(cfg) == 4

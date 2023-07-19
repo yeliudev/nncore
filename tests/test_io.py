@@ -1,7 +1,6 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
 import os
-import os.path as osp
 import tempfile
 
 import pytest
@@ -13,17 +12,17 @@ def _test_handler(format, test_obj, str_checker, mode='r+'):
     dump_str = nncore.dumps(test_obj, format=format)
     str_checker(dump_str)
 
-    tmp_filename = osp.join(tempfile.gettempdir(), 'nncore_test_dump')
+    tmp_filename = os.path.join(tempfile.gettempdir(), 'nncore_test_dump')
     nncore.dump(test_obj, tmp_filename, format=format)
-    assert osp.isfile(tmp_filename)
+    assert os.path.isfile(tmp_filename)
     load_obj = nncore.load(tmp_filename, format=format)
     assert load_obj == test_obj
     os.remove(tmp_filename)
 
-    tmp_filename = osp.join(tempfile.gettempdir(),
+    tmp_filename = os.path.join(tempfile.gettempdir(),
                             'nncore_test_dump.' + format)
     nncore.dump(test_obj, tmp_filename)
-    assert osp.isfile(tmp_filename)
+    assert os.path.isfile(tmp_filename)
     load_obj = nncore.load(tmp_filename)
     assert load_obj == test_obj
     os.remove(tmp_filename)

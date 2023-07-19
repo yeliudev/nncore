@@ -26,7 +26,10 @@ def move_to_device(data, device='cpu'):
             tensors.
     """
     if isinstance(data, dict):
-        return {k: move_to_device(v, device=device) for k, v in data.items()}
+        return data.__class__({
+            k: move_to_device(v, device=device)
+            for k, v in data.items()
+        })
     elif isinstance(data, (list, tuple)):
         return type(data)([move_to_device(d, device=device) for d in data])
     elif torch.is_tensor(data):
