@@ -327,17 +327,17 @@ class TransformerDecoderLayer(nn.Module):
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
         self.norm3 = build_norm_layer(norm_cfg, dims=dims)
 
-    def forward(self, x, mem, q_pe=None, k_pe=None, mask=None):
+    def forward(self, x, mem, q_pe=None, k_pe=None, q_mask=None, k_mask=None):
         if self._pre_norm:
             v = self.norm1(x)
             q = k = v if q_pe is None else v + q_pe
-            d = self.att1(q, k, v, mask=mask)
+            d = self.att1(q, k, v, mask=q_mask)
             x = x + d
 
             q = self.norm2(x)
             q = q if q_pe is None else q + q_pe
             k = mem if k_pe is None else mem + k_pe
-            d = self.att2(q, k, mem, mask=mask)
+            d = self.att2(q, k, mem, mask=k_mask)
             x = x + d
 
             d = self.norm3(x)
@@ -345,12 +345,12 @@ class TransformerDecoderLayer(nn.Module):
             x = x + d
         else:
             q = k = x if q_pe is None else x + q_pe
-            d = self.att1(q, k, x, mask=mask)
+            d = self.att1(q, k, x, mask=q_mask)
             x = self.norm1(x + d)
 
             q = x if q_pe is None else x + q_pe
             k = mem if k_pe is None else mem + k_pe
-            d = self.att2(q, k, mem, mask=mask)
+            d = self.att2(q, k, mem, mask=k_mask)
             x = self.norm2(x + d)
 
             d = self.ffn(x)
