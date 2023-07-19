@@ -10,14 +10,13 @@ def weighted_loss(func):
     """
 
     @wraps(func)
-    def _wrapper(pred,
-                 target,
+    def _wrapper(*args,
                  weight=None,
                  reduction='mean',
                  avg_factor=None,
                  **kwargs):
         assert reduction in ('mean', 'sum', 'none')
-        loss = func(pred, target, **kwargs)
+        loss = func(*args, **kwargs)
 
         if weight is not None:
             loss = loss * weight

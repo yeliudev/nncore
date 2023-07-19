@@ -13,7 +13,7 @@
     <img src="https://badgen.net/pypi/v/nncore?label=PyPI&cache=300">
   </a>
   <a href="https://pypistats.org/packages/nncore">
-    <img src="https://badgen.net/runkit/yeliudev/pypi-downloads/nncore/month?cache=300">
+    <img src="https://badgen.net/pypi/dm/nncore?label=Downloads&color=cyan&cache=300">
   </a>
   <a href="https://github.com/yeliudev/nncore/blob/main/LICENSE">
     <img src="https://badgen.net/github/license/yeliudev/nncore?label=License&cache=300">
@@ -42,8 +42,8 @@ Note that some methods in the library work with PyTorch 1.9+, but the installati
 | :-: | :-: | :-: | :-: | :-: |
 | Ubuntu 20.04 | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/0?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/1?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/2?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/3?icon=github&cache=300)][link] |
 | Ubuntu 22.04 | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/4?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/5?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/6?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/7?icon=github&cache=300)][link] |
-| macOS 11.x | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/8?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/9?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/10?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/11?icon=github&cache=300)][link] |
-| macOS 12.x | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/12?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/13?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/14?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/15?icon=github&cache=300)][link] |
+| macOS 12.x | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/8?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/9?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/10?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/11?icon=github&cache=300)][link] |
+| macOS 13.x | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/12?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/13?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/14?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/15?icon=github&cache=300)][link] |
 | Windows Server 2022 | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/16?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/17?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/18?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/19?icon=github&cache=300)][link] |
 
 ## Installation

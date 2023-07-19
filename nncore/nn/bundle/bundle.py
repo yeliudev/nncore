@@ -70,6 +70,8 @@ class Parameter(nn.Parameter):
     def __new__(cls, *args, requires_grad=True, **kwargs):
         if torch.is_tensor(args[0]):
             data = args[0]
+        elif isinstance(args[0], float):
+            data = torch.Tensor([args[0]])
         elif isinstance(args[0], (list, tuple)):
             data = torch.randn(args[0], **kwargs) / args[0][-1]**0.5
         else:
