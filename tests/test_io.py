@@ -20,7 +20,7 @@ def _test_handler(format, test_obj, str_checker, mode='r+'):
     os.remove(tmp_filename)
 
     tmp_filename = os.path.join(tempfile.gettempdir(),
-                            'nncore_test_dump.' + format)
+                                'nncore_test_dump.' + format)
     nncore.dump(test_obj, tmp_filename)
     assert os.path.isfile(tmp_filename)
     load_obj = nncore.load(tmp_filename)
