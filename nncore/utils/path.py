@@ -103,7 +103,7 @@ def pure_name(path):
     Returns:
         str: The parsed pure filename.
     """
-    return split_ext(path)[0]
+    return split_ext(base_name(path))[0]
 
 
 @recursive()
