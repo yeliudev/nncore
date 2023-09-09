@@ -8,15 +8,35 @@ from .timer import Timer
 
 class ProgressBar(object):
     """
-    A progress bar which can show the state of a progress. It only takes
-    effect in the main process.
+    A progress bar which showing the state of a progress.
+
+    Args:
+        iterable (iterable | None, optional): The iterable object to decorate
+            with a progress bar. Default: ``None``.
+        num_tasks (int | None, optional): The number of expected iterations.
+            If not specified, the length of iterable object will be used.
+            Default: ``None``.
+        active (bool | None, optional): Whether the progress bar is active. If
+            not specified, only the main process will show the progree bar.
+            Default: ``None``.
+
+    Example:
+        >>> for item in ProgressBar(range(10)):
+        ...     # do processing
+
+        >>> prog_bar = ProgressBar(num_tasks=10)
+        >>> for item in range(10):
+        ...     # do processing
+        ...     prog_bar.update()
     """
 
     _wb = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}, eta: {}{}'
-    _ob = '\rcompleted: {}, elapsed: {}, {:.1f} tasks/s'
+    _ob = '\rCompleted: {}, elapsed: {}, {:.1f} tasks/s'
 
-    def __init__(self, num_tasks=None, active=None):
-        self._task_num = num_tasks
+    def __init__(self, iterable=None, num_tasks=None, active=None):
+        self._iterable = iterable
+        self._num_tasks = num_tasks or (len(iterable) if hasattr(
+            iterable, '__len__') else None)
         self._completed = 0
 
         if active is None:
@@ -29,8 +49,8 @@ class ProgressBar(object):
             self._active = active
 
         if self._active:
-            if self._task_num is not None:
-                msg = self._wb.format(0, self._task_num, 0, 0, 0, '')
+            if self._num_tasks is not None:
+                msg = self._wb.format(0, self._num_tasks, 0, 0, 0, '')
                 msg = msg.format(' ' * self._get_bar_width(msg))
             else:
                 msg = self._ob.format(0, 0, 0)
@@ -39,6 +59,11 @@ class ProgressBar(object):
             self._last_length = len(msg)
 
             self._timer = Timer()
+
+    def __iter__(self):
+        for item in self._iterable:
+            yield item
+            self.update()
 
     def _get_bar_width(self, msg):
         width, _ = get_terminal_size()
@@ -85,13 +110,13 @@ class ProgressBar(object):
             fps = self._completed / ela
             ela_str = self._get_time_str(ceil(ela))
 
-            if self._task_num is not None:
-                perc = self._completed / float(self._task_num)
+            if self._num_tasks is not None:
+                perc = self._completed / float(self._num_tasks)
                 eta = int(ela * (1 - perc) / perc + 0.5)
                 eta_str = self._get_time_str(ceil(eta))
                 msg = self._wb.format(
-                    self._completed, self._task_num, fps, ela_str, eta_str,
-                    '\n' if self._task_num == self._completed else '')
+                    self._completed, self._num_tasks, fps, ela_str, eta_str,
+                    '\n' if self._num_tasks == self._completed else '')
                 bar_width = self._get_bar_width(msg)
                 mark_width = int(bar_width * perc)
                 chars = '>' * mark_width + ' ' * (bar_width - mark_width)

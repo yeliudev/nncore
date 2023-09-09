@@ -54,7 +54,7 @@ def get_logger(logger_or_name=None,
             only the main process (rank 0) is affected, and other processes
             will set the level to ``ERROR`` thus be silent at most of the time.
             Default: :obj:`logging.INFO`.
-        log_file (str, optional): Path to the log file. If specified, a
+        log_file (str | None, optional): Path to the log file. If specified, a
             :obj:`FileHandler` will be added to the logger of the main process.
             Default: ``None``.
 
