@@ -2,13 +2,13 @@
 
 import importlib
 import os
+import platform
+import re
 import subprocess
 import sys
 import time
 from collections import defaultdict
 from getpass import getuser
-from platform import system
-from re import findall
 from socket import gethostname
 
 from tabulate import tabulate
@@ -28,17 +28,31 @@ def get_timestamp():
     return time.strftime('%Y%m%d%H%M%S', time.localtime())
 
 
+def _collect_cpu_env(system_type):
+    if system_type == 'Linux':
+        info = subprocess.check_output(
+            'cat /proc/cpuinfo', shell=True).decode().strip()
+        for line in info.split('\n'):
+            if 'model name' in line:
+                return re.sub('.*model name.*:', '', line, 1)
+    elif system_type == 'Darwin':
+        return subprocess.check_output(
+            'sysctl -n machdep.cpu.brand_string', shell=True).decode().strip()
+    elif system_type == 'Windows':
+        return platform.processor()
+    return '<unknown>'
+
+
 def _collect_cuda_env():
     try:
         import torch
         from torch.utils.cpp_extension import CUDA_HOME
-        cuda_arch_list = os.getenv('TORCH_CUDA_ARCH_LIST')
         if CUDA_HOME is not None and is_dir(CUDA_HOME):
             try:
                 nvcc = join(CUDA_HOME, 'bin', 'nvcc')
                 nvcc = subprocess.check_output(
-                    "'{}' -V | tail -n1".format(nvcc), shell=True)
-                nvcc = nvcc.decode('utf-8').strip()
+                    "'{}' -V | tail -n1".format(nvcc),
+                    shell=True).decode().strip()
             except subprocess.SubprocessError:
                 nvcc = None
         else:
@@ -49,9 +63,9 @@ def _collect_cuda_env():
                 devices[torch.cuda.get_device_name(k)].append(str(k))
         else:
             devices = None
-        return CUDA_HOME, cuda_arch_list, nvcc, devices
+        return CUDA_HOME, nvcc, devices
     except ImportError:
-        return None, None, None, None
+        return None, None, None
 
 
 def _collect_torch_env():
@@ -81,11 +95,11 @@ def _detect_compute_compatibility(cuda_home, so_file):
         cuobjdump = os.path.join(cuda_home, 'bin', 'cuobjdump')
         if os.path.isfile(cuobjdump):
             output = subprocess.check_output(
-                "'{}' --list-elf '{}'".format(cuobjdump, so_file), shell=True)
-            output = output.decode('utf-8').strip().split('\n')
+                "'{}' --list-elf '{}'".format(cuobjdump, so_file),
+                shell=True).decode().strip().split('\n')
             sm = []
             for line in output:
-                line = findall(r'\.sm_[0-9]*\.', line)[0]
+                line = re.findall(r'\.sm_[0-9]*\.', line)[0]
                 sm.append(line.strip('.'))
             sm = sorted(set(sm))
             return ', '.join(sm)
@@ -124,7 +138,7 @@ def _get_module_version(mod_name):
         pass
 
 
-def collect_env_info(modules=['nncore', 'numpy', 'PIL', 'cv2']):
+def collect_env_info(modules=['numpy', 'PIL', 'cv2']):
     """
     Collect information about the environment.
 
@@ -134,19 +148,21 @@ def collect_env_info(modules=['nncore', 'numpy', 'PIL', 'cv2']):
 
     Args:
         modules (list[str], optional): The list of module names to be checked.
+            Default: ``['numpy', 'PIL', 'cv2']``.
 
     Returns:
         str: The environment information.
     """
     info = []
 
-    info.append(('System', system()))
+    system_type = platform.system()
+    info.append(('System', system_type))
     info.append(('Python', sys.version.replace('\n', '')))
+    info.append(('CPU', _collect_cpu_env(system_type)))
 
-    cuda_home, cuda_arch_list, nvcc, devices = _collect_cuda_env()
+    cuda_home, nvcc, devices = _collect_cuda_env()
     if cuda_home is not None:
         info.append(('CUDA_HOME', cuda_home))
-        info.append(('TORCH_CUDA_ARCH_LIST', cuda_arch_list or '<not-found>'))
         info.append(('NVCC', nvcc or '<not-found>'))
         if devices is not None:
             for name, ids in devices.items():
@@ -166,7 +182,7 @@ def collect_env_info(modules=['nncore', 'numpy', 'PIL', 'cv2']):
     if torchvision_arch_flags is not None:
         info.append(('torchvision arch flags', torchvision_arch_flags))
 
-    for module in modules:
+    for module in ['nncore'] + modules:
         info.append((module, _get_module_version(module) or '<not-found>'))
 
     env_info = tabulate(info)

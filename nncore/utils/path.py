@@ -78,17 +78,18 @@ def base_name(path):
     return os.path.basename(path)
 
 
-def join(*args):
+@recursive()
+def split_path(path):
     """
-    Combine strings into a path.
+    Split directory name and filename of a path.
 
     Args:
-        *args (str): The strings to be combined.
+        path (str): Path to the file or directory.
 
     Returns:
-        str: The combined path.
+        str: The parsed directory name and filename.
     """
-    return os.path.join(*args)
+    return dir_name(path), base_name(path)
 
 
 @recursive()
@@ -132,6 +133,19 @@ def pure_ext(path):
         str: The parsed file extension.
     """
     return split_ext(path)[1]
+
+
+def join(*args):
+    """
+    Combine strings into a path.
+
+    Args:
+        *args (str): The strings to be combined.
+
+    Returns:
+        str: The combined path.
+    """
+    return os.path.join(*args)
 
 
 @recursive()

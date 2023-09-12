@@ -16,6 +16,8 @@ class ProgressBar(object):
         num_tasks (int | None, optional): The number of expected iterations.
             If not specified, the length of iterable object will be used.
             Default: ``None``.
+        percentage (bool, optional): Whether to display the percentage instead
+            of raw task numbers. Default: ``False``.
         active (bool | None, optional): Whether the progress bar is active. If
             not specified, only the main process will show the progree bar.
             Default: ``None``.
@@ -30,14 +32,23 @@ class ProgressBar(object):
         ...     prog_bar.update()
     """
 
+    _pb = '\r[{{}}] {}, elapsed: {}, eta: {}{}'
     _wb = '\r[{{}}] {}/{}, {:.1f} task/s, elapsed: {}, eta: {}{}'
     _ob = '\rCompleted: {}, elapsed: {}, {:.1f} tasks/s'
 
-    def __init__(self, iterable=None, num_tasks=None, active=None):
+    def __init__(self,
+                 iterable=None,
+                 num_tasks=None,
+                 percentage=False,
+                 active=None):
         self._iterable = iterable
         self._num_tasks = num_tasks or (len(iterable) if hasattr(
             iterable, '__len__') else None)
+        self._percentage = percentage
         self._completed = 0
+
+        if self._percentage:
+            assert self._num_tasks is not None
 
         if active is None:
             try:
@@ -49,7 +60,10 @@ class ProgressBar(object):
             self._active = active
 
         if self._active:
-            if self._num_tasks is not None:
+            if self._percentage:
+                msg = self._pb.format('0%', 0, 0, '')
+                msg = msg.format(' ' * self._get_bar_width(msg))
+            elif self._num_tasks is not None:
                 msg = self._wb.format(0, self._num_tasks, 0, 0, 0, '')
                 msg = msg.format(' ' * self._get_bar_width(msg))
             else:
@@ -111,12 +125,16 @@ class ProgressBar(object):
             ela_str = self._get_time_str(ceil(ela))
 
             if self._num_tasks is not None:
-                perc = self._completed / float(self._num_tasks)
+                perc = self._completed / self._num_tasks
                 eta = int(ela * (1 - perc) / perc + 0.5)
                 eta_str = self._get_time_str(ceil(eta))
-                msg = self._wb.format(
-                    self._completed, self._num_tasks, fps, ela_str, eta_str,
-                    '\n' if self._num_tasks == self._completed else '')
+                end_str = '\n' if self._num_tasks == self._completed else ''
+                if self._percentage:
+                    msg = self._pb.format(f'{round(perc*100,1)}%', ela_str,
+                                          eta_str, end_str)
+                else:
+                    msg = self._wb.format(self._completed, self._num_tasks,
+                                          fps, ela_str, eta_str, end_str)
                 bar_width = self._get_bar_width(msg)
                 mark_width = int(bar_width * perc)
                 chars = '>' * mark_width + ' ' * (bar_width - mark_width)

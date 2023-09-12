@@ -7,9 +7,11 @@ from .data import (concat, flatten, is_list_of, is_seq_of, is_tuple_of, slice,
 from .env import collect_env_info, get_host_info, get_time_str, get_timestamp
 from .logger import get_logger, log_or_print
 from .misc import recursive
+from .network import download
 from .path import (abs_path, base_name, cp, dir_name, expand_user, find,
                    is_dir, is_file, join, ls, mkdir, mv, pure_ext, pure_name,
-                   rel_path, remove, rename, same_dir, split_ext, symlink)
+                   rel_path, remove, rename, same_dir, split_ext, split_path,
+                   symlink)
 from .progress import ProgressBar
 from .registry import Registry, build_object
 from .timer import Timer
@@ -19,8 +21,8 @@ __all__ = [
     'is_list_of', 'is_seq_of', 'is_tuple_of', 'slice', 'swap_element',
     'to_dict_of_list', 'to_list_of_dict', 'collect_env_info', 'get_host_info',
     'get_time_str', 'get_timestamp', 'get_logger', 'log_or_print', 'recursive',
-    'abs_path', 'base_name', 'cp', 'dir_name', 'expand_user', 'find', 'is_dir',
-    'is_file', 'join', 'ls', 'mkdir', 'mv', 'pure_ext', 'pure_name',
-    'rel_path', 'remove', 'rename', 'same_dir', 'split_ext', 'symlink',
-    'ProgressBar', 'Registry', 'build_object', 'Timer'
+    'download', 'abs_path', 'base_name', 'cp', 'dir_name', 'expand_user',
+    'find', 'is_dir', 'is_file', 'join', 'ls', 'mkdir', 'mv', 'pure_ext',
+    'pure_name', 'rel_path', 'remove', 'rename', 'same_dir', 'split_ext',
+    'split_path', 'symlink', 'ProgressBar', 'Registry', 'build_object', 'Timer'
 ]
