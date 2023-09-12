@@ -28,6 +28,10 @@ def get_timestamp():
     return time.strftime('%Y%m%d%H%M%S', time.localtime())
 
 
+def exec(cmd):
+    return subprocess.check_output(cmd, shell=True).decode().strip()
+
+
 def _collect_cpu_env(system_type):
     if system_type == 'Linux':
         info = subprocess.check_output(
