@@ -34,14 +34,12 @@ def exec(cmd):
 
 def _collect_cpu_env(system_type):
     if system_type == 'Linux':
-        info = subprocess.check_output(
-            'cat /proc/cpuinfo', shell=True).decode().strip()
+        info = exec('cat /proc/cpuinfo')
         for line in info.split('\n'):
             if 'model name' in line:
                 return re.sub('.*model name.*:', '', line, 1)
     elif system_type == 'Darwin':
-        return subprocess.check_output(
-            'sysctl -n machdep.cpu.brand_string', shell=True).decode().strip()
+        return exec('sysctl -n machdep.cpu.brand_string')
     elif system_type == 'Windows':
         return platform.processor()
     return '<unknown>'
@@ -54,9 +52,7 @@ def _collect_cuda_env():
         if CUDA_HOME is not None and is_dir(CUDA_HOME):
             try:
                 nvcc = join(CUDA_HOME, 'bin', 'nvcc')
-                nvcc = subprocess.check_output(
-                    "'{}' -V | tail -n1".format(nvcc),
-                    shell=True).decode().strip()
+                nvcc = exec("'{}' -V | tail -n1".format(nvcc))
             except subprocess.SubprocessError:
                 nvcc = None
         else:
@@ -98,11 +94,9 @@ def _detect_compute_compatibility(cuda_home, so_file):
     try:
         cuobjdump = os.path.join(cuda_home, 'bin', 'cuobjdump')
         if os.path.isfile(cuobjdump):
-            output = subprocess.check_output(
-                "'{}' --list-elf '{}'".format(cuobjdump, so_file),
-                shell=True).decode().strip().split('\n')
+            output = exec("'{}' --list-elf '{}'".format(cuobjdump, so_file))
             sm = []
-            for line in output:
+            for line in output.split('\n'):
                 line = re.findall(r'\.sm_[0-9]*\.', line)[0]
                 sm.append(line.strip('.'))
             sm = sorted(set(sm))
