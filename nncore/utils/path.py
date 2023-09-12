@@ -37,6 +37,20 @@ def abs_path(path):
 
 
 @recursive()
+def rel_path(path):
+    """
+    Parse relative path from an absolute path.
+
+    Args:
+        path (str): Path to the file or directory.
+
+    Returns:
+        str: The parsed relative path.
+    """
+    return os.path.relpath(path)
+
+
+@recursive()
 def dir_name(path):
     """
     Parse directory name from a path.
