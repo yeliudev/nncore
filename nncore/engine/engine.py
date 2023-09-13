@@ -430,10 +430,8 @@ class Engine(object):
 
         self._call_hook('before_val_epoch')
 
-        prog_bar = nncore.ProgressBar(len(self.data_loader))
-        for data in self.data_loader:
+        for data in nncore.ProgressBar(self.data_loader):
             self.val_iter(data)
-            prog_bar.update()
 
         self._call_hook('after_val_epoch')
 
@@ -447,10 +445,8 @@ class Engine(object):
         if callable(getattr(self.data_loader.dataset, 'set_state', None)):
             self.data_loader.dataset.set_state(self._mode)
 
-        prog_bar = nncore.ProgressBar(len(self.data_loader))
-        for data in self.data_loader:
+        for data in nncore.ProgressBar(self.data_loader):
             self.test_iter(data)
-            prog_bar.update()
 
     def run_stage(self):
         if isinstance(self.cur_stage['optimizer'], dict):

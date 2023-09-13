@@ -172,7 +172,7 @@ class VideoReader(object):
                     interval=1,
                     start=0,
                     max_num=-1,
-                    show_progress=False,
+                    progress=False,
                     raise_error=True):
         """
         Dump the video to resized frame images.
@@ -197,8 +197,8 @@ class VideoReader(object):
             start (int, optional): The starting frame index. Default: ``0``.
             max_num (int, optional): The maximum number of frames to be dumped.
                 Default: ``-1``.
-            show_progress (bool, optional): Whether to display the progress
-                bar. Default: ``False``.
+            progress (bool, optional): Whether to display the progress bar.
+                Default: ``False``.
             raise_error (bool, optional): Whether to raise an error if a frame
                 is not successfully decoded. Default: ``True``.
         """
@@ -215,8 +215,7 @@ class VideoReader(object):
         if start > 0:
             self._set_position(start)
 
-        prog_bar = nncore.ProgressBar(
-            num_tasks=num_tasks, active=show_progress)
+        prog_bar = nncore.ProgressBar(num_tasks=num_tasks, active=progress)
 
         for i in range(total_tasks):
             img = self.read()
