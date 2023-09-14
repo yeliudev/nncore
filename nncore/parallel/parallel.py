@@ -2,6 +2,7 @@
 
 import torch
 from torch.nn.parallel import DataParallel, DistributedDataParallel
+from torch.nn.parallel.scatter_gather import _is_namedtuple
 from torch.nn.parallel._functions import Function, Scatter, _get_stream
 
 from .container import DataContainer
@@ -84,32 +85,36 @@ def _scatter(inputs, target_gpus, dim=0):
                 return Scatter.apply(target_gpus, None, dim, obj)
             else:
                 return _Scatter.forward(target_gpus, obj)
-        elif isinstance(obj, DataContainer):
+        if isinstance(obj, DataContainer):
             if obj.cpu_only:
                 return obj.data
             else:
                 return _Scatter.forward(target_gpus, obj.data)
-        elif isinstance(obj, tuple) and len(obj) > 0:
+        if _is_namedtuple(obj):
+            return [type(obj)(*args) for args in zip(*map(_scatter_map, obj))]
+        if isinstance(obj, tuple) and len(obj) > 0:
             return list(zip(*map(_scatter_map, obj)))
-        elif isinstance(obj, list) and len(obj) > 0:
-            return list(map(list, zip(*map(_scatter_map, obj))))
-        elif isinstance(obj, dict) and len(obj) > 0:
-            return list(map(type(obj), zip(*map(_scatter_map, obj.items()))))
+        if isinstance(obj, list) and len(obj) > 0:
+            return [list(i) for i in zip(*map(_scatter_map, obj))]
+        if isinstance(obj, dict) and len(obj) > 0:
+            return [type(obj)(i) for i in zip(*map(_scatter_map, obj.items()))]
         return [obj for _ in target_gpus]
 
     try:
-        return _scatter_map(inputs)
+        res = _scatter_map(inputs)
     finally:
         _scatter_map = None
+
+    return res
 
 
 def _scatter_kwargs(inputs, kwargs, target_gpus, dim=0):
     inputs = _scatter(inputs, target_gpus, dim) if inputs else []
     kwargs = _scatter(kwargs, target_gpus, dim) if kwargs else []
     if len(inputs) < len(kwargs):
-        inputs.extend([() for _ in range(len(kwargs) - len(inputs))])
+        inputs.extend(() for _ in range(len(kwargs) - len(inputs)))
     elif len(kwargs) < len(inputs):
-        kwargs.extend([{} for _ in range(len(inputs) - len(kwargs))])
+        kwargs.extend({} for _ in range(len(inputs) - len(kwargs)))
     return tuple(inputs), tuple(kwargs)
 
 
@@ -171,16 +176,16 @@ class NNDistributedDataParallel(DistributedDataParallel):
             module = self.module
 
         if self.device_ids:
-            inputs, kwargs = self.to_kwargs(inputs, kwargs, self.device_ids[0])
-            return module(*inputs[0], **kwargs[0])
+            inputs, kwargs = _scatter_kwargs(
+                inputs, kwargs, self.device_ids, dim=self.dim)
+            with self._inside_ddp_forward():
+                return module(*inputs[0], **kwargs[0])
         else:
-            return module(*inputs, **kwargs)
+            with self._inside_ddp_forward():
+                return module(*inputs, **kwargs)
 
     def scatter(self, inputs, kwargs, device_ids):
         return _scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
-
-    def to_kwargs(self, inputs, kwargs, device_id):
-        return _scatter_kwargs(inputs, kwargs, [device_id], dim=self.dim)
 
     def forward(self, *inputs, **kwargs):
         if self.device_ids:
