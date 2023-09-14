@@ -20,7 +20,7 @@ def _get_default_device(group=None):
 
 def _serialize_to_tensor(data, device):
     buffer = nncore.dumps(data)
-    storage = torch.ByteStorage.from_buffer(buffer)
+    storage = torch.UntypedStorage.from_buffer(buffer, dtype=torch.uint8)
     data_tensor = torch.ByteTensor(storage).to(device)
     size_tensor = torch.LongTensor([data_tensor.numel()]).to(device)
     return data_tensor, size_tensor
@@ -263,21 +263,8 @@ def all_gather(data, group=None):
     if world_size == 1:
         return [data]
 
-    device = _get_default_device(group=group)
-    data_tensor, size_tensor = _serialize_to_tensor(data, device)
-    size_list = [torch.empty_like(size_tensor) for _ in range(world_size)]
-    dist.all_gather(size_list, size_tensor, group=group)
-
-    pad_size = max(size_tensor.item() for size_tensor in size_list)
-    data_tensor = _pad_tensor(data_tensor, pad_size)
-
-    tensor_list = [data_tensor.new_empty(pad_size) for _ in range(world_size)]
-    dist.all_gather(tensor_list, data_tensor, group=group)
-
-    gathered = []
-    for data_tensor, size_tensor in zip(tensor_list, size_list):
-        buffer = data_tensor.cpu().numpy().tobytes()[:size_tensor.item()]
-        gathered.append(nncore.loads(buffer))
+    gathered = [None] * world_size
+    dist.all_gather_object(gathered, data, group=group)
 
     return gathered
 
@@ -301,32 +288,8 @@ def gather(data, dst=0, group=None):
     if world_size == 1:
         return [data]
 
-    # TODO: Fix the walkaround for gather on NCCL
-    if dist.get_backend(group=group) == 'nccl':
-        gathered = all_gather(data, group=group)
-        return gathered if rank == dst else None
-
-    device = _get_default_device(group=group)
-    data_tensor, size_tensor = _serialize_to_tensor(data, device)
-    size_list = [torch.empty_like(size_tensor) for _ in range(world_size)]
-    dist.all_gather(size_list, size_tensor, group=group)
-
-    pad_size = max(size_tensor.item() for size_tensor in size_list)
-    data_tensor = _pad_tensor(data_tensor, pad_size)
-
-    if rank == dst:
-        tensor_list = [
-            data_tensor.new_empty(pad_size) for _ in range(world_size)
-        ]
-        dist.gather(data_tensor, gather_list=tensor_list, dst=dst, group=group)
-
-        gathered = []
-        for data_tensor, size_tensor in zip(tensor_list, size_list):
-            buffer = data_tensor.cpu().numpy().tobytes()[:size_tensor.item()]
-            gathered.append(nncore.loads(buffer))
-    else:
-        dist.gather(data_tensor, dst=dst, group=group)
-        gathered = None
+    gathered = [None] * world_size if rank == dst else None
+    dist.gather_object(data, object_gather_list=gathered, dst=dst, group=group)
 
     return gathered
 

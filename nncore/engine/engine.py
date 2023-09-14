@@ -488,7 +488,7 @@ class Engine(object):
         blob = gather(blob)
 
         if is_main_process():
-            blob = nncore.concat(blob)
+            blob = nncore.interleave(blob)[:len(self.data_loader.dataset)]
 
             cfg = self.cur_stage.get('validation')
             if cfg is not None:

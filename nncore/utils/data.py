@@ -126,6 +126,20 @@ def concat(seq):
     return seq_type(out)
 
 
+def interleave(seq):
+    """
+    Interleave a sequence of sequences.
+
+    Args:
+        seq (list | tuple): The sequence to be interleaved.
+
+    Returns:
+        list | tuple: The interleaved sequence.
+    """
+    seq_type = type(seq)
+    return seq_type([v for s in zip(*seq) for v in s])
+
+
 def flatten(seq):
     """
     Flatten a sequence of sequences and items.
