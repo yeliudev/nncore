@@ -7,6 +7,7 @@ from datetime import timedelta
 import torch
 import torch.distributed as dist
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
 
 import nncore
 from ..builder import HOOKS
@@ -187,7 +188,6 @@ class TensorboardWriter(Writer):
             self._log_dir = nncore.join(engine.work_dir, 'tf_logs')
         nncore.mkdir(self._log_dir)
 
-        from torch.utils.tensorboard import SummaryWriter
         self._writer = SummaryWriter(self._log_dir, **self._kwargs)
 
         if self._input_to_model is not None:
@@ -280,9 +280,10 @@ class EventWriterHook(Hook):
             :obj:`TensorboardWriter`. Default: ``['CommandLineWriter']``.
     """
 
-    def __init__(self,
-                 interval=50,
-                 writers=['CommandLineWriter', 'JSONWriter']):
+    def __init__(
+            self,
+            interval=50,
+            writers=['CommandLineWriter', 'JSONWriter', 'TensorboardWriter']):
         super(EventWriterHook, self).__init__()
         self._interval = interval
         self._writers = [

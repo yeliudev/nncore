@@ -4,7 +4,7 @@ from .base import Hook
 from .checkpoint import CheckpointHook
 from .closure import ClosureHook
 from .eval import EvalHook
-from .events import (CommandLineWriter, EventWriterHook, JSONWriter,
+from .writer import (CommandLineWriter, EventWriterHook, JSONWriter,
                      TensorboardWriter, WandbWriter)
 from .lr_updater import LrUpdaterHook
 from .memory import EmptyCacheHook

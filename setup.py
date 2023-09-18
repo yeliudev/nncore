@@ -9,7 +9,7 @@ from setuptools import find_packages, setup
 
 INSTALL_REQUIRES = [
     'h5py>=3.1', 'joblib>=1.1', 'jsonlines>=2', 'numpy>=1.19', 'pyyaml>=6',
-    'tabulate>=0.8', 'termcolor>=1.1'
+    'tabulate>=0.8', 'tensorboard>=2.12', 'termcolor>=1.1'
 ]
 
 OPENCV_INSTALL_REQUIRES = 'opencv-python-headless>=4.5', 'opencv-python>=4.5'
@@ -60,13 +60,12 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Topic :: Utilities',
     ],
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=get_install_requires(),
