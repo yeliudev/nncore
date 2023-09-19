@@ -307,18 +307,17 @@ def mkdir(dir_name, raise_error=False, keep_empty=False, modify_path=False):
     assert isinstance(dir_name, str) and dir_name != ''
     dir_name = expand_user(dir_name)
 
-    if is_dir(dir_name) and modify_path:
-        tmp, i = dir_name, 0
-        while is_dir(tmp):
-            tmp = '{}_{}'.format(dir_name, i)
-            i += 1
-        dir_name = tmp
+    if is_dir(dir_name):
+        if keep_empty:
+            remove(dir_name)
+        elif modify_path:
+            tmp, i = dir_name, 0
+            while is_dir(tmp):
+                tmp = '{}_{}'.format(dir_name, i)
+                i += 1
+            dir_name = tmp
 
     os.makedirs(dir_name, exist_ok=not raise_error)
-
-    if keep_empty:
-        for f in ls(dir_name, join_path=True):
-            remove(f)
 
     return dir_name
 
