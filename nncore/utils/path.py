@@ -145,7 +145,7 @@ def join(*args):
     Returns:
         str: The combined path.
     """
-    return os.path.join(*args)
+    return os.path.join(*[str(a) for a in args])
 
 
 @recursive()
