@@ -8,7 +8,8 @@ import jsonlines
 
 import nncore
 from .handlers import (HDF5Handler, JSONHandler, JSONLHandler, NumPyHandler,
-                       PickleHandler, TXTHandler, XMLHandler, YAMLHandler)
+                       NumPyzHandler, PickleHandler, TXTHandler, XMLHandler,
+                       YAMLHandler)
 
 _FILE_HANDLERS = {
     'json': JSONHandler(),
@@ -20,7 +21,7 @@ _FILE_HANDLERS = {
     'hdf5': HDF5Handler(),
     'h5': HDF5Handler(),
     'npy': NumPyHandler(),
-    'npz': NumPyHandler(),
+    'npz': NumPyzHandler(),
     'xml': XMLHandler(),
     'txt': TXTHandler()
 }
