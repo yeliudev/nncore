@@ -38,7 +38,10 @@ class Writer(metaclass=ABCMeta):
             if len(groups) == 1:
                 metrics['lr'] = round(groups[0]['lr'], 5)
             else:
-                metrics['lr'] = [round(group['lr'], 5) for group in groups]
+                metrics['lr'] = [{
+                    group['name']: round(group['lr'], 5)
+                } if 'name' in group else round(group['lr'], 5)
+                                 for group in groups]
 
             metrics['epoch'] += 1
             metrics['iter'] += 1
@@ -73,9 +76,10 @@ class CommandLineWriter(Writer):
         metrics = self._collect_metrics(engine, window_size)
 
         if engine.mode == 'train':
-            log = 'Epoch [{}][{}/{}] lr: {:.5f}'.format(
-                metrics['epoch'], metrics['iter'], len(engine.data_loader),
-                metrics['lr'])
+            log = 'Epoch [{}][{}/{}] lr: {}'.format(metrics['epoch'],
+                                                    metrics['iter'],
+                                                    len(engine.data_loader),
+                                                    metrics['lr'])
 
             if '_total_time' in engine.buffer.keys():
                 total_time = engine.buffer.latest('_total_time')

@@ -109,6 +109,10 @@ class Engine(object):
             Default: ``None``.
         meta (any | None, optional): A dictionary-like object containing meta
             data of this engine. Default: ``None``.
+        amp (dict | str | bool | None, optional): Whether to use automatic
+            mixed precision training. Default: ``None``.
+        debug (bool, optional): Whether to activate debug mode. Default:
+            ``False``.
 
     Example:
         >>> # Build model
@@ -152,6 +156,8 @@ class Engine(object):
                  work_dir=None,
                  seed=None,
                  meta=None,
+                 amp=None,
+                 debug=False,
                  **kwargs):
         self.model = build_model(model, **kwargs)
 
@@ -191,7 +197,24 @@ class Engine(object):
         self.buffer = Buffer(max_size=buffer_size, logger=self.logger)
         self.reset_states()
 
+        if isinstance(amp, dict):
+            amp.setdefault('enabled', True)
+            self.amp_cfg = amp
+        elif isinstance(amp, str):
+            if amp in ('fp16', 'float16'):
+                dtype = torch.float16
+            elif amp in ('bf16', 'bfloat16'):
+                dtype = torch.bfloat16
+            else:
+                raise TypeError(
+                    "Amp training only supports 'float16' or 'bfloat16' data "
+                    "types, but got '{}'".format(amp))
+            self.amp_cfg = dict(enabled=True, dtype=dtype)
+        else:
+            self.amp_cfg = dict(enabled=bool(amp))
+
         self.meta = meta
+        self.debug = debug
 
     @property
     def cur_stage(self):
@@ -221,6 +244,11 @@ class Engine(object):
     def _call_hook(self, name):
         for hook in self.hooks.values():
             getattr(hook, name)(self)
+
+    def get_amp_type(self):
+        if self.amp_cfg['enabled']:
+            dtype = self.amp_cfg.get('dtype', torch.float16)
+            return 'fp16' if dtype is torch.float16 else 'bf16'
 
     def reset_states(self):
         self.buffer.clear()
@@ -362,12 +390,14 @@ class Engine(object):
     def train_iter(self, data):
         self._call_hook('before_train_iter')
 
-        output = self.model(data, mode=self._mode, **self._kwargs)
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        with torch.autocast(device, **self.amp_cfg):
+            output = self.model(data, mode=self._mode, **self._kwargs)
 
-        self.losses = {k: v for k, v in output.items() if 'loss' in k}
-        if 'loss' not in output:
-            self.losses['loss'] = output['loss'] = sum(
-                v for v in self.losses.values())
+            self.losses = {k: v for k, v in output.items() if 'loss' in k}
+            if 'loss' not in output:
+                self.losses['loss'] = output['loss'] = sum(
+                    v for v in self.losses.values())
 
         for key, value in output.items():
             self.buffer.update(
@@ -450,20 +480,21 @@ class Engine(object):
 
     def run_stage(self):
         if isinstance(self.cur_stage['optimizer'], dict):
-            optim = self.cur_stage['optimizer'].copy()
-            optim_type = optim.pop('type')
-            optim_args = ['{}: {}'.format(k, v) for k, v in optim.items()]
-            optim = '{}({})'.format(optim_type, ', '.join(optim_args))
+            optim_cfg = self.cur_stage['optimizer'].copy()
+            optim_type = optim_cfg.pop('type')
+            optim_args = ['{}: {}'.format(k, v) for k, v in optim_cfg.items()]
+            optim_str = '{}({})'.format(optim_type, ', '.join(optim_args))
         else:
-            optim = '{}()'.format(
+            optim_str = '{}()'.format(
                 self.cur_stage['optimizer'].__class__.__name__)
 
         self.logger.info('Stage: {}, epochs: {}, optimizer: {}'.format(
-            self._stage + 1, self.cur_stage['epochs'], optim))
+            self._stage + 1, self.cur_stage['epochs'], optim_str))
 
         if self.epoch_in_stage == 0:
             self.optimizer = build_optimizer(
-                self.cur_stage['optimizer'], params=self.model.parameters())
+                self.cur_stage['optimizer'],
+                params=[p for p in self.model.parameters() if p.requires_grad])
 
         self._call_hook('before_stage')
 
@@ -524,8 +555,11 @@ class Engine(object):
                 ', '.join(['{}: {}'.format(k, v) for k, v in output.items()]))
             return output
 
+        self.logger.info('Distributed: {}, AMP: {}, Debug: {}'.format(
+            is_distributed(), self.get_amp_type(), self.debug))
         self.logger.info('Launch engine, host: {}, work_dir: {}'.format(
             nncore.get_host_info(), self.work_dir))
+
         self._call_hook('before_launch')
 
         while self._stage < self._max_stages:

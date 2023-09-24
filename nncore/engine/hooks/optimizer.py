@@ -2,7 +2,9 @@
 
 from collections import OrderedDict
 
+import torch
 import torch.distributed as dist
+from torch.cuda.amp.grad_scaler import GradScaler
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
 from torch.nn.utils import clip_grad
@@ -25,13 +27,26 @@ class OptimizerHook(Hook):
             distributed training. Default: ``True``.
         bucket_size_mb (int, optional): Size of the bucket. ``-1`` means not
             restricting the bucket size. Default: ``-1``.
+        grad_scale (dict | bool | None, optional): Whether to scale the grads.
+            If not specified, this module will automatically scale the grads
+            when amp is activated. Default: ``None``.
     """
 
-    def __init__(self, interval=1, coalesce=True, bucket_size_mb=-1):
+    def __init__(self,
+                 interval=1,
+                 coalesce=True,
+                 bucket_size_mb=-1,
+                 grad_scale=None):
         super(OptimizerHook, self).__init__()
         self._interval = interval
         self._coalesce = coalesce
         self._bucket_size_mb = bucket_size_mb
+
+        if isinstance(grad_scale, dict):
+            grad_scale.setdefault('enabled', True)
+            self._grad_scale_cfg = grad_scale
+        else:
+            self._grad_scale_cfg = dict(enabled=grad_scale)
 
     def _allreduce_coalesced(self, tensors, world_size):
         if self._bucket_size_mb > 0:
@@ -66,13 +81,22 @@ class OptimizerHook(Hook):
             for tensor in grads:
                 dist.all_reduce(tensor.div_(world_size))
 
+    def before_launch(self, engine):
+        cfg = self._grad_scale_cfg.copy()
+        enabled = cfg.pop('enabled')
+        self.scaler = GradScaler(
+            enabled=(engine.get_amp_type() is not None
+                     and torch.cuda.is_available())
+            if enabled is None else enabled,
+            **cfg)
+
     def before_train_epoch(self, engine):
         self._last_updated_iter = 0
         engine.optimizer.zero_grad()
 
     def after_train_iter(self, engine):
         key = engine.cur_stage.get('loss', 'loss')
-        engine.losses[key].backward()
+        self.scaler.scale(engine.losses[key]).backward()
 
         if (not self.every_n_iters_in_epoch(engine, self._interval)
                 and not self.last_iter_in_epoch(engine)):
@@ -89,6 +113,7 @@ class OptimizerHook(Hook):
 
         cfg = engine.cur_stage.get('grad_clip')
         if cfg is not None:
+            self.scaler.unscale_(engine.optimizer)
             params_with_grad = [
                 p for p in engine.model.parameters()
                 if p.requires_grad and p.grad is not None
@@ -96,7 +121,29 @@ class OptimizerHook(Hook):
             if len(params_with_grad) > 0:
                 clip_grad.clip_grad_norm_(params_with_grad, **cfg)
 
-        engine.optimizer.step()
+        if engine.debug:
+            for name, param in engine.model.named_parameters():
+                if param.grad is None:
+                    continue
+                if param.grad.is_sparse:
+                    if param.grad.dtype in (torch.float16, torch.bfloat16):
+                        param.grad = param.grad.coalesce()
+                    grad = param.grad._values()
+                else:
+                    grad = param.grad
+                grad = grad.clone().abs().max()
+                state = 'Inf' if torch.isinf(grad) else 'NaN' if torch.isnan(
+                    grad) else None
+                if state is not None:
+                    engine.logger.warn('Iter [{}]: {} detected in {}'.format(
+                        engine.iter + 1, state, name))
+
+        if self.scaler.is_enabled():
+            engine.buffer.update('scale', self.scaler.get_scale())
+
+        self.scaler.step(engine.optimizer)
+        self.scaler.update()
+
         engine.optimizer.zero_grad()
 
     def after_train_epoch(self, engine):
