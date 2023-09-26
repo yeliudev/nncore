@@ -27,9 +27,9 @@ class OptimizerHook(Hook):
             distributed training. Default: ``True``.
         bucket_size_mb (int, optional): Size of the bucket. ``-1`` means not
             restricting the bucket size. Default: ``-1``.
-        grad_scale (dict | bool | None, optional): Whether to scale the grads.
-            If not specified, this module will automatically scale the grads
-            when amp is activated. Default: ``None``.
+        grad_scale (dict | bool | None, optional): Whether to scale the
+            gradients. If not specified, this module will automatically scale
+            the gradients when amp is activated. Default: ``None``.
     """
 
     def __init__(self,
@@ -128,10 +128,9 @@ class OptimizerHook(Hook):
                 if param.grad.is_sparse:
                     if param.grad.dtype in (torch.float16, torch.bfloat16):
                         param.grad = param.grad.coalesce()
-                    grad = param.grad._values()
+                    grad = param.grad._values().abs().max()
                 else:
-                    grad = param.grad
-                grad = grad.clone().abs().max()
+                    grad = param.grad.abs().max()
                 state = 'Inf' if torch.isinf(grad) else 'NaN' if torch.isnan(
                     grad) else None
                 if state is not None:
