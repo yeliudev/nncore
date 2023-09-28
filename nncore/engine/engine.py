@@ -379,7 +379,8 @@ class Engine(object):
 
         if 'optimizer' in checkpoint:
             self.optimizer = build_optimizer(
-                self.cur_stage['optimizer'], params=self.model.parameters())
+                self.cur_stage['optimizer'],
+                params=[p for p in self.model.parameters() if p.requires_grad])
             self.optimizer.load_state_dict(checkpoint['optimizer'])
         else:
             raise KeyError('optimizer not found in the checkpoint')
