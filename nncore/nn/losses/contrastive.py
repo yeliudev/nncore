@@ -14,15 +14,18 @@ from .utils import weighted_loss
 
 
 @weighted_loss
-def infonce_loss(a, b, scale=log(1 / 0.07), max_scale=100):
+def infonce_loss(a, b, temperature=0.07, scale=None, max_scale=100):
     """
     InfoNCE Loss introduced in [1].
 
     Args:
         a (:obj:`torch.Tensor`): The first group of samples.
         b (:obj:`torch.Tensor`): The second group of samples.
-        scale (:obj:`torch.Tensor`): The logit scale. Default:
-            ``log(1 / 0.07)``.
+        temperature (float, optional): The temperature for softmax. Default:
+            ``0.07``.
+        scale (:obj:`torch.Tensor` | None, optional): The logit scale to use.
+            If not specified, the scale will be calculated from temperature.
+            Default: ``None``.
         max_scale (float, optional): The maximum logit scale value. Default:
             ``100``.
 
@@ -32,7 +35,10 @@ def infonce_loss(a, b, scale=log(1 / 0.07), max_scale=100):
     a = F.normalize(a, dim=-1)
     b = F.normalize(b, dim=-1)
 
-    scale = torch.clamp(torch.Tensor(scale).exp(), max=max_scale)
+    if scale is None:
+        scale = a.new_tensor([log(1 / temperature)])
+
+    scale = torch.clamp(scale.exp(), max=max_scale)
     a_sim = torch.matmul(a, b.transpose(-1, -2)) * scale
     b_sim = a_sim.transpose(-1, -2)
 
@@ -73,7 +79,7 @@ class InfoNCELoss(nn.Module):
     InfoNCE Loss introduced in [1].
 
     Args:
-        temperature (float, optional): The initial temperature of softmax.
+        temperature (float, optional): The initial temperature for softmax.
             Default: ``0.07``.
         max_scale (float, optional): The maximum value of learnable scale.
             Default: ``100``.
@@ -92,10 +98,10 @@ class InfoNCELoss(nn.Module):
                  loss_weight=1.0):
         super(InfoNCELoss, self).__init__()
 
-        self.scale = log(1 / temperature)
-
         if learnable:
-            self.scale = Parameter(self.scale)
+            self.scale = Parameter(log(1 / temperature))
+        else:
+            self.scale = None
 
         self._temperature = temperature
         self._max_scale = max_scale
@@ -111,6 +117,7 @@ class InfoNCELoss(nn.Module):
         return infonce_loss(
             a,
             b,
+            temperature=self._temperature,
             scale=self.scale,
             max_scale=self._max_scale,
             weight=weight,
