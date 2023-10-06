@@ -10,7 +10,7 @@ from nncore.optim import build_optimizer
 from nncore.utils import CfgNode
 from .buffer import Buffer
 from .builder import build_dataloader, build_hook
-from .comm import gather, is_distributed, is_main_process, sync
+from .comm import gather, get_world_size, is_distributed, is_main_process, sync
 from .hooks import Hook
 from .utils import get_checkpoint, load_checkpoint
 
@@ -557,7 +557,8 @@ class Engine(object):
             return output
 
         self.logger.info('Distributed: {}, AMP: {}, Debug: {}'.format(
-            is_distributed(), self.get_amp_type(), self.debug))
+            f'{get_world_size()} processes' if is_distributed() else False,
+            self.get_amp_type(), self.debug))
         self.logger.info('Launch engine, host: {}, work_dir: {}'.format(
             nncore.get_host_info(), self.work_dir))
 

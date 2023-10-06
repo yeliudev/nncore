@@ -38,7 +38,7 @@ def infonce_loss(a, b, temperature=0.07, scale=None, max_scale=100):
     if scale is None:
         scale = a.new_tensor([log(1 / temperature)])
 
-    scale = torch.clamp(scale.exp(), max=max_scale)
+    scale = scale.exp().clamp(max=max_scale)
     a_sim = torch.matmul(a, b.transpose(-1, -2)) * scale
     b_sim = a_sim.transpose(-1, -2)
 
