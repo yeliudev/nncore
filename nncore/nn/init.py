@@ -119,15 +119,15 @@ def kaiming_init_(module,
         nn.init.constant_(module.bias, bias)
 
 
-def init_module_(module, method, **kwargs):
+def init_module_(module, init_cfg):
     """
     Initialize a module using the specified method.
 
     Args:
         module (:obj:`nn.Module`): The module to be initialized.
-        method (str): The initialization method. Expected methods include
-            ``'constant'``, ``'normal'``, ``'uniform'``, ``'xavier'``,
-            ``'kaiming'``.
+        init_cfg (dict | str): The initialization method and configs.
     """
-    assert method in INITIALIZERS
-    INITIALIZERS.get(method)(module, **kwargs)
+    _cfg = init_cfg.copy()
+    meth = _cfg.pop('type')
+    assert meth in INITIALIZERS
+    INITIALIZERS.get(meth)(module, **_cfg)

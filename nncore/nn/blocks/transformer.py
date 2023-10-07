@@ -8,7 +8,7 @@ import torch.nn as nn
 import nncore
 from ..builder import MODELS, build_act_layer, build_norm_layer
 from ..bundle import Parameter, Sequential
-from ..init import kaiming_init_, xavier_init_
+from ..init import init_module_
 from .norm import DropPath
 
 
@@ -65,7 +65,7 @@ class PositionalEncoding(nn.Module):
 
 @MODELS.register()
 @nncore.bind_getter('dims', 'q_dims', 'k_dims', 'v_dims', 'h_dims', 'o_dims',
-                    'heads', 'bias')
+                    'heads', 'bias', 'init_cfg')
 class MultiHeadAttention(nn.Module):
     """
     Multi-Head Attention introduced in [1].
@@ -86,6 +86,8 @@ class MultiHeadAttention(nn.Module):
         out_dropout (float, optional): Dropout probability for outputs.
             Default: ``0.0``.
         bias (bool, optional): Whether to add the bias term. Default: ``True``.
+        init_cfg (dict | str, optional): The config for module initialization.
+            Default: ``dict(type='xavier')``.
 
     References:
         1. Vaswani et al. (https://arxiv.org/abs/1706.03762)
@@ -100,7 +102,8 @@ class MultiHeadAttention(nn.Module):
                  heads=8,
                  att_dropout=0.0,
                  out_dropout=0.0,
-                 bias=True):
+                 bias=True,
+                 init_cfg=dict(type='xavier')):
         super(MultiHeadAttention, self).__init__()
 
         self._q_dims = dims
@@ -113,6 +116,7 @@ class MultiHeadAttention(nn.Module):
         self._out_dropout = out_dropout
         self._bias = bias
         self._head_dims = self._h_dims // heads
+        self._init_cfg = init_cfg
 
         self.q = nn.Linear(self._q_dims, self._h_dims, bias=bias)
         self.k = nn.Linear(self._k_dims, self._h_dims, bias=bias)
@@ -136,7 +140,7 @@ class MultiHeadAttention(nn.Module):
 
     def reset_parameters(self):
         for m in (self.q, self.k, self.v, self.m):
-            xavier_init_(m)
+            init_module_(m, self._init_cfg)
 
     def forward(self, q, k=None, v=None, mask=None):
         v = v if torch.is_tensor(v) else k if torch.is_tensor(k) else q
@@ -175,7 +179,7 @@ class MultiHeadAttention(nn.Module):
 
 
 @MODELS.register()
-@nncore.bind_getter('dims', 'ratio', 'ffn_dropout', 'out_dropout')
+@nncore.bind_getter('dims', 'ratio', 'ffn_dropout', 'out_dropout', 'init_cfg')
 class FeedForwardNetwork(nn.Module):
     """
     Feed Forward Network introduced in [1].
@@ -190,6 +194,8 @@ class FeedForwardNetwork(nn.Module):
             Default: ``0.0``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
+        init_cfg (dict | str, optional): The config for module initialization.
+            Default: ``dict(type='xavier')``.
 
     References:
         1. Vaswani et al. (https://arxiv.org/abs/1706.03762)
@@ -200,7 +206,8 @@ class FeedForwardNetwork(nn.Module):
                  ratio=4,
                  ffn_dropout=0.0,
                  out_dropout=0.0,
-                 act_cfg=dict(type='ReLU', inplace=True)):
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 init_cfg=dict(type='xavier')):
         super(FeedForwardNetwork, self).__init__()
 
         self._dims = dims
@@ -208,6 +215,7 @@ class FeedForwardNetwork(nn.Module):
         self._ffn_dropout = ffn_dropout
         self._out_dropout = out_dropout
         self._h_dims = int(dims * ratio)
+        self._init_cfg = init_cfg
 
         self.mapping = Sequential()
         self.mapping.append(nn.Linear(dims, self._h_dims))
@@ -231,7 +239,7 @@ class FeedForwardNetwork(nn.Module):
     def reset_parameters(self):
         for m in self.mapping:
             if isinstance(m, nn.Linear):
-                kaiming_init_(m)
+                init_module_(m, self._init_cfg)
 
     def forward(self, x):
         x = self.mapping(x)
@@ -240,7 +248,8 @@ class FeedForwardNetwork(nn.Module):
 
 @MODELS.register()
 @nncore.bind_getter('dims', 'heads', 'ratio', 'att_dropout', 'ffn_dropout',
-                    'att_out_dropout', 'ffn_out_dropout', 'pre_norm', 'bias')
+                    'att_out_dropout', 'ffn_out_dropout', 'pre_norm', 'bias',
+                    'init_cfg')
 class TransformerEncoderLayer(nn.Module):
     """
     Transformer Encoder Layer introduced in [1].
@@ -268,6 +277,8 @@ class TransformerEncoderLayer(nn.Module):
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
+        init_cfg (dict | str, optional): The config for module initialization.
+            Default: ``dict(type='xavier')``.
 
     References:
         1. Vaswani et al. (https://arxiv.org/abs/1706.03762)
@@ -285,7 +296,8 @@ class TransformerEncoderLayer(nn.Module):
                  pre_norm=True,
                  bias=True,
                  norm_cfg=dict(type='LN'),
-                 act_cfg=dict(type='ReLU', inplace=True)):
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 init_cfg=dict(type='xavier')):
         super(TransformerEncoderLayer, self).__init__()
 
         self._dims = dims
@@ -298,19 +310,22 @@ class TransformerEncoderLayer(nn.Module):
         self._droppath = droppath
         self._pre_norm = pre_norm
         self._bias = bias
+        self._init_cfg = init_cfg
 
         self.att = MultiHeadAttention(
             dims,
             heads=heads,
             att_dropout=att_dropout,
             out_dropout=att_out_dropout,
-            bias=bias)
+            bias=bias,
+            init_cfg=init_cfg)
         self.ffn = FeedForwardNetwork(
             dims,
             ratio=ratio,
             ffn_dropout=ffn_dropout,
             out_dropout=ffn_out_dropout,
-            act_cfg=act_cfg)
+            act_cfg=act_cfg,
+            init_cfg=init_cfg)
 
         self.norm1 = build_norm_layer(norm_cfg, dims=dims)
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
@@ -349,7 +364,8 @@ class TransformerEncoderLayer(nn.Module):
 
 @MODELS.register()
 @nncore.bind_getter('dims', 'heads', 'ratio', 'att_dropout', 'ffn_dropout',
-                    'att_out_dropout', 'ffn_out_dropout', 'pre_norm', 'bias')
+                    'att_out_dropout', 'ffn_out_dropout', 'pre_norm', 'bias',
+                    'init_cfg')
 class TransformerDecoderLayer(nn.Module):
     """
     Transformer Decoder Layer introduced in [1].
@@ -377,6 +393,8 @@ class TransformerDecoderLayer(nn.Module):
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
+        init_cfg (dict | str, optional): The config for module initialization.
+            Default: ``dict(type='xavier')``.
 
     References:
         1. Vaswani et al. (https://arxiv.org/abs/1706.03762)
@@ -394,7 +412,8 @@ class TransformerDecoderLayer(nn.Module):
                  pre_norm=True,
                  bias=True,
                  norm_cfg=dict(type='LN'),
-                 act_cfg=dict(type='ReLU', inplace=True)):
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 init_cfg=dict(type='xavier')):
         super(TransformerDecoderLayer, self).__init__()
 
         self._dims = dims
@@ -407,25 +426,29 @@ class TransformerDecoderLayer(nn.Module):
         self._droppath = droppath
         self._pre_norm = pre_norm
         self._bias = bias
+        self._init_cfg = init_cfg
 
         self.att1 = MultiHeadAttention(
             dims,
             heads=heads,
             att_dropout=att_dropout,
             out_dropout=att_out_dropout,
-            bias=bias)
+            bias=bias,
+            init_cfg=init_cfg)
         self.att2 = MultiHeadAttention(
             dims,
             heads=heads,
             att_dropout=att_dropout,
             out_dropout=att_out_dropout,
-            bias=bias)
+            bias=bias,
+            init_cfg=init_cfg)
         self.ffn = FeedForwardNetwork(
             dims,
             ratio=ratio,
             ffn_dropout=ffn_dropout,
             out_dropout=ffn_out_dropout,
-            act_cfg=act_cfg)
+            act_cfg=act_cfg,
+            init_cfg=init_cfg)
 
         self.norm1 = build_norm_layer(norm_cfg, dims=dims)
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
@@ -480,7 +503,8 @@ class TransformerDecoderLayer(nn.Module):
 
 @MODELS.register()
 @nncore.bind_getter('dims', 'heads', 'ratio', 'att_dropout', 'ffn_dropout',
-                    'att_out_dropout', 'ffn_out_dropout', 'pre_norm', 'bias')
+                    'att_out_dropout', 'ffn_out_dropout', 'pre_norm', 'bias',
+                    'init_cfg')
 class CrossAttentionLayer(nn.Module):
     """
     Cross Attention Layer.
@@ -508,6 +532,8 @@ class CrossAttentionLayer(nn.Module):
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
+        init_cfg (dict | str, optional): The config for module initialization.
+            Default: ``dict(type='xavier')``.
     """
 
     def __init__(self,
@@ -522,7 +548,8 @@ class CrossAttentionLayer(nn.Module):
                  pre_norm=True,
                  bias=True,
                  norm_cfg=dict(type='LN'),
-                 act_cfg=dict(type='ReLU', inplace=True)):
+                 act_cfg=dict(type='ReLU', inplace=True),
+                 init_cfg=dict(type='xavier')):
         super(CrossAttentionLayer, self).__init__()
 
         self._dims = dims
@@ -535,31 +562,36 @@ class CrossAttentionLayer(nn.Module):
         self._droppath = droppath
         self._pre_norm = pre_norm
         self._bias = bias
+        self._init_cfg = init_cfg
 
         self.att1 = MultiHeadAttention(
             dims,
             heads=heads,
             att_dropout=att_dropout,
             out_dropout=att_out_dropout,
-            bias=bias)
+            bias=bias,
+            init_cfg=init_cfg)
         self.att2 = MultiHeadAttention(
             dims,
             heads=heads,
             att_dropout=att_dropout,
             out_dropout=att_out_dropout,
-            bias=bias)
+            bias=bias,
+            init_cfg=init_cfg)
         self.ffn1 = FeedForwardNetwork(
             dims,
             ratio=ratio,
             ffn_dropout=ffn_dropout,
             out_dropout=ffn_out_dropout,
-            act_cfg=act_cfg)
+            act_cfg=act_cfg,
+            init_cfg=init_cfg)
         self.ffn2 = FeedForwardNetwork(
             dims,
             ratio=ratio,
             ffn_dropout=ffn_dropout,
             out_dropout=ffn_out_dropout,
-            act_cfg=act_cfg)
+            act_cfg=act_cfg,
+            init_cfg=init_cfg)
 
         self.norm1 = build_norm_layer(norm_cfg, dims=dims)
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
