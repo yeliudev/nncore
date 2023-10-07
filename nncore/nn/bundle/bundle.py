@@ -1,6 +1,7 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
 from collections import OrderedDict
+from types import GeneratorType
 
 import torch
 import torch.nn as nn
@@ -23,6 +24,8 @@ class Sequential(nn.Sequential):
                     if mod is not None:
                         self.add_module(key, mod)
                 continue
+            elif isinstance(arg, GeneratorType):
+                arg = list(arg)
             elif not isinstance(arg, (list, tuple)):
                 arg = [arg]
 

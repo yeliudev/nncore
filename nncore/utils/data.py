@@ -1,5 +1,7 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
+from types import GeneratorType
+
 import numpy as np
 
 
@@ -156,6 +158,8 @@ def flatten(seq):
     for item in seq:
         if isinstance(item, (list, tuple)):
             out += flatten(item)
+        elif isinstance(item, GeneratorType):
+            out += flatten(list(item))
         else:
             out.append(item)
 

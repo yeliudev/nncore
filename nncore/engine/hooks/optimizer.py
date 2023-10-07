@@ -4,9 +4,9 @@ from collections import OrderedDict
 
 import torch
 import torch.distributed as dist
-from torch.cuda.amp.grad_scaler import GradScaler
 from torch._utils import (_flatten_dense_tensors, _take_tensors,
                           _unflatten_dense_tensors)
+from torch.cuda.amp.grad_scaler import GradScaler
 from torch.nn.utils import clip_grad
 
 from ..builder import HOOKS

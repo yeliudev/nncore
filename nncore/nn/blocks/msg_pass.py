@@ -109,8 +109,8 @@ class SGC(GCN):
 
 
 @MESSAGE_PASSINGS.register()
-@nncore.bind_getter('in_features', 'out_features', 'heads', 'p',
-                    'negative_slope', 'concat', 'residual')
+@nncore.bind_getter('in_features', 'out_features', 'heads', 'pre_dropout',
+                    'att_dropout', 'negative_slope', 'concat', 'residual')
 class GAT(nn.Module):
     """
     Graph Attention Layer introduced in [1].
@@ -119,7 +119,10 @@ class GAT(nn.Module):
         in_features (int): Number of input features.
         out_features (int): Number of output features.
         heads (int, optional): Number of attention heads. Default: ``1``.
-        p (float, optional): The dropout probability. Default: ``0``.
+        pre_dropout (float, optional): Dropout probability for inputs. Default:
+            ``0.0``.
+        att_dropout (float, optional): Dropout probability for the attention
+            map. Default: ``0.0``.
         negative_slope (float, optional): The negative slope of
             :obj:`LeakyReLU`. Default: ``0.2``.
         concat (bool, optional): Whether to concatenate the features from
@@ -136,7 +139,8 @@ class GAT(nn.Module):
                  in_features,
                  out_features,
                  heads=1,
-                 p=0,
+                 pre_dropout=0.0,
+                 att_dropout=0.0,
                  negative_slope=0.2,
                  concat=True,
                  residual=True,
@@ -145,7 +149,8 @@ class GAT(nn.Module):
         self._in_features = in_features
         self._out_features = out_features
         self._heads = heads
-        self._p = p
+        self._pre_dropout = pre_dropout
+        self._att_dropout = att_dropout
         self._negative_slope = negative_slope
         self._concat = concat
         self._residual = residual
@@ -163,18 +168,25 @@ class GAT(nn.Module):
         if self._with_bias:
             self.bias = Parameter(out_features)
 
-        self.dropout = nn.Dropout(p=p)
+        if pre_dropout > 0:
+            self.pre_dropout = nn.Dropout(p=pre_dropout)
+
+        if att_dropout > 0:
+            self.att_dropout = nn.Dropout(p=att_dropout)
+
         self.leaky_relu = nn.LeakyReLU(negative_slope=negative_slope)
 
         self.reset_parameters()
 
     def __repr__(self):
-        return ('{}(in_features={}, out_features={}, heads={}, p={}, '
-                'negative_slope={}, concat={}, residual={}, bias={})'.format(
-                    self.__class__.__name__, self._in_features,
-                    self._out_features, self._heads, self._p,
-                    self._negative_slope, self._concat, self._residual,
-                    self._with_bias))
+        return (
+            '{}(in_features={}, out_features={}, heads={}, pre_dropout={}, '
+            'att_dropout={}, negative_slope={}, concat={}, residual={}, '
+            'bias={})'.format(self.__class__.__name__, self._in_features,
+                              self._out_features, self._heads,
+                              self._pre_dropout, self._att_dropout,
+                              self._negative_slope, self._concat,
+                              self._residual, self._with_bias))
 
     def reset_parameters(self):
         for weight in (self.weight, self.weight_i, self.weight_j):
@@ -194,7 +206,9 @@ class GAT(nn.Module):
         """
         assert x.size(0) == graph.size(0) == graph.size(1)
 
-        x = self.dropout(x)
+        if self._pre_dropout > 0:
+            x = self.pre_dropout(x)
+
         h = torch.matmul(x[None, :], self.weight)
 
         coe_i = torch.bmm(h, self.weight_i)
@@ -202,7 +216,10 @@ class GAT(nn.Module):
         coe = self.leaky_relu(coe_i + coe_j)
 
         graph = torch.where(graph > 0, .0, float('-inf')).t()
-        att = self.dropout((coe + graph).softmax(dim=-1))
+        att = (coe + graph).softmax(dim=-1)
+
+        if self._att_dropout > 0:
+            att = self.att_dropout(att)
 
         y = torch.bmm(att, h).transpose(0, 1).contiguous()
 

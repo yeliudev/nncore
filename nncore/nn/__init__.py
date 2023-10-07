@@ -1,9 +1,9 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
-from .blocks import (GAT, GCN, SGC, Clamp, CrossAttentionLayer, EffMish,
-                     EffSwish, FeedForwardNetwork, Mish, MultiHeadAttention,
-                     PositionalEncoding, Swish, TransformerDecoderLayer,
-                     TransformerEncoderLayer)
+from .blocks import (GAT, GCN, SGC, Clamp, CrossAttentionLayer, DropPath,
+                     FeedForwardNetwork, MultiHeadAttention,
+                     PositionalEncoding, TransformerDecoderLayer,
+                     TransformerEncoderLayer, drop_path)
 from .builder import (ACTIVATIONS, CONVS, LOSSES, MESSAGE_PASSINGS, MODELS,
                       MODULES, NORMS, build_act_layer, build_conv_layer,
                       build_loss, build_model, build_msg_pass_layer,
@@ -23,9 +23,9 @@ from .utils import (fuse_bn_, model_soup, move_to_device, publish_model,
                     update_bn_stats_)
 
 __all__ = [
-    'GAT', 'GCN', 'SGC', 'Clamp', 'CrossAttentionLayer', 'EffMish', 'EffSwish',
-    'FeedForwardNetwork', 'Mish', 'MultiHeadAttention', 'PositionalEncoding',
-    'Swish', 'TransformerDecoderLayer', 'TransformerEncoderLayer',
+    'GAT', 'GCN', 'SGC', 'Clamp', 'CrossAttentionLayer', 'DropPath',
+    'FeedForwardNetwork', 'MultiHeadAttention', 'PositionalEncoding',
+    'drop_path', 'TransformerDecoderLayer', 'TransformerEncoderLayer',
     'ACTIVATIONS', 'CONVS', 'LOSSES', 'MESSAGE_PASSINGS', 'MODELS', 'MODULES',
     'NORMS', 'build_act_layer', 'build_conv_layer', 'build_loss',
     'build_model', 'build_msg_pass_layer', 'build_norm_layer', 'ModuleDict',
