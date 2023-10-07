@@ -1,6 +1,6 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
-from math import cos, pi
+import math
 
 import nncore
 from ..builder import HOOKS
@@ -23,7 +23,7 @@ def _step(base_lr, progress, step, gamma=0.1, **kwargs):
 
 @POLICIES.register(name='cosine')
 def _cosine(base_lr, progress, max_progress, target_lr=0, **kwargs):
-    scale = cos(pi * (progress / max_progress)) + 1
+    scale = math.cos(math.pi * (progress / max_progress)) + 1
     return (base_lr - target_lr) * scale * 0.5 + target_lr
 
 

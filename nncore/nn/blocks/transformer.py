@@ -1,65 +1,109 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
-from math import log
+import math
 
 import torch
 import torch.nn as nn
 
 import nncore
 from ..builder import MODELS, build_act_layer, build_norm_layer
-from ..bundle import Parameter, Sequential
+from ..bundle import Sequential
 from ..init import init_module_
 from .norm import DropPath
 
 
 @MODELS.register()
-@nncore.bind_getter('dims', 'learnable', 'max_len')
+@nncore.bind_getter('dims', 'temperature', 'normalize', 'scale', 'offset',
+                    'learnable', 'max_len')
 class PositionalEncoding(nn.Module):
     """
     Positional Encoding introduced in [1].
 
     Args:
         dims (int): Input feature dimensions.
+        temperature (int, optional): The temperature used for scaling
+            the position embedding. Default: ``10000``.
+        normalize (bool, optional): Whether to normalize the positional
+            encoding. Default: ``False``.
+        scale (float, optional): Scale factor for the position encoding.
+            It will be used only when ``normalize=True`` Default: ``2 * pi``.
+        offset (float): Offset value for normalization. Default: ``0``.
         learnable (bool, optional): Whether the positional encoding is
             learnable. Default: ``True``.
         dropout (float, optional): Dropout probability. Default: ``0.0``.
         max_len (int, optional): Maximum length of the input sequence. Default:
-            ``5000``.
+            ``1000``.
 
     References:
         1. Vaswani et al. (https://arxiv.org/abs/1706.03762)
     """
 
-    def __init__(self, dims, learnable=True, dropout=0.0, max_len=5000):
+    def __init__(self,
+                 dims,
+                 temperature=10000,
+                 normalize=False,
+                 scale=2 * math.pi,
+                 offset=0.0,
+                 learnable=False,
+                 dropout=0.0,
+                 max_len=1000):
         super(PositionalEncoding, self).__init__()
 
         self._dims = dims
+        self._temperature = temperature
+        self._normalize = normalize
+        self._scale = scale
+        self._offset = offset
         self._learnable = learnable
         self._dropout = dropout
         self._max_len = max_len
 
         if learnable:
-            self.pe = Parameter(1, max_len, dims)
-        else:
-            pos = torch.arange(max_len).unsqueeze(1)
-            div = (torch.arange(0, dims, 2) * (-log(10000.0) / dims)).exp()
-            pe = torch.zeros(1, max_len, dims)
-            pe[0, :, 0::2] = (pos * div).sin()
-            pe[0, :, 1::2] = (pos * div).cos()
-            self.register_buffer('pe', pe)
+            self.pe = nn.Embedding(max_len, dims)
 
-        if dropout > 0:
-            self.dropout = nn.Dropout(p=dropout)
+            if dropout > 0:
+                self.dropout = nn.Dropout(p=dropout)
 
     def __repr__(self):
-        return ('{}(dims={}, learnable={}, dropout={}, max_len={})'.format(
-            self.__class__.__name__, self._dims, self._learnable,
-            self._dropout, self._max_len))
+        if self._learnable:
+            repr_str = ('{}(dims={}, learnable={}, dropout={}, '
+                        'max_len={})'.format(self.__class__.__name__,
+                                             self._dims, self._learnable,
+                                             self._dropout, self._max_len))
+        else:
+            repr_str = ('{}(dims={}, temperature={}, normalize={}, '
+                        'scale={}, offset={})'.format(self.__class__.__name__,
+                                                      self._dims,
+                                                      self._temperature,
+                                                      self._normalize,
+                                                      self._scale,
+                                                      self._offset))
+        return repr_str
 
-    def forward(self, x):
-        pe = self.pe[:, :x.size(1)].repeat(x.size(0), 1, 1)
-        if self._dropout > 0:
-            pe = self.dropout(pe)
+    def forward(self, x, mask=None):
+        if mask is not None:
+            assert x.size(1) == mask.size(1)
+            pe = mask.cumsum(1)
+        else:
+            pe = torch.arange(1, x.size(1) + 1, device=x.device)
+            pe = pe.unsqueeze(0).repeat(x.size(0), 1)
+
+        if self._learnable:
+            pe = self.pe(pe - 1)
+
+            if self._dropout > 0:
+                pe = self.dropout(pe)
+        else:
+            if self._normalize:
+                pe = (pe + self._offset) / (pe[:, -1:] + 1e-6) * self._scale
+
+            dt = torch.arange(self._dims, device=x.device)
+            dt = self.temperature**(dt // 2 * 2 / self._dims)
+
+            pe = pe.unsqueeze(-1) / dt
+            pe = pe[:, :, 0::2].sin(), pe[:, :, 1::2].cos()
+            pe = torch.stack(pe, dim=3).flatten(start_dim=2)
+
         return pe
 
 

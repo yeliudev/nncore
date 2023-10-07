@@ -1,6 +1,6 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
-from math import ceil
+import math
 from shutil import get_terminal_size
 
 from .timer import Timer
@@ -122,12 +122,12 @@ class ProgressBar(object):
             self._completed += 1
             ela = self._timer.seconds()
             fps = self._completed / ela
-            ela_str = self._get_time_str(ceil(ela))
+            ela_str = self._get_time_str(math.ceil(ela))
 
             if self._num_tasks is not None:
                 perc = self._completed / self._num_tasks
                 eta = int(ela * (1 - perc) / perc + 0.5)
-                eta_str = self._get_time_str(ceil(eta))
+                eta_str = self._get_time_str(math.ceil(eta))
                 end_str = '\n' if self._num_tasks == self._completed else ''
                 if self._percentage:
                     msg = self._pb.format(f'{round(perc*100,1)}%', ela_str,

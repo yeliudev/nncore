@@ -1,6 +1,6 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
-from math import log
+import math
 
 import torch
 import torch.nn as nn
@@ -36,7 +36,7 @@ def infonce_loss(a, b, temperature=0.07, scale=None, max_scale=100):
     b = F.normalize(b, dim=-1)
 
     if scale is None:
-        scale = a.new_tensor([log(1 / temperature)])
+        scale = a.new_tensor([math.log(1 / temperature)])
 
     scale = scale.exp().clamp(max=max_scale)
     a_sim = torch.matmul(a, b.transpose(-1, -2)) * scale
@@ -99,7 +99,7 @@ class InfoNCELoss(nn.Module):
         super(InfoNCELoss, self).__init__()
 
         if learnable:
-            self.scale = Parameter(log(1 / temperature))
+            self.scale = Parameter(math.log(1 / temperature))
         else:
             self.scale = None
 

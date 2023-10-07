@@ -1,7 +1,7 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
+import math
 from collections import OrderedDict
-from math import ceil
 
 import cv2
 
@@ -210,7 +210,7 @@ class VideoReader(object):
         if total_tasks <= 0:
             raise ValueError('start must be less than the total frame number')
 
-        num_tasks = ceil(total_tasks / interval)
+        num_tasks = math.ceil(total_tasks / interval)
 
         if start > 0:
             self._set_position(start)
