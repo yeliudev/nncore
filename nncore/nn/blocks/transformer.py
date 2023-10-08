@@ -239,7 +239,7 @@ class FeedForwardNetwork(nn.Module):
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
         init_cfg (dict | str, optional): The config for module initialization.
-            Default: ``dict(type='xavier')``.
+            Default: ``dict(type='kaiming')``.
 
     References:
         1. Vaswani et al. (https://arxiv.org/abs/1706.03762)
@@ -251,7 +251,7 @@ class FeedForwardNetwork(nn.Module):
                  ffn_dropout=0.0,
                  out_dropout=0.0,
                  act_cfg=dict(type='ReLU', inplace=True),
-                 init_cfg=dict(type='xavier')):
+                 init_cfg=dict(type='kaiming')):
         super(FeedForwardNetwork, self).__init__()
 
         self._dims = dims
@@ -293,7 +293,7 @@ class FeedForwardNetwork(nn.Module):
 @MODELS.register()
 @nncore.bind_getter('dims', 'heads', 'ratio', 'att_dropout', 'ffn_dropout',
                     'att_out_dropout', 'ffn_out_dropout', 'pre_norm', 'bias',
-                    'init_cfg')
+                    'att_init_cfg', 'ffn_init_cfg')
 class TransformerEncoderLayer(nn.Module):
     """
     Transformer Encoder Layer introduced in [1].
@@ -321,8 +321,10 @@ class TransformerEncoderLayer(nn.Module):
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
-        init_cfg (dict | str, optional): The config for module initialization.
-            Default: ``dict(type='xavier')``.
+        att_init_cfg (dict | str, optional): The config for initializing
+            attention block. Default: ``dict(type='xavier')``.
+        ffn_init_cfg (dict | str, optional): The config for initializing
+            feed forward network. Default: ``dict(type='kaiming')``.
 
     References:
         1. Vaswani et al. (https://arxiv.org/abs/1706.03762)
@@ -341,7 +343,8 @@ class TransformerEncoderLayer(nn.Module):
                  bias=True,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='ReLU', inplace=True),
-                 init_cfg=dict(type='xavier')):
+                 att_init_cfg=dict(type='xavier'),
+                 ffn_init_cfg=dict(type='kaiming')):
         super(TransformerEncoderLayer, self).__init__()
 
         self._dims = dims
@@ -354,7 +357,8 @@ class TransformerEncoderLayer(nn.Module):
         self._droppath = droppath
         self._pre_norm = pre_norm
         self._bias = bias
-        self._init_cfg = init_cfg
+        self._att_init_cfg = att_init_cfg
+        self._ffn_init_cfg = ffn_init_cfg
 
         self.att = MultiHeadAttention(
             dims,
@@ -362,14 +366,14 @@ class TransformerEncoderLayer(nn.Module):
             att_dropout=att_dropout,
             out_dropout=att_out_dropout,
             bias=bias,
-            init_cfg=init_cfg)
+            init_cfg=att_init_cfg)
         self.ffn = FeedForwardNetwork(
             dims,
             ratio=ratio,
             ffn_dropout=ffn_dropout,
             out_dropout=ffn_out_dropout,
             act_cfg=act_cfg,
-            init_cfg=init_cfg)
+            init_cfg=ffn_init_cfg)
 
         self.norm1 = build_norm_layer(norm_cfg, dims=dims)
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
@@ -409,7 +413,7 @@ class TransformerEncoderLayer(nn.Module):
 @MODELS.register()
 @nncore.bind_getter('dims', 'heads', 'ratio', 'att_dropout', 'ffn_dropout',
                     'att_out_dropout', 'ffn_out_dropout', 'pre_norm', 'bias',
-                    'init_cfg')
+                    'att_init_cfg', 'ffn_init_cfg')
 class TransformerDecoderLayer(nn.Module):
     """
     Transformer Decoder Layer introduced in [1].
@@ -437,8 +441,10 @@ class TransformerDecoderLayer(nn.Module):
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
-        init_cfg (dict | str, optional): The config for module initialization.
-            Default: ``dict(type='xavier')``.
+        att_init_cfg (dict | str, optional): The config for initializing
+            attention block. Default: ``dict(type='xavier')``.
+        ffn_init_cfg (dict | str, optional): The config for initializing
+            feed forward network. Default: ``dict(type='kaiming')``.
 
     References:
         1. Vaswani et al. (https://arxiv.org/abs/1706.03762)
@@ -457,7 +463,8 @@ class TransformerDecoderLayer(nn.Module):
                  bias=True,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='ReLU', inplace=True),
-                 init_cfg=dict(type='xavier')):
+                 att_init_cfg=dict(type='xavier'),
+                 ffn_init_cfg=dict(type='kaiming')):
         super(TransformerDecoderLayer, self).__init__()
 
         self._dims = dims
@@ -470,7 +477,8 @@ class TransformerDecoderLayer(nn.Module):
         self._droppath = droppath
         self._pre_norm = pre_norm
         self._bias = bias
-        self._init_cfg = init_cfg
+        self._att_init_cfg = att_init_cfg
+        self._ffn_init_cfg = ffn_init_cfg
 
         self.att1 = MultiHeadAttention(
             dims,
@@ -478,21 +486,21 @@ class TransformerDecoderLayer(nn.Module):
             att_dropout=att_dropout,
             out_dropout=att_out_dropout,
             bias=bias,
-            init_cfg=init_cfg)
+            init_cfg=att_init_cfg)
         self.att2 = MultiHeadAttention(
             dims,
             heads=heads,
             att_dropout=att_dropout,
             out_dropout=att_out_dropout,
             bias=bias,
-            init_cfg=init_cfg)
+            init_cfg=att_init_cfg)
         self.ffn = FeedForwardNetwork(
             dims,
             ratio=ratio,
             ffn_dropout=ffn_dropout,
             out_dropout=ffn_out_dropout,
             act_cfg=act_cfg,
-            init_cfg=init_cfg)
+            init_cfg=ffn_init_cfg)
 
         self.norm1 = build_norm_layer(norm_cfg, dims=dims)
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
@@ -548,7 +556,7 @@ class TransformerDecoderLayer(nn.Module):
 @MODELS.register()
 @nncore.bind_getter('dims', 'heads', 'ratio', 'att_dropout', 'ffn_dropout',
                     'att_out_dropout', 'ffn_out_dropout', 'pre_norm', 'bias',
-                    'init_cfg')
+                    'att_init_cfg', 'ffn_init_cfg')
 class CrossAttentionLayer(nn.Module):
     """
     Cross Attention Layer.
@@ -576,8 +584,10 @@ class CrossAttentionLayer(nn.Module):
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
-        init_cfg (dict | str, optional): The config for module initialization.
-            Default: ``dict(type='xavier')``.
+        att_init_cfg (dict | str, optional): The config for initializing
+            attention block. Default: ``dict(type='xavier')``.
+        ffn_init_cfg (dict | str, optional): The config for initializing
+            feed forward network. Default: ``dict(type='kaiming')``.
     """
 
     def __init__(self,
@@ -593,7 +603,8 @@ class CrossAttentionLayer(nn.Module):
                  bias=True,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='ReLU', inplace=True),
-                 init_cfg=dict(type='xavier')):
+                 att_init_cfg=dict(type='xavier'),
+                 ffn_init_cfg=dict(type='kaiming')):
         super(CrossAttentionLayer, self).__init__()
 
         self._dims = dims
@@ -606,7 +617,8 @@ class CrossAttentionLayer(nn.Module):
         self._droppath = droppath
         self._pre_norm = pre_norm
         self._bias = bias
-        self._init_cfg = init_cfg
+        self._att_init_cfg = att_init_cfg
+        self._ffn_init_cfg = ffn_init_cfg
 
         self.att1 = MultiHeadAttention(
             dims,
@@ -614,28 +626,28 @@ class CrossAttentionLayer(nn.Module):
             att_dropout=att_dropout,
             out_dropout=att_out_dropout,
             bias=bias,
-            init_cfg=init_cfg)
+            init_cfg=att_init_cfg)
         self.att2 = MultiHeadAttention(
             dims,
             heads=heads,
             att_dropout=att_dropout,
             out_dropout=att_out_dropout,
             bias=bias,
-            init_cfg=init_cfg)
+            init_cfg=att_init_cfg)
         self.ffn1 = FeedForwardNetwork(
             dims,
             ratio=ratio,
             ffn_dropout=ffn_dropout,
             out_dropout=ffn_out_dropout,
             act_cfg=act_cfg,
-            init_cfg=init_cfg)
+            init_cfg=ffn_init_cfg)
         self.ffn2 = FeedForwardNetwork(
             dims,
             ratio=ratio,
             ffn_dropout=ffn_dropout,
             out_dropout=ffn_out_dropout,
             act_cfg=act_cfg,
-            init_cfg=init_cfg)
+            init_cfg=ffn_init_cfg)
 
         self.norm1 = build_norm_layer(norm_cfg, dims=dims)
         self.norm2 = build_norm_layer(norm_cfg, dims=dims)
