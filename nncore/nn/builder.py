@@ -117,7 +117,9 @@ def build_norm_layer(cfg, *args, dims=None, **kwargs):
     _cfg = cfg.copy()
 
     if dims is not None and _cfg['type'] not in NORMS.group('drop'):
-        if _cfg['type'] == 'LN':
+        if _cfg['type'] == 'RMSNorm':
+            key = 'dims'
+        elif _cfg['type'] == 'LN':
             key = 'normalized_shape'
         elif _cfg['type'] == 'GN':
             key = 'num_channels'

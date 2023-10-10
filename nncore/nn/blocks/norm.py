@@ -24,38 +24,72 @@ NORMS.register(nn.FeatureAlphaDropout, name='FADrop', group=['drop', '1d'])
 
 def drop_path(x, p=0.1, training=False):
     """
-    Drop paths per sample when applied in main path of residual blocks.
+    DropPath operation introducted in [1].
 
     Args:
         p (float, optional): Probability of the path to be dropped. Default:
             ``0.1``.
         training (bool, optional): Whether the module is in training mode. If
             ``False``, this method would return the inputs directly.
+
+    References:
+        1. Larsson et al. (https://arxiv.org/abs/1605.07648)
     """
-    if p == 0. or not training:
+    if p == 0 or not training:
         return x
-    keep_prob = 1 - p
-    shape = (x.shape[0], ) + (1, ) * (x.ndim - 1)
-    random_tensor = keep_prob + torch.rand(
-        shape, dtype=x.dtype, device=x.device)
-    output = x.div(keep_prob) * random_tensor.floor()
-    return output
+    prob = 1 - p
+    size = (x.size(0), ) + (1, ) * (x.dim() - 1)
+    rand = prob + torch.rand(size, dtype=x.dtype, device=x.device)
+    return x / prob * rand.floor()
 
 
 @NORMS.register(group=['drop', '1d'])
 @nncore.bind_getter('p')
 class DropPath(nn.Module):
     """
-    Drop paths per sample when applied in main path of residual blocks.
+    DropPath operation introducted in [1].
 
     Args:
         p (float, optional): Probability of the path to be dropped. Default:
             ``0.1``.
+
+    References:
+        1. Larsson et al. (https://arxiv.org/abs/1605.07648)
     """
 
     def __init__(self, p=0.1):
         super(DropPath, self).__init__()
         self._p = p
 
+    def __repr__(self):
+        return '{}(p={})'.format(self.__class__.__name__, self._p)
+
     def forward(self, x):
         return drop_path(x, self._p, self.training)
+
+
+@NORMS.register(group=['norm', '1d', '2d', '3d'])
+@nncore.bind_getter('eps')
+class RMSNorm(nn.Module):
+    """
+    Root Mean Square Layer Normalization introducted in [1].
+
+    Args:
+        dims (int): Input feature dimensions.
+        eps (float, optional): The term added to the denominator to improve
+            numerical stability. Default: ``1e-6``.
+
+    References:
+        1. Zhang et al. (https://arxiv.org/abs/1910.07467)
+    """
+
+    def __init__(self, dims, eps=1e-6):
+        super(RMSNorm, self).__init__()
+        self._eps = eps
+        self.weight = nn.Parameter(torch.ones(dims))
+
+    def forward(self, x):
+        d = x.float()
+        d = d * (d.pow(2).mean(dim=-1, keepdim=True) + self._eps).rsqrt()
+        x = d.type_as(x) * self.weight
+        return x
