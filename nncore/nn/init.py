@@ -125,9 +125,10 @@ def init_module_(module, init_cfg):
 
     Args:
         module (:obj:`nn.Module`): The module to be initialized.
-        init_cfg (dict | str): The initialization method and configs.
+        init_cfg (dict | str | None): The initialization method and configs.
+            If ``None``, the module will not be initialized.
     """
-    _cfg = init_cfg.copy()
-    meth = _cfg.pop('type')
-    assert meth in INITIALIZERS
-    INITIALIZERS.get(meth)(module, **_cfg)
+    if init_cfg is not None:
+        _cfg = init_cfg.copy()
+        method = _cfg.pop('type')
+        INITIALIZERS.get(method)(module, **_cfg)
