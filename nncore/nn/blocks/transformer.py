@@ -206,7 +206,7 @@ class MultiHeadAttention(nn.Module):
         if mask is not None:
             mask = torch.where(mask > 0, .0, float('-inf'))
             mask = mask.repeat_interleave(self._heads, dim=0)
-            att += mask.unsqueeze(1)
+            att += mask if mask.dim() == 3 else mask.unsqueeze(1)
 
         att = att.softmax(-1)
 
