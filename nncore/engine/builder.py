@@ -14,10 +14,10 @@ from .comm import get_dist_info, is_distributed
 HOOKS = Registry('hook')
 
 
-def _init_fn(worker_id, num_workers, rank, seed):
+def _worker_init_fn(worker_id, num_workers, rank, seed):
     worker_seed = seed + worker_id + rank * num_workers
-    np.random.seed(worker_seed)
     random.seed(worker_seed)
+    np.random.seed(worker_seed)
 
 
 def build_dataloader(cfg, seed=None, dist=None, group=None, **kwargs):
@@ -60,14 +60,14 @@ def build_dataloader(cfg, seed=None, dist=None, group=None, **kwargs):
             num_replicas=world_size,
             rank=rank,
             shuffle=loader_cfg.pop('shuffle', False),
-            seed=seed,
+            seed=0 if seed is None else seed,
             drop_last=loader_cfg.pop('drop_last', False))
 
     data_loader = DataLoader(
         dataset,
         collate_fn=collate,
         worker_init_fn=None if seed is None else partial(
-            _init_fn, num_workers=num_workers, rank=rank, seed=seed),
+            _worker_init_fn, num_workers=num_workers, rank=rank, seed=seed),
         **loader_cfg)
 
     return data_loader

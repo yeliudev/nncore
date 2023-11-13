@@ -294,7 +294,7 @@ class FeedForwardNetwork(nn.Module):
 @MODELS.register()
 @nncore.bind_getter('dims', 'heads', 'ratio', 'att_dropout', 'ffn_dropout',
                     'att_out_dropout', 'ffn_out_dropout', 'pre_norm', 'bias',
-                    'att_init_cfg', 'ffn_init_cfg')
+                    'order', 'att_init_cfg', 'ffn_init_cfg')
 class TransformerEncoderLayer(nn.Module):
     """
     Transformer Encoder Layer introduced in [1].
@@ -322,6 +322,9 @@ class TransformerEncoderLayer(nn.Module):
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
+        order (tuple[str], optional): The order of sub-modules. This argument
+            should be a sequence of `'self_att'` and `'ffn'`.
+            Default: `('self_att', 'ffn')`.
         att_init_cfg (dict | str | None, optional): The initialization config
             for qkv projection layers in the attention block. Default:
             ``dict(type='xavier', distribution='uniform')``.
@@ -345,9 +348,13 @@ class TransformerEncoderLayer(nn.Module):
                  bias=True,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='ReLU', inplace=True),
+                 order=('self_att', 'ffn'),
                  att_init_cfg=dict(type='xavier', distribution='uniform'),
                  ffn_init_cfg=None):
         super(TransformerEncoderLayer, self).__init__()
+
+        order_set = set(order)
+        assert order_set.issubset(('self_att', 'ffn'))
 
         self._dims = dims
         self._heads = heads
@@ -359,55 +366,62 @@ class TransformerEncoderLayer(nn.Module):
         self._droppath = droppath
         self._pre_norm = pre_norm
         self._bias = bias
+        self._order = order
         self._att_init_cfg = att_init_cfg
         self._ffn_init_cfg = ffn_init_cfg
 
-        self.att = MultiHeadAttention(
-            dims,
-            heads=heads,
-            att_dropout=att_dropout,
-            out_dropout=att_out_dropout,
-            bias=bias,
-            init_cfg=att_init_cfg)
-        self.ffn = FeedForwardNetwork(
-            dims,
-            ratio=ratio,
-            ffn_dropout=ffn_dropout,
-            out_dropout=ffn_out_dropout,
-            act_cfg=act_cfg,
-            init_cfg=ffn_init_cfg)
-
-        self.norm1 = build_norm_layer(norm_cfg, dims=dims)
-        self.norm2 = build_norm_layer(norm_cfg, dims=dims)
+        for name in order_set:
+            if name == 'self_att':
+                self.self_att = MultiHeadAttention(
+                    dims,
+                    heads=heads,
+                    att_dropout=att_dropout,
+                    out_dropout=att_out_dropout,
+                    bias=bias,
+                    init_cfg=att_init_cfg)
+                self.self_att_norm = build_norm_layer(norm_cfg, dims=dims)
+            else:
+                self.ffn = FeedForwardNetwork(
+                    dims,
+                    ratio=ratio,
+                    ffn_dropout=ffn_dropout,
+                    out_dropout=ffn_out_dropout,
+                    act_cfg=act_cfg,
+                    init_cfg=ffn_init_cfg)
+                self.ffn_norm = build_norm_layer(norm_cfg, dims=dims)
 
         if droppath > 0:
             self.droppath = DropPath(p=droppath)
 
     def forward(self, x, pe=None, mask=None):
         if self._pre_norm:
-            v = self.norm1(x)
-            q = k = v if pe is None else v + pe
-            d = self.att(q, k, v, mask=mask)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            x = x + d
-
-            d = self.norm2(x)
-            d = self.ffn(d)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            x = x + d
+            for name in self._order:
+                if name == 'self_att':
+                    v = self.self_att_norm(x)
+                    q = k = v if pe is None else v + pe
+                    d = self.self_att(q, k, v, mask=mask)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    x = x + d
+                else:
+                    d = self.ffn_norm(x)
+                    d = self.ffn(d)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    x = x + d
         else:
-            q = k = x if pe is None else x + pe
-            d = self.att(q, k, x, mask=mask)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            x = self.norm1(x + d)
-
-            d = self.ffn(x)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            x = self.norm2(x + d)
+            for name in self._order:
+                if name == 'self_att':
+                    q = k = x if pe is None else x + pe
+                    d = self.self_att(q, k, x, mask=mask)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    x = self.self_att_norm(x + d)
+                else:
+                    d = self.ffn(x)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    x = self.ffn_norm(x + d)
 
         return x
 
@@ -415,7 +429,7 @@ class TransformerEncoderLayer(nn.Module):
 @MODELS.register()
 @nncore.bind_getter('dims', 'heads', 'ratio', 'att_dropout', 'ffn_dropout',
                     'att_out_dropout', 'ffn_out_dropout', 'pre_norm', 'bias',
-                    'att_init_cfg', 'ffn_init_cfg')
+                    'order', 'att_init_cfg', 'ffn_init_cfg')
 class TransformerDecoderLayer(nn.Module):
     """
     Transformer Decoder Layer introduced in [1].
@@ -443,6 +457,9 @@ class TransformerDecoderLayer(nn.Module):
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
+        order (tuple[str], optional): The order of sub-modules. This argument
+            should be a sequence of `'self_att'`, `'cross_att'`, and `'ffn'`.
+            Default: `('self_att', 'cross_att', 'ffn')`.
         att_init_cfg (dict | str | None, optional): The initialization config
             for qkv projection layers in the attention block. Default:
             ``dict(type='xavier', distribution='uniform')``.
@@ -466,9 +483,13 @@ class TransformerDecoderLayer(nn.Module):
                  bias=True,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='ReLU', inplace=True),
+                 order=('self_att', 'cross_att', 'ffn'),
                  att_init_cfg=dict(type='xavier', distribution='uniform'),
                  ffn_init_cfg=None):
         super(TransformerDecoderLayer, self).__init__()
+
+        order_set = set(order)
+        assert order_set.issubset(('self_att', 'cross_att', 'ffn'))
 
         self._dims = dims
         self._heads = heads
@@ -480,78 +501,86 @@ class TransformerDecoderLayer(nn.Module):
         self._droppath = droppath
         self._pre_norm = pre_norm
         self._bias = bias
+        self._order = order
         self._att_init_cfg = att_init_cfg
         self._ffn_init_cfg = ffn_init_cfg
 
-        self.att1 = MultiHeadAttention(
-            dims,
-            heads=heads,
-            att_dropout=att_dropout,
-            out_dropout=att_out_dropout,
-            bias=bias,
-            init_cfg=att_init_cfg)
-        self.att2 = MultiHeadAttention(
-            dims,
-            heads=heads,
-            att_dropout=att_dropout,
-            out_dropout=att_out_dropout,
-            bias=bias,
-            init_cfg=att_init_cfg)
-        self.ffn = FeedForwardNetwork(
-            dims,
-            ratio=ratio,
-            ffn_dropout=ffn_dropout,
-            out_dropout=ffn_out_dropout,
-            act_cfg=act_cfg,
-            init_cfg=ffn_init_cfg)
-
-        self.norm1 = build_norm_layer(norm_cfg, dims=dims)
-        self.norm2 = build_norm_layer(norm_cfg, dims=dims)
-        self.norm3 = build_norm_layer(norm_cfg, dims=dims)
+        for name in order_set:
+            if name == 'self_att':
+                self.self_att = MultiHeadAttention(
+                    dims,
+                    heads=heads,
+                    att_dropout=att_dropout,
+                    out_dropout=att_out_dropout,
+                    bias=bias,
+                    init_cfg=att_init_cfg)
+                self.self_att_norm = build_norm_layer(norm_cfg, dims=dims)
+            elif name == 'cross_att':
+                self.cross_att = MultiHeadAttention(
+                    dims,
+                    heads=heads,
+                    att_dropout=att_dropout,
+                    out_dropout=att_out_dropout,
+                    bias=bias,
+                    init_cfg=att_init_cfg)
+                self.cross_att_norm = build_norm_layer(norm_cfg, dims=dims)
+            else:
+                self.ffn = FeedForwardNetwork(
+                    dims,
+                    ratio=ratio,
+                    ffn_dropout=ffn_dropout,
+                    out_dropout=ffn_out_dropout,
+                    act_cfg=act_cfg,
+                    init_cfg=ffn_init_cfg)
+                self.ffn_norm = build_norm_layer(norm_cfg, dims=dims)
 
         if droppath > 0:
             self.droppath = DropPath(p=droppath)
 
     def forward(self, x, mem, q_pe=None, k_pe=None, q_mask=None, k_mask=None):
         if self._pre_norm:
-            v = self.norm1(x)
-            q = k = v if q_pe is None else v + q_pe
-            d = self.att1(q, k, v, mask=q_mask)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            x = x + d
-
-            q = self.norm2(x)
-            q = q if q_pe is None else q + q_pe
-            k = mem if k_pe is None else mem + k_pe
-            d = self.att2(q, k, mem, mask=k_mask)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            x = x + d
-
-            d = self.norm3(x)
-            d = self.ffn(d)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            x = x + d
+            for name in self._order:
+                if name == 'self_att':
+                    v = self.self_att_norm(x)
+                    q = k = v if q_pe is None else v + q_pe
+                    d = self.self_att(q, k, v, mask=q_mask)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    x = x + d
+                elif name == 'cross_att':
+                    q = self.cross_att_norm(x)
+                    q = q if q_pe is None else q + q_pe
+                    k = mem if k_pe is None else mem + k_pe
+                    d = self.cross_att(q, k, mem, mask=k_mask)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    x = x + d
+                else:
+                    d = self.ffn_norm(x)
+                    d = self.ffn(d)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    x = x + d
         else:
-            q = k = x if q_pe is None else x + q_pe
-            d = self.att1(q, k, x, mask=q_mask)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            x = self.norm1(x + d)
-
-            q = x if q_pe is None else x + q_pe
-            k = mem if k_pe is None else mem + k_pe
-            d = self.att2(q, k, mem, mask=k_mask)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            x = self.norm2(x + d)
-
-            d = self.ffn(x)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            x = self.norm3(x + d)
+            for name in self._order:
+                if name == 'self_att':
+                    q = k = x if q_pe is None else x + q_pe
+                    d = self.self_att(q, k, x, mask=q_mask)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    x = self.self_att_norm(x + d)
+                elif name == 'cross_att':
+                    q = x if q_pe is None else x + q_pe
+                    k = mem if k_pe is None else mem + k_pe
+                    d = self.cross_att(q, k, mem, mask=k_mask)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    x = self.cross_att_norm(x + d)
+                else:
+                    d = self.ffn(x)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    x = self.ffn_norm(x + d)
 
         return x
 
@@ -559,7 +588,7 @@ class TransformerDecoderLayer(nn.Module):
 @MODELS.register()
 @nncore.bind_getter('dims', 'heads', 'ratio', 'att_dropout', 'ffn_dropout',
                     'att_out_dropout', 'ffn_out_dropout', 'pre_norm', 'bias',
-                    'att_init_cfg', 'ffn_init_cfg')
+                    'order', 'att_init_cfg', 'ffn_init_cfg')
 class CrossAttentionLayer(nn.Module):
     """
     Cross Attention Layer.
@@ -587,6 +616,9 @@ class CrossAttentionLayer(nn.Module):
             normalization layer. Default: ``dict(type='LN')``.
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
+        order (tuple[str], optional): The order of sub-modules. This argument
+            should be a sequence of `'cross_att'` and `'ffn'`.
+            Default: `('cross_att', 'ffn')`.
         att_init_cfg (dict | str | None, optional): The initialization config
             for qkv projection layers in the attention block. Default:
             ``dict(type='xavier', distribution='uniform')``.
@@ -607,9 +639,13 @@ class CrossAttentionLayer(nn.Module):
                  bias=True,
                  norm_cfg=dict(type='LN'),
                  act_cfg=dict(type='ReLU', inplace=True),
+                 order=('cross_att', 'ffn'),
                  att_init_cfg=dict(type='xavier', distribution='uniform'),
                  ffn_init_cfg=None):
         super(CrossAttentionLayer, self).__init__()
+
+        order_set = set(order)
+        assert order_set.issubset(('cross_att', 'ffn'))
 
         self._dims = dims
         self._heads = heads
@@ -621,42 +657,45 @@ class CrossAttentionLayer(nn.Module):
         self._droppath = droppath
         self._pre_norm = pre_norm
         self._bias = bias
+        self._order = order
         self._att_init_cfg = att_init_cfg
         self._ffn_init_cfg = ffn_init_cfg
 
-        self.att1 = MultiHeadAttention(
-            dims,
-            heads=heads,
-            att_dropout=att_dropout,
-            out_dropout=att_out_dropout,
-            bias=bias,
-            init_cfg=att_init_cfg)
-        self.att2 = MultiHeadAttention(
-            dims,
-            heads=heads,
-            att_dropout=att_dropout,
-            out_dropout=att_out_dropout,
-            bias=bias,
-            init_cfg=att_init_cfg)
-        self.ffn1 = FeedForwardNetwork(
-            dims,
-            ratio=ratio,
-            ffn_dropout=ffn_dropout,
-            out_dropout=ffn_out_dropout,
-            act_cfg=act_cfg,
-            init_cfg=ffn_init_cfg)
-        self.ffn2 = FeedForwardNetwork(
-            dims,
-            ratio=ratio,
-            ffn_dropout=ffn_dropout,
-            out_dropout=ffn_out_dropout,
-            act_cfg=act_cfg,
-            init_cfg=ffn_init_cfg)
-
-        self.norm1 = build_norm_layer(norm_cfg, dims=dims)
-        self.norm2 = build_norm_layer(norm_cfg, dims=dims)
-        self.norm3 = build_norm_layer(norm_cfg, dims=dims)
-        self.norm4 = build_norm_layer(norm_cfg, dims=dims)
+        for name in order_set:
+            if name == 'cross_att':
+                self.b_to_a_att = MultiHeadAttention(
+                    dims,
+                    heads=heads,
+                    att_dropout=att_dropout,
+                    out_dropout=att_out_dropout,
+                    bias=bias,
+                    init_cfg=att_init_cfg)
+                self.a_to_b_att = MultiHeadAttention(
+                    dims,
+                    heads=heads,
+                    att_dropout=att_dropout,
+                    out_dropout=att_out_dropout,
+                    bias=bias,
+                    init_cfg=att_init_cfg)
+                self.b_to_a_att_norm = build_norm_layer(norm_cfg, dims=dims)
+                self.a_to_b_att_norm = build_norm_layer(norm_cfg, dims=dims)
+            else:
+                self.a_ffn = FeedForwardNetwork(
+                    dims,
+                    ratio=ratio,
+                    ffn_dropout=ffn_dropout,
+                    out_dropout=ffn_out_dropout,
+                    act_cfg=act_cfg,
+                    init_cfg=ffn_init_cfg)
+                self.b_ffn = FeedForwardNetwork(
+                    dims,
+                    ratio=ratio,
+                    ffn_dropout=ffn_dropout,
+                    out_dropout=ffn_out_dropout,
+                    act_cfg=act_cfg,
+                    init_cfg=ffn_init_cfg)
+                self.a_ffn_norm = build_norm_layer(norm_cfg, dims=dims)
+                self.b_ffn_norm = build_norm_layer(norm_cfg, dims=dims)
 
         if droppath > 0:
             self.droppath = DropPath(p=droppath)
@@ -665,48 +704,56 @@ class CrossAttentionLayer(nn.Module):
         _a, _b = a, b
 
         if self._pre_norm:
-            q = self.norm1(a)
-            d = self.att1(q, _b, _b, mask=b_mask)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            a = a + d
+            for name in self._order:
+                if name == 'cross_att':
+                    q = self.b_to_a_att_norm(a)
+                    d = self.b_to_a_att(q, _b, _b, mask=b_mask)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    a = a + d
 
-            q = self.norm2(b)
-            d = self.att2(q, _a, _a, mask=a_mask)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            b = b + d
+                    q = self.a_to_b_att_norm(b)
+                    d = self.a_to_b_att(q, _a, _a, mask=a_mask)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    b = b + d
 
-            d = self.norm3(a)
-            d = self.ffn1(d)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            a = a + d
+                    _a, _b = a, b
+                else:
+                    d = self.a_ffn_norm(a)
+                    d = self.a_ffn(d)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    a = a + d
 
-            d = self.norm4(b)
-            d = self.ffn2(d)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            b = b + d
+                    d = self.b_ffn_norm(b)
+                    d = self.b_ffn(d)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    b = b + d
         else:
-            d = self.att1(a, _b, _b, mask=b_mask)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            a = self.norm1(a + d)
+            for name in self._order:
+                if name == 'cross_att':
+                    d = self.b_to_a_att(a, _b, _b, mask=b_mask)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    a = self.b_to_a_att_norm(a + d)
 
-            d = self.att2(b, _a, _a, mask=a_mask)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            b = self.norm2(b + d)
+                    d = self.a_to_b_att(b, _a, _a, mask=a_mask)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    b = self.a_to_b_att_norm(b + d)
 
-            d = self.ffn1(a)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            a = self.norm3(a + d)
+                    _a, _b = a, b
+                else:
+                    d = self.a_ffn(a)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    a = self.a_ffn_norm(a + d)
 
-            d = self.ffn2(b)
-            if self._droppath > 0:
-                d = self.droppath(d)
-            b = self.norm4(b + d)
+                    d = self.b_ffn(b)
+                    if self._droppath > 0:
+                        d = self.droppath(d)
+                    b = self.b_ffn_norm(b + d)
 
         return a, b

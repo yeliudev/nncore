@@ -360,7 +360,7 @@ class Engine(object):
         if self.stages != checkpoint['meta']['stages']:
             self.logger.warn(
                 'Stages in the engine and checkpoint are mismatched:'
-                '\nCurrent stages: {}\n\nCheckpoint stages: {}'.format([
+                '\n\nCurrent stages: {}\n\nCheckpoint stages: {}\n'.format([
                     c.to_dict() if isinstance(c, CfgNode) else c
                     for c in self.stages
                 ], checkpoint['meta']['stages']))
