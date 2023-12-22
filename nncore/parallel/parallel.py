@@ -15,7 +15,10 @@ class _Scatter(Function):
         input_device = _get_input_device(input)
         streams = None
         if input_device == -1 and target_gpus != [-1]:
-            streams = [_get_stream(device) for device in target_gpus]
+            streams = [
+                _get_stream(torch.device('cuda', gpu_id))
+                for gpu_id in target_gpus
+            ]
 
         outputs = _scatter_stream(input, target_gpus, streams)
         if streams is not None:
