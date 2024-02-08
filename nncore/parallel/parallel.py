@@ -173,19 +173,14 @@ class NNDistributedDataParallel(DistributedDataParallel):
             **kwargs)
 
     def _run_ddp_forward(self, *inputs, **kwargs):
-        if self._use_replicated_tensor_module:
-            module = self._replicated_tensor_module
-        else:
-            module = self.module
-
         if self.device_ids:
             inputs, kwargs = _scatter_kwargs(
                 inputs, kwargs, self.device_ids, dim=self.dim)
             with self._inside_ddp_forward():
-                return module(*inputs[0], **kwargs[0])
+                return self.module(*inputs[0], **kwargs[0])
         else:
             with self._inside_ddp_forward():
-                return module(*inputs, **kwargs)
+                return self.module(*inputs, **kwargs)
 
     def scatter(self, inputs, kwargs, device_ids):
         return _scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
