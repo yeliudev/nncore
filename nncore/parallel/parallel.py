@@ -195,8 +195,13 @@ class NNDistributedDataParallel(DistributedDataParallel):
         super(NNDistributedDataParallel, self).__init__(
             module, device_ids=device_ids, **kwargs)
 
-    def to_kwargs(self, inputs, kwargs, device_id):
-        return _scatter_kwargs(inputs, kwargs, [device_id], dim=self.dim)
+    def _run_ddp_forward(self, *inputs, **kwargs):
+        if self.device_ids:
+            inputs, kwargs = _scatter_kwargs(
+                inputs, kwargs, self.device_ids, dim=self.dim)
+            inputs, kwargs = inputs[0], kwargs[0]
+        super(NNDistributedDataParallel,
+              self)._run_ddp_forward(*inputs, **kwargs)
 
     def forward(self, *inputs, **kwargs):
         if self.device_ids:
