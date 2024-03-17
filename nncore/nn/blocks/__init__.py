@@ -4,12 +4,13 @@ from .activation import Clamp
 from .conv import *  # noqa
 from .msg_pass import GAT, GCN, SGC
 from .norm import DropPath, drop_path
+from .scale import Scale, Gate
 from .transformer import (CrossAttentionLayer, FeedForwardNetwork,
                           MultiHeadAttention, PositionalEncoding,
                           TransformerDecoderLayer, TransformerEncoderLayer)
 
 __all__ = [
-    'Clamp', 'GAT', 'GCN', 'SGC', 'DropPath', 'drop_path',
+    'Clamp', 'GAT', 'GCN', 'SGC', 'DropPath', 'drop_path', 'Scale', 'Gate',
     'CrossAttentionLayer', 'FeedForwardNetwork', 'MultiHeadAttention',
     'PositionalEncoding', 'TransformerDecoderLayer', 'TransformerEncoderLayer'
 ]
