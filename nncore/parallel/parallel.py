@@ -114,6 +114,14 @@ def _scatter_kwargs(inputs, kwargs, target_gpus, dim=0):
     return tuple(inputs), tuple(kwargs)
 
 
+def _get_device(device_id=None):
+    if device_id is not None:
+        return device_id
+    if torch.cuda.is_available():
+        return torch.cuda.current_device()
+    return -1
+
+
 class NNDataParallel(DataParallel):
     """
     A :obj:`nn.DataParallel` class with :obj:`DataContainer` support. This
@@ -130,13 +138,15 @@ class NNDataParallel(DataParallel):
         assert isinstance(device_id, int) or device_id is None
         assert 'device_ids' not in kwargs and 'output_device' not in kwargs
 
-        if device_id is None:
-            if torch.cuda.is_available():
-                device_id = torch.cuda.current_device()
-            else:
-                device_id = -1
+        device_id = _get_device(device_id)
 
-        if device_id == -1:
+        if device_id >= 0:
+            super(NNDataParallel, self).__init__(
+                module,
+                device_ids=[device_id],
+                output_device=device_id,
+                **kwargs)
+        else:
             logger = nncore.get_logger()
             logger.warn('{} is running on CPU'.format(self.__class__.__name__))
 
@@ -146,10 +156,6 @@ class NNDataParallel(DataParallel):
             self.module = module
             self.device_ids = []
             self.dim = dim
-            return
-
-        super(NNDataParallel, self).__init__(
-            module, device_ids=[device_id], output_device=device_id, **kwargs)
 
     def scatter(self, inputs, kwargs, device_ids):
         return _scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
@@ -178,11 +184,7 @@ class NNDistributedDataParallel(DistributedDataParallel):
         assert isinstance(device_id, int) or device_id is None
         assert 'device_ids' not in kwargs and 'output_device' not in kwargs
 
-        if device_id is None:
-            if torch.cuda.is_available():
-                device_id = torch.cuda.current_device()
-            else:
-                device_id = -1
+        device_id = _get_device(device_id)
 
         if device_id >= 0:
             module = module.to('cuda:{}'.format(device_id))
@@ -195,13 +197,15 @@ class NNDistributedDataParallel(DistributedDataParallel):
         super(NNDistributedDataParallel, self).__init__(
             module, device_ids=device_ids, **kwargs)
 
-    def _run_ddp_forward(self, *inputs, **kwargs):
+    def _pre_forward(self, *inputs, **kwargs):
         if self.device_ids:
-            inputs, kwargs = _scatter_kwargs(
-                inputs, kwargs, self.device_ids, dim=self.dim)
+            inputs, kwargs = self.scatter(inputs, kwargs, self.device_ids)
             inputs, kwargs = inputs[0], kwargs[0]
-        super(NNDistributedDataParallel,
-              self)._run_ddp_forward(*inputs, **kwargs)
+        return super(NNDistributedDataParallel,
+                     self)._pre_forward(*inputs, **kwargs)
+
+    def scatter(self, inputs, kwargs, device_ids):
+        return _scatter_kwargs(inputs, kwargs, device_ids, dim=self.dim)
 
     def forward(self, *inputs, **kwargs):
         if self.device_ids:

@@ -353,8 +353,8 @@ class TransformerEncoderLayer(nn.Module):
                  ffn_init_cfg=None):
         super(TransformerEncoderLayer, self).__init__()
 
-        order_set = set(order)
-        assert order_set.issubset(('self_att', 'ffn'))
+        assert all(o in ('self_att', 'ffn') for o in order)
+        assert len(order) == len(set(order))
 
         self._dims = dims
         self._heads = heads
@@ -370,7 +370,7 @@ class TransformerEncoderLayer(nn.Module):
         self._att_init_cfg = att_init_cfg
         self._ffn_init_cfg = ffn_init_cfg
 
-        for name in order_set:
+        for name in order:
             if name == 'self_att':
                 self.self_att = MultiHeadAttention(
                     dims,
@@ -488,8 +488,8 @@ class TransformerDecoderLayer(nn.Module):
                  ffn_init_cfg=None):
         super(TransformerDecoderLayer, self).__init__()
 
-        order_set = set(order)
-        assert order_set.issubset(('self_att', 'cross_att', 'ffn'))
+        assert all(o in ('self_att', 'cross_att', 'ffn') for o in order)
+        assert len(order) == len(set(order))
 
         self._dims = dims
         self._heads = heads
@@ -505,7 +505,7 @@ class TransformerDecoderLayer(nn.Module):
         self._att_init_cfg = att_init_cfg
         self._ffn_init_cfg = ffn_init_cfg
 
-        for name in order_set:
+        for name in order:
             if name == 'self_att':
                 self.self_att = MultiHeadAttention(
                     dims,
@@ -644,8 +644,8 @@ class CrossAttentionLayer(nn.Module):
                  ffn_init_cfg=None):
         super(CrossAttentionLayer, self).__init__()
 
-        order_set = set(order)
-        assert order_set.issubset(('cross_att', 'ffn'))
+        assert all(o in ('cross_att', 'ffn') for o in order)
+        assert len(order) == len(set(order))
 
         self._dims = dims
         self._heads = heads
@@ -661,7 +661,7 @@ class CrossAttentionLayer(nn.Module):
         self._att_init_cfg = att_init_cfg
         self._ffn_init_cfg = ffn_init_cfg
 
-        for name in order_set:
+        for name in order:
             if name == 'cross_att':
                 self.b_to_a_att = MultiHeadAttention(
                     dims,
