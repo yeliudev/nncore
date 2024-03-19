@@ -3,18 +3,49 @@
 import math
 
 import torch
+import torch.distributed as dist
 import torch.nn as nn
 import torch.nn.functional as F
 
 import nncore
+from nncore.engine import comm
 from nncore.ops import cosine_similarity
 from ..builder import LOSSES
 from ..bundle import Parameter
 from .utils import weighted_loss
 
 
+class _AllGather(torch.autograd.Function):
+
+    @staticmethod
+    def forward(ctx, tensor, group=None):
+        rank, world_size = comm.get_dist_info()
+
+        ctx.size = tensor.size(-2)
+        ctx.rank = rank
+        ctx.group = group
+
+        gathered = [torch.zeros_like(tensor) for _ in range(world_size)]
+        dist.all_gather(gathered, tensor, group=group)
+
+        gathered = torch.cat(gathered, dim=-2)
+        return gathered
+
+    @staticmethod
+    def backward(ctx, grad):
+        grad = grad.contiguous()
+        dist.all_reduce(grad, op=dist.ReduceOp.AVG, group=ctx.group)
+        return grad[..., ctx.size * ctx.rank:ctx.size * (ctx.rank + 1), :]
+
+
 @weighted_loss
-def infonce_loss(a, b, temperature=0.07, scale=None, max_scale=100):
+def infonce_loss(a,
+                 b,
+                 temperature=0.07,
+                 scale=None,
+                 max_scale=100,
+                 dist=False,
+                 group=None):
     """
     InfoNCE Loss introduced in [1].
 
@@ -28,6 +59,11 @@ def infonce_loss(a, b, temperature=0.07, scale=None, max_scale=100):
             Default: ``None``.
         max_scale (float, optional): The maximum logit scale value. Default:
             ``100``.
+        dist (bool, optional): Whether the loss is computed across processes.
+            Default: ``False``.
+        group (:obj:`dist.ProcessGroup` | None, optional): The process group
+            to use. If not specified, the default process group will be used.
+            Default: ``None``.
 
     References:
         1. Oord et al. (https://arxiv.org/abs/1807.03748)
@@ -39,12 +75,30 @@ def infonce_loss(a, b, temperature=0.07, scale=None, max_scale=100):
         scale = a.new_tensor([math.log(1 / temperature)])
 
     scale = scale.exp().clamp(max=max_scale)
-    a_sim = torch.matmul(a, b.transpose(-1, -2)) * scale
-    b_sim = a_sim.transpose(-1, -2)
 
-    target = torch.arange(a.size(-2), device=a.device).expand(a.size()[:-1])
-    a_loss = F.cross_entropy(a_sim, target)
-    b_loss = F.cross_entropy(b_sim, target)
+    n = a.size(-2)
+    t = torch.arange(n, device=a.device)
+
+    if dist and comm.is_distributed():
+        rank = comm.get_rank(group=group)
+
+        s, e = n * rank, n * (rank + 1)
+        t += s
+
+        a = _AllGather.apply(a)
+        b = _AllGather.apply(b)
+
+        a_sim = torch.matmul(a[..., s:e, :], b.transpose(-1, -2)) * scale
+        b_sim = torch.matmul(b[..., s:e, :], a.transpose(-1, -2)) * scale
+    else:
+        a_sim = torch.matmul(a, b.transpose(-1, -2)) * scale
+        b_sim = a_sim.transpose(-1, -2).contiguous()
+
+    a_sim = a_sim.view(-1, a_sim.size(-1))
+    b_sim = b_sim.view(-1, b_sim.size(-1))
+
+    a_loss = F.cross_entropy(a_sim, t.repeat(int(a_sim.size(0) / n)))
+    b_loss = F.cross_entropy(b_sim, t.repeat(int(b_sim.size(0) / n)))
 
     loss = (a_loss + b_loss) / 2
     return loss
@@ -95,6 +149,7 @@ class InfoNCELoss(nn.Module):
                  temperature=0.07,
                  max_scale=100,
                  learnable=True,
+                 dist=False,
                  loss_weight=1.0):
         super(InfoNCELoss, self).__init__()
 
@@ -106,12 +161,14 @@ class InfoNCELoss(nn.Module):
         self._temperature = temperature
         self._max_scale = max_scale
         self._learnable = learnable
+        self._dist = dist
         self._loss_weight = loss_weight
 
     def extra_repr(self):
-        return ('temperature={}, max_scale={}, learnable={}, loss_weight={}'.
-                format(self._temperature, self._max_scale, self._learnable,
-                       self._loss_weight))
+        return ('temperature={}, max_scale={}, learnable={}, dist={}, '
+                'loss_weight={}'.format(self._temperature, self._max_scale,
+                                        self._learnable, self._dist,
+                                        self._loss_weight))
 
     def forward(self, a, b, weight=None, avg_factor=None):
         return infonce_loss(
@@ -120,6 +177,7 @@ class InfoNCELoss(nn.Module):
             temperature=self._temperature,
             scale=self.scale,
             max_scale=self._max_scale,
+            dist=self._dist,
             weight=weight,
             avg_factor=avg_factor) * self._loss_weight
 
@@ -146,7 +204,7 @@ class TripletLoss(nn.Module):
         self._loss_weight = loss_weight
 
     def extra_repr(self):
-        return 'margin={}, reduction={}, loss_weight={}'.format(
+        return "margin={}, reduction='{}', loss_weight={}".format(
             self._margin, self._reduction, self._loss_weight)
 
     def forward(self, pos, neg, anchor, weight=None, avg_factor=None):
