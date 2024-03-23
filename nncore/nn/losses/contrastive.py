@@ -34,7 +34,7 @@ class _AllGather(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad):
         grad = grad.contiguous()
-        dist.all_reduce(grad, op=dist.ReduceOp.AVG, group=ctx.group)
+        dist.all_reduce(grad, op=dist.ReduceOp.SUM, group=ctx.group)
         return grad[..., ctx.size * ctx.rank:ctx.size * (ctx.rank + 1), :]
 
 
