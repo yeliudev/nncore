@@ -84,7 +84,7 @@ def xavier_init_(module, gain=1, bias=0, distribution='normal'):
 @INITIALIZERS.register(name='kaiming')
 def kaiming_init_(module,
                   a=0,
-                  mode='fan_in',
+                  mode='fan_out',
                   nonlinearity='leaky_relu',
                   bias=0,
                   distribution='normal'):
@@ -96,7 +96,7 @@ def kaiming_init_(module,
         a (int, optional): The negative slope of ``LeakyReLU``. Default: ``0``.
         mode (str, optional): The direction of pass whose magnitude of the
             variance of the weights are preserved. Expected values include
-            ``'fan_in'`` and ``'fan_out'``. Default: ``'fan_in'``.
+            ``'fan_in'`` and ``'fan_out'``. Default: ``'fan_out'``.
         nonlinearity (str, optional): The nonlinearity after the parameterized
             layers. The expected values are ``'relu'`` and ``'leaky_relu'``.
             Default: ``'leaky_relu'``.

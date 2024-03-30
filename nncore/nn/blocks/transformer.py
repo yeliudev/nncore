@@ -240,7 +240,7 @@ class FeedForwardNetwork(nn.Module):
         act_cfg (dict | str | None, optional): The config or name of the
             activation layer. Default: ``dict(type='ReLU', inplace=True)``.
         init_cfg (dict | str | None, optional): The initialization config for
-            linear layers. Default: ``None``.
+            linear layers. Default: ``dict(type='kaiming')``.
 
     References:
         1. Vaswani et al. (https://arxiv.org/abs/1706.03762)
@@ -252,7 +252,7 @@ class FeedForwardNetwork(nn.Module):
                  ffn_dropout=0.0,
                  out_dropout=0.0,
                  act_cfg=dict(type='ReLU', inplace=True),
-                 init_cfg=None):
+                 init_cfg=dict(type='kaiming')):
         super(FeedForwardNetwork, self).__init__()
 
         self._dims = dims
@@ -329,7 +329,8 @@ class TransformerEncoderLayer(nn.Module):
             for qkv projection layers in the attention block. Default:
             ``dict(type='xavier', distribution='uniform')``.
         ffn_init_cfg (dict | str | None, optional): The initialization config
-            for linear layers in the feed forward network. Default: ``None``.
+            for linear layers in the feed forward network. Default:
+            ``dict(type='kaiming')``.
 
     References:
         1. Vaswani et al. (https://arxiv.org/abs/1706.03762)
@@ -350,7 +351,7 @@ class TransformerEncoderLayer(nn.Module):
                  act_cfg=dict(type='ReLU', inplace=True),
                  order=('self_att', 'ffn'),
                  att_init_cfg=dict(type='xavier', distribution='uniform'),
-                 ffn_init_cfg=None):
+                 ffn_init_cfg=dict(type='kaiming')):
         super(TransformerEncoderLayer, self).__init__()
 
         assert all(o in ('self_att', 'ffn') for o in order)
@@ -464,7 +465,8 @@ class TransformerDecoderLayer(nn.Module):
             for qkv projection layers in the attention block. Default:
             ``dict(type='xavier', distribution='uniform')``.
         ffn_init_cfg (dict | str | None, optional): The initialization config
-            for linear layers in the feed forward network. Default: ``None``.
+            for linear layers in the feed forward network. Default:
+            ``dict(type='kaiming')``.
 
     References:
         1. Vaswani et al. (https://arxiv.org/abs/1706.03762)
@@ -485,7 +487,7 @@ class TransformerDecoderLayer(nn.Module):
                  act_cfg=dict(type='ReLU', inplace=True),
                  order=('self_att', 'cross_att', 'ffn'),
                  att_init_cfg=dict(type='xavier', distribution='uniform'),
-                 ffn_init_cfg=None):
+                 ffn_init_cfg=dict(type='kaiming')):
         super(TransformerDecoderLayer, self).__init__()
 
         assert all(o in ('self_att', 'cross_att', 'ffn') for o in order)
@@ -623,7 +625,8 @@ class CrossAttentionLayer(nn.Module):
             for qkv projection layers in the attention block. Default:
             ``dict(type='xavier', distribution='uniform')``.
         ffn_init_cfg (dict | str | None, optional): The initialization config
-            for linear layers in the feed forward network. Default: ``None``.
+            for linear layers in the feed forward network. Default:
+            ``dict(type='kaiming')``.
     """
 
     def __init__(self,
@@ -641,7 +644,7 @@ class CrossAttentionLayer(nn.Module):
                  act_cfg=dict(type='ReLU', inplace=True),
                  order=('cross_att', 'ffn'),
                  att_init_cfg=dict(type='xavier', distribution='uniform'),
-                 ffn_init_cfg=None):
+                 ffn_init_cfg=dict(type='kaiming')):
         super(CrossAttentionLayer, self).__init__()
 
         assert all(o in ('cross_att', 'ffn') for o in order)
