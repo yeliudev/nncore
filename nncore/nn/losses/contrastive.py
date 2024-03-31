@@ -138,7 +138,7 @@ class InfoNCELoss(nn.Module):
         max_scale (float, optional): The maximum value of learnable scale.
             Default: ``100``.
         learnable (bool, optional): Whether the logit scale is learnable.
-            Default: ``True``.
+            Default: ``False``.
         loss_weight (float, optional): Weight of the loss. Default: ``1.0``.
 
     References:
@@ -148,7 +148,7 @@ class InfoNCELoss(nn.Module):
     def __init__(self,
                  temperature=0.07,
                  max_scale=100,
-                 learnable=True,
+                 learnable=False,
                  dist=False,
                  loss_weight=1.0):
         super(InfoNCELoss, self).__init__()
