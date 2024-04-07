@@ -23,7 +23,8 @@ _FILE_HANDLERS = {
     'npy': NumPyHandler(),
     'npz': NumPyzHandler(),
     'xml': XMLHandler(),
-    'txt': TXTHandler()
+    'txt': TXTHandler(),
+    'sh': TXTHandler()
 }
 
 _open = open
