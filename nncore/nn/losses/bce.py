@@ -34,17 +34,25 @@ class DynamicBCELoss(nn.Module):
         return "reduction='{}', pos_weight={}, loss_weight={}".format(
             self._reduction, self._pos_weight, self._loss_weight)
 
-    def forward(self, pred, target, weight=None):
+    def forward(self, pred, target, weight=None, avg_factor=None):
         if self._pos_weight is not None:
             pos_weight = pred.new_tensor([self._pos_weight] * pred.size(1))
         else:
             pos_weight = None
 
+        if avg_factor is not None:
+            assert self._reduction == 'mean'
+            reduction = 'sum'
+        else:
+            reduction = self._reduction
+            avg_factor = 1
+
         loss = F.binary_cross_entropy_with_logits(
             pred,
             target,
             weight=weight,
-            reduction=self._reduction,
+            reduction=reduction,
             pos_weight=pos_weight)
+        loss = loss / avg_factor
 
         return loss * self._loss_weight
