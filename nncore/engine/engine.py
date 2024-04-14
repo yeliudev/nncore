@@ -215,6 +215,7 @@ class Engine(object):
 
         self.meta = meta
         self.debug = debug
+        self._kwargs = dict()
 
     @property
     def cur_stage(self):
@@ -450,7 +451,6 @@ class Engine(object):
         self._epoch += 1
 
     def val_epoch(self):
-        self.logger.info('Validating...')
         self._mode = 'val'
         self.model.eval()
         self.buffer.pop('_out', None)
@@ -467,7 +467,6 @@ class Engine(object):
         self._call_hook('after_val_epoch')
 
     def test_epoch(self):
-        self.logger.info('Evaluating...')
         self._mode = 'test'
         self.model.eval()
         self.buffer.pop('_out', None)
@@ -506,6 +505,7 @@ class Engine(object):
                     and cfg.get('interval', 0) > 0
                     and self.epoch_in_stage > cfg.get('offset', 0)
                     and self.epoch_in_stage % cfg.get('interval', 0) == 0):
+                self.logger.info('Validating...')
                 self.val_epoch()
 
         self._call_hook('after_stage')
@@ -549,6 +549,7 @@ class Engine(object):
         self._kwargs = kwargs
 
         if eval:
+            self.logger.info('Evaluating...')
             self.test_epoch()
             output = self.evaluate()
             self.logger.info(

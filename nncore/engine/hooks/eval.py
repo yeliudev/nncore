@@ -37,6 +37,7 @@ class EvalHook(Hook):
             return
 
         if self._run_test:
+            engine.logger.info('Evaluating...')
             engine.test_epoch()
 
         output = engine.evaluate()
