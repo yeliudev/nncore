@@ -34,11 +34,11 @@ NNCore is a library that provides common functionalities for Machine Learning an
 - More powerful data loading techniques
 - An engine that can take over the whole training and testing process, with all the baby-sitting works (stage control, optimizer configuration, lr scheduling, checkpoint management, metrics & tensorboard writing, etc.) done automatically. See an [example](https://github.com/yeliudev/nncore/blob/main/examples/mnist.py) for details.
 
-Note that some methods in the library work with PyTorch 1.11+, but the installation of PyTorch is not necessary.
+Note that some methods in the library work with PyTorch 2.0+, but the installation of PyTorch is not necessary.
 
 ## Continuous Integration
 
-| Platform / Python Version | 3.8 | 3.9 | 3.10 | 3.11 |
+| Platform / Python Version | 3.9 | 3.10 | 3.11 | 3.12
 | :-: | :-: | :-: | :-: | :-: |
 | Ubuntu 20.04 | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/0?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/1?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/2?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/3?icon=github&cache=300)][link] |
 | Ubuntu 22.04 | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/4?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/5?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/6?icon=github&cache=300)][link] | [![Build](https://badgen.net/runkit/yeliudev/nncore-badge/7?icon=github&cache=300)][link] |

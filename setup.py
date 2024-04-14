@@ -8,11 +8,11 @@ from pkg_resources import DistributionNotFound, get_distribution
 from setuptools import find_packages, setup
 
 INSTALL_REQUIRES = [
-    'h5py>=3.1', 'joblib>=1.1', 'jsonlines>=2', 'numpy>=1.19', 'pyyaml>=6',
-    'requests>=2.31', 'tabulate>=0.8', 'tensorboard>=2.12', 'termcolor>=1.1'
+    'h5py>=3.10', 'joblib>=1.3', 'jsonlines>=4', 'numpy>=1.26', 'pyyaml>=6',
+    'requests>=2.31', 'tabulate>=0.9', 'tensorboard>=2.16', 'termcolor>=2.4'
 ]
 
-OPENCV_INSTALL_REQUIRES = 'opencv-python-headless>=4.5', 'opencv-python>=4.5'
+OPENCV_INSTALL_REQUIRES = 'opencv-python-headless>=4.9', 'opencv-python>=4.9'
 
 
 def get_version():
@@ -60,12 +60,13 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Topic :: Utilities',
     ],
-    python_requires='>=3.8',
+    python_requires='>=3.9',
     setup_requires=['pytest-runner'],
     tests_require=['pytest'],
     install_requires=get_install_requires(),

@@ -4,7 +4,7 @@ from .activation import Clamp
 from .conv import *  # noqa
 from .msg_pass import GAT, GCN, SGC
 from .norm import DropPath, drop_path
-from .scale import Scale, Gate
+from .scale import Gate, Scale
 from .transformer import (CrossAttentionLayer, FeedForwardNetwork,
                           MultiHeadAttention, PositionalEncoding,
                           TransformerDecoderLayer, TransformerEncoderLayer)
