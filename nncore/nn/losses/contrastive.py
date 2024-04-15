@@ -8,7 +8,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 import nncore
-from nncore.engine import comm
 from nncore.ops import cosine_similarity
 from ..builder import LOSSES
 from ..bundle import Parameter
@@ -19,12 +18,11 @@ class _AllGather(torch.autograd.Function):
 
     @staticmethod
     def forward(ctx, tensor, group=None):
-        rank, world_size = comm.get_dist_info()
-
         ctx.size = tensor.size(-2)
-        ctx.rank = rank
+        ctx.rank = dist.get_rank(group=group)
         ctx.group = group
 
+        world_size = dist.get_world_size(group=group)
         gathered = [torch.zeros_like(tensor) for _ in range(world_size)]
         dist.all_gather(gathered, tensor, group=group)
 
@@ -79,8 +77,8 @@ def infonce_loss(a,
     n = a.size(-2)
     t = torch.arange(n, device=a.device)
 
-    if dist and comm.is_distributed():
-        rank = comm.get_rank(group=group)
+    if dist and dist.is_initialized():
+        rank = dist.get_rank(group=group)
 
         s, e = n * rank, n * (rank + 1)
         t += s
