@@ -466,11 +466,11 @@ class Engine(object):
 
         self._call_hook('after_val_epoch')
 
-    def test_epoch(self):
+    def test_epoch(self, split='test'):
         self._mode = 'test'
         self.model.eval()
         self.buffer.pop('_out', None)
-        self.data_loader = self.data_loaders[self._mode]
+        self.data_loader = self.data_loaders[split]
 
         if callable(getattr(self.data_loader.dataset, 'set_state', None)):
             self.data_loader.dataset.set_state(self._mode)
@@ -547,7 +547,7 @@ class Engine(object):
         output = dict()
         for split in splits:
             self.logger.info('Inferencing on {} split...'.format(split))
-            getattr(self, '{}_epoch'.format(split))()
+            self.test_epoch(split=split)
             out = self.evaluate()
             if out:
                 self.logger.info(

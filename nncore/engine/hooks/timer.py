@@ -77,11 +77,11 @@ class TimerHook(Hook):
     @main_only
     def before_val_iter(self, engine):
         self._iter_timer.reset()
-        self._val_timer.resume(raise_error=False)
+        self._val_timer.resume()
         self._update_time(engine, ['data'])
 
     @main_only
     def after_val_iter(self, engine):
         self._data_timer.reset()
-        self._val_timer.pause(raise_error=False)
+        self._val_timer.pause()
         self._update_time(engine, ['total', 'iter', 'val'])
