@@ -25,20 +25,20 @@ class Timer(object):
         """
         return self._paused is not None
 
-    def pause(self):
+    def pause(self, raise_error=True):
         """
         Pause the timer.
         """
-        if self.is_paused():
+        if self.is_paused() and raise_error:
             raise RuntimeError('the timer that is already paused')
 
         self._paused = perf_counter()
 
-    def resume(self):
+    def resume(self, raise_error=True):
         """
         Resume the timer.
         """
-        if not self.is_paused():
+        if not self.is_paused() and raise_error:
             raise RuntimeError('the timer is not paused')
 
         self._paused_time += perf_counter() - self._paused
