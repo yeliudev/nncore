@@ -130,8 +130,8 @@ class ProgressBar(object):
                 eta_str = self._get_time_str(math.ceil(eta))
                 end_str = '\n' if self._num_tasks == self._completed else ''
                 if self._percentage:
-                    msg = self._pb.format(f'{round(perc*100, 1)}%', ela_str,
-                                          eta_str, end_str)
+                    msg = self._pb.format('{}%'.format(round(perc * 100, 1)),
+                                          ela_str, eta_str, end_str)
                 else:
                     msg = self._wb.format(self._completed, self._num_tasks,
                                           fps, ela_str, eta_str, end_str)

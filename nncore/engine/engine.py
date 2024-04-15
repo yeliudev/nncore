@@ -512,10 +512,6 @@ class Engine(object):
         self._stage += 1
 
     def evaluate(self):
-        """
-        Perform evaluation. This methods is expected to be called after
-        validation or testing.
-        """
         blob = self.buffer.pop('_out')
         blob = gather(blob)
 
@@ -538,28 +534,46 @@ class Engine(object):
         sync()
         return output
 
-    def launch(self, eval=False, **kwargs):
+    def eval_mode(self, mode):
+        if isinstance(mode, bool):
+            splits = ('test', )
+        elif mode in ('val', 'test'):
+            splits = (mode, )
+        elif mode == 'both':
+            splits = ('val', 'test')
+        else:
+            raise ValueError("eval mode '{}' not found".format(mode))
+
+        output = dict()
+        for split in splits:
+            self.logger.info('Inferencing on {} split...'.format(split))
+            getattr(self, '{}_epoch'.format(split))()
+            out = self.evaluate()
+            if out:
+                self.logger.info(
+                    'Evaluation results on {} split: '.format(split) +
+                    ', '.join(['{}: {}'.format(k, v) for k, v in out.items()]))
+            output[split] = out
+            self.reset_states()
+
+        return output
+
+    def launch(self, eval=None, **kwargs):
         """
         Launch the engine.
 
         Args:
-            eval (bool, optional): Whether to run evaluation only. Default:
-                ``False``.
+            eval (str | bool, optional): Run evaluation only and specify the
+                split to run. Default: ``None``.
         """
         self._kwargs = kwargs
 
         if eval:
-            self.logger.info('Evaluating...')
-            self.test_epoch()
-            output = self.evaluate()
-            self.logger.info(
-                'Evaluation results: ' +
-                ', '.join(['{}: {}'.format(k, v) for k, v in output.items()]))
-            return output
+            return self.eval_mode(eval)
 
         self.logger.info('Distributed: {}, AMP: {}, Debug: {}'.format(
-            f'{get_world_size()} processes' if is_distributed() else False,
-            self.get_amp_type(), self.debug))
+            '{} processes'.format(get_world_size())
+            if is_distributed() else False, self.get_amp_type(), self.debug))
         self.logger.info('Launch engine, host: {}, work_dir: {}'.format(
             nncore.get_host_info(), self.work_dir))
 
