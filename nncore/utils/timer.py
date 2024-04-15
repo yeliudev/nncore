@@ -29,8 +29,10 @@ class Timer(object):
         """
         Pause the timer.
         """
-        if self.is_paused() and raise_error:
-            raise RuntimeError('the timer that is already paused')
+        if self.is_paused():
+            if raise_error:
+                raise RuntimeError('the timer that is already paused')
+            return
 
         self._paused = perf_counter()
 
@@ -38,8 +40,10 @@ class Timer(object):
         """
         Resume the timer.
         """
-        if not self.is_paused() and raise_error:
-            raise RuntimeError('the timer is not paused')
+        if not self.is_paused():
+            if raise_error:
+                raise RuntimeError('the timer is not paused')
+            return
 
         self._paused_time += perf_counter() - self._paused
         self._paused = None
