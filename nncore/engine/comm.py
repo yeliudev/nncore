@@ -87,7 +87,7 @@ def init_dist(launcher=None, backend='nccl', method='spawn', **kwargs):
         backend = 'gloo'
 
     if 'timeout' in kwargs:
-        os.environ['NCCL_BLOCKING_WAIT'] = '1'
+        os.environ['TORCH_NCCL_BLOCKING_WAIT'] = '1'
 
     dist.init_process_group(backend, **kwargs)
     info = '{} ({})'.format(launcher, backend)
