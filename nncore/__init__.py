@@ -11,4 +11,4 @@ except ImportError:
     warn("Please install opencv-python to enable 'nncore.image' and "
          "'nncore.video'")
 
-__version__ = '0.4.1'
+__version__ = '0.4.2'
