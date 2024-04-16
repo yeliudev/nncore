@@ -563,8 +563,8 @@ class Engine(object):
         Launch the engine.
 
         Args:
-            eval (str | bool, optional): Run evaluation only and specify the
-                split to run. Default: ``None``.
+            eval (str | bool | None, optional): Run evaluation only and
+                specify the split to use. Default: ``None``.
         """
         self._kwargs = kwargs
 

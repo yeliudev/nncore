@@ -161,7 +161,7 @@ def update_bn_stats_(model, data_loader, num_iters=200, **kwargs):
 
 def publish_model(checkpoint,
                   out='model.pth',
-                  keys_to_keep=['state_dict', 'meta'],
+                  keys_to_keep=['state_dict'],
                   device='cpu',
                   meta=None,
                   hash_type='sha256',
@@ -175,13 +175,13 @@ def publish_model(checkpoint,
         out (str, optional): Path to the output checkpoint file. Default:
             ``'model.pth'``.
         keys_to_keep (list[str], optional): The list of keys to be kept from
-            the checkpoint. Default: ``['state_dict', 'meta']``.
+            the checkpoint. Default: ``['state_dict']``.
         device (:obj:`torch.device` | str): The destination device. Default:
             ``'cpu'``.
         meta (dict | None, optional): The meta data to be saved. Note that the
             key ``nncore_version`` and ``create_time`` are reserved by the
             method. Default: ``None``.
-        hash_type (str, optional): Type of the hash algorithm. Currently
+        hash_type (str | None, optional): Type of the hash algorithm. Currently
             supported algorithms include ``'md5'``, ``'sha1'``, ``'sha224'``,
             ``'sha256'``, ``'sha384'``, ``'sha512'``, ``'blake2b'``,
             ``'blake2s'``, ``'sha3_224'``, ``'sha3_256'``, ``'sha3_384'``,
@@ -208,13 +208,14 @@ def publish_model(checkpoint,
     model = move_to_device(model, device=device)
     torch.save(model, out)
 
-    with open(out, 'rb') as f:
-        hasher = hashlib.new(hash_type, data=f.read())
-        hash_value = hasher.hexdigest()[:hash_len]
+    if hash_type is not None:
+        with open(out, 'rb') as f:
+            hasher = hashlib.new(hash_type, data=f.read())
+            hash_value = hasher.hexdigest()[:hash_len]
 
-    name, ext = nncore.split_ext(out)
-    hashed = '{}-{}.{}'.format(name, hash_value, ext).rstrip('.')
-    nncore.rename(out, hashed)
+        name, ext = nncore.split_ext(out)
+        hashed = '{}-{}.{}'.format(name, hash_value, ext).rstrip('.')
+        nncore.rename(out, hashed)
 
 
 def model_soup(model1, model2, out='model.pth', device='cpu'):
