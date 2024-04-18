@@ -118,6 +118,14 @@ class OptimizerHook(Hook):
                 p for p in engine.model.parameters()
                 if p.requires_grad and p.grad is not None
             ]
+
+            debug = cfg.pop('debug', False)
+            if debug:
+                norm_type = cfg.get('norm_type', 2)
+                grad_norm = sum(p.grad.detach().data.norm(2).item()**norm_type
+                                for p in params_with_grad)**(1 / norm_type)
+                engine.buffer.update('grad_norm', grad_norm)
+
             if len(params_with_grad) > 0:
                 clip_grad.clip_grad_norm_(params_with_grad, **cfg)
 
