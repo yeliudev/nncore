@@ -119,6 +119,9 @@ def log_or_print(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
     elif isinstance(logger_or_name, str):
         logger = get_logger(logger_or_name, **kwargs)
         logger.log(level, msg)
+    elif len(_CACHED_LOGGERS) > 0:
+        logger = get_logger(_CACHED_LOGGERS[0], **kwargs)
+        logger.log(level, msg)
     else:
         if level > 20:
             level_name = logging._levelToName[level]
