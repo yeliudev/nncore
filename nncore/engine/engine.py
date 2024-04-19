@@ -392,9 +392,19 @@ class Engine(object):
     def train_iter(self, data):
         self._call_hook('before_train_iter')
 
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        device = next(self.model.parameters()).device
         with torch.autocast(device, **self.amp_cfg):
             output = self.model(data, mode=self._mode, **self._kwargs)
+
+            if self.debug:
+                for key, value in output.items():
+                    if not torch.is_tensor(value):
+                        continue
+                    state = 'Inf' if torch.isinf(
+                        value) else 'NaN' if torch.isnan(value) else None
+                    if state is not None:
+                        self.logger.warn('Iter [{}]: {} detected in {}'.format(
+                            self._iter + 1, state, key))
 
             self.losses = {k: v for k, v in output.items() if 'loss' in k}
             if 'loss' not in output:
