@@ -392,8 +392,8 @@ class Engine(object):
     def train_iter(self, data):
         self._call_hook('before_train_iter')
 
-        device = next(self.model.parameters()).device
-        with torch.autocast(device, **self.amp_cfg):
+        device_type = next(self.model.parameters()).device.type
+        with torch.autocast(device_type, **self.amp_cfg):
             output = self.model(data, mode=self._mode, **self._kwargs)
 
             if self.debug:
