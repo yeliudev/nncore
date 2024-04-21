@@ -36,11 +36,11 @@ class Writer(metaclass=ABCMeta):
         if engine.mode == 'train':
             groups = engine.optimizer.param_groups
             if len(groups) == 1:
-                metrics['lr'] = round(groups[0]['lr'], 5)
+                metrics['lr'] = round(groups[0]['lr'], 8)
             else:
                 metrics['lr'] = [{
-                    group['name']: round(group['lr'], 5)
-                } if 'name' in group else round(group['lr'], 5)
+                    group['name']: round(group['lr'], 8)
+                } if 'name' in group else round(group['lr'], 8)
                                  for group in groups]
 
             metrics['epoch'] += 1
