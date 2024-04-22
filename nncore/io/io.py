@@ -46,8 +46,8 @@ def load(name_or_file, format=None, **kwargs):
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json/jsonl``, ``yaml/yml``,
-            ``pickle/pkl``, ``hdf5/h5``, ``npy/npz``, ``xml``, and ``txt``.
-            Default: ``None``.
+            ``pickle/pkl``, ``hdf5/h5``, ``npy/npz``, ``xml``, ``txt``,
+            and ``sh``. Default: ``None``.
 
     Returns:
         any: The loaded data.
@@ -78,8 +78,8 @@ def dump(obj, name_or_file, format=None, overwrite=True, **kwargs):
         format (str, optional): Format of the file. If not specified, the file
             format will be inferred from the file extension. Currently
             supported formats include ``json/jsonl``, ``yaml/yml``,
-            ``pickle/pkl``, ``hdf5/h5``, ``npy/npz``, ``xml``, and ``txt``.
-            Default: ``None``.
+            ``pickle/pkl``, ``hdf5/h5``, ``npy/npz``, ``xml``, ``txt``,
+            and ``sh``. Default: ``None``.
         overwrite (bool, optional): Whether to overwrite it if the file exists.
             Default: ``True``.
     """

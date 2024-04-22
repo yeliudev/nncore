@@ -18,7 +18,7 @@ or manually from source
 Usage
 --------------------
 
-You can easily import nncore in your own projects using the following command.
+Use the following command to import nncore in your own project.
 
 ::
 
