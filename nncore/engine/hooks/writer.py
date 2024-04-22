@@ -35,13 +35,16 @@ class Writer(metaclass=ABCMeta):
 
         if engine.mode == 'train':
             groups = engine.optimizer.param_groups
+            metrics['lr'] = []
+            for group in groups:
+                lr = round(group['lr'], 8 if group['lr'] < 1e-4 else 5)
+                if 'name' in group:
+                    metrics['lr'].append({group['name']: lr})
+                else:
+                    metrics['lr'].append(lr)
+
             if len(groups) == 1:
-                metrics['lr'] = round(groups[0]['lr'], 8)
-            else:
-                metrics['lr'] = [{
-                    group['name']: round(group['lr'], 8)
-                } if 'name' in group else round(group['lr'], 8)
-                                 for group in groups]
+                metrics['lr'] = metrics['lr'][0]
 
             metrics['epoch'] += 1
             metrics['iter'] += 1
