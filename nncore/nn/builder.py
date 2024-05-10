@@ -15,7 +15,12 @@ LOSSES = Registry('loss', parent=MODELS)
 MODULES = Registry('module', parent=MODELS)
 
 
-def build_model(cfg, *args, bundler='sequential', dist=None, **kwargs):
+def build_model(cfg,
+                *args,
+                bundler='sequential',
+                dist=None,
+                dp_cfg=None,
+                **kwargs):
     """
     Build a general model from a dict or str. This method searches for modules
     in :obj:`MODELS` first, and then fall back to :obj:`torch.nn`.
@@ -27,6 +32,8 @@ def build_model(cfg, *args, bundler='sequential', dist=None, **kwargs):
             ``'modulelist'``. Default: ``'sequential'``.
         dist (bool | None, optional): Whether the model is distributed. If not
             specified, the model will not be wrapped. Default: ``None``.
+        dp_cfg (dict | None, optional): The config for :obj:`NNDataParallel` or
+            :obj:`NNDataParallel`. Default: ``None``.
 
     Returns:
         :obj:`nn.Module`: The constructed model.
@@ -45,10 +52,13 @@ def build_model(cfg, *args, bundler='sequential', dist=None, **kwargs):
     if bundler == 'modulelist':
         model = ModuleList(model)
 
+    if dp_cfg is None:
+        dp_cfg = dict()
+
     if dist:
-        model = NNDistributedDataParallel(model)
+        model = NNDistributedDataParallel(model, **dp_cfg)
     elif dist is not None:
-        model = NNDataParallel(model)
+        model = NNDataParallel(model, **dp_cfg)
 
     return model
 
