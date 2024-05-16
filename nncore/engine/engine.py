@@ -202,14 +202,15 @@ class Engine(object):
             self.amp_cfg = amp
         elif isinstance(amp, str):
             if amp in ('fp16', 'float16'):
-                dtype = torch.float16
+                self.amp_cfg = dict(enabled=True, dtype=torch.float16)
             elif amp in ('bf16', 'bfloat16'):
-                dtype = torch.bfloat16
+                self.amp_cfg = dict(enabled=True, dtype=torch.bfloat16)
+            elif amp.lower() == 'none':
+                self.amp_cfg = dict(enabled=False)
             else:
                 raise TypeError(
-                    "Amp training only supports 'float16' or 'bfloat16' data "
-                    "types, but got '{}'".format(amp))
-            self.amp_cfg = dict(enabled=True, dtype=dtype)
+                    "Amp training only supports 'fp16' and 'bf16' data types, "
+                    "but got '{}'".format(amp))
         else:
             self.amp_cfg = dict(enabled=bool(amp))
 
