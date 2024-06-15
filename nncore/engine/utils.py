@@ -39,7 +39,11 @@ def _match_keys(keys, cand):
     return False
 
 
-def _load_state_dict(module, state_dict, strict=False, logger=None):
+def _load_state_dict(module,
+                     state_dict,
+                     strict=False,
+                     warning=True,
+                     logger=None):
     unexpected_keys = []
     missing_keys = []
     err_msg = []
@@ -76,7 +80,8 @@ def _load_state_dict(module, state_dict, strict=False, logger=None):
             raise RuntimeError(
                 'error in loading state dict for {}:\n\t{}'.format(
                     module.__class__.__name__, "\n\t".join(err_msg)))
-        nncore.log_or_print(err_msg, logger, log_level='WARNING')
+        if warning:
+            nncore.log_or_print(err_msg, logger, log_level='WARNING')
 
 
 def generate_random_seed(sync=True, src=0, group=None):
@@ -170,6 +175,7 @@ def load_checkpoint(model,
                     checkpoint,
                     map_location=None,
                     strict=False,
+                    warning=True,
                     keys=None,
                     logger=None,
                     **kwargs):
@@ -185,6 +191,8 @@ def load_checkpoint(model,
         strict (bool, optional): Whether to allow different params for the
             model and checkpoint. If ``True``, raise an error when the params
             do not match exactly. Default: ``False``.
+        warning (bool, optional): Whether to display warnings if the params
+            for the model and checkpoint are not matched. Default: ``True``.
         keys (list[str] | None, optional): The list of parameter keys to load.
             Default: ``None``.
         logger (:obj:`logging.Logger` | str | None, optional): The logger or
@@ -192,7 +200,7 @@ def load_checkpoint(model,
             ``None``.
 
     Returns:
-        :obj:`OrderedDict` | dict: The loaded checkpoint.
+        :obj:`nn.Module`: The model with loaded checkpoint.
     """
     if isinstance(checkpoint, str):
         checkpoint = get_checkpoint(
@@ -216,9 +224,10 @@ def load_checkpoint(model,
         getattr(model, 'module', model),
         state_dict,
         strict=strict,
+        warning=warning,
         logger=logger)
 
-    return checkpoint
+    return model
 
 
 def save_checkpoint(model, filename, optimizer=None, meta=None):
