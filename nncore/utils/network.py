@@ -52,7 +52,7 @@ def download(url,
         if exist == 'skip':
             if verbose:
                 print(f'File {out_path} already downloaded')
-            return
+            return out_path
         elif exist == 'overwrite':
             remove(out_path)
         else:
