@@ -29,7 +29,7 @@ class _Formatter(logging.Formatter):
         return prefix + log[anchor:]
 
 
-def get_logger(logger_or_name=None,
+def get_logger(logger=None,
                fmt='[%(asctime)s %(levelname)s]: %(message)s',
                datefmt='%Y-%m-%d %H:%M:%S',
                log_level=logging.INFO,
@@ -44,8 +44,8 @@ def get_logger(logger_or_name=None,
     ``0``, a :obj:`FileHandler` will also be added.
 
     Args:
-        logger_or_name (:obj:`logging.Logger` | str | None, optional): The
-            logger or name of the logger. Default: ``None``.
+        logger (:obj:`logging.Logger` | str | None, optional): The logger or
+            name of the logger. Default: ``None``.
         fmt (str, optional): Logging format of the logger. The format must end
             with ``'%(message)s'`` to make sure that the colors can be rendered
             properly. Default: ``'[%(asctime)s %(levelname)s]: %(message)s'``.
@@ -64,15 +64,15 @@ def get_logger(logger_or_name=None,
     """
     global _DEFAULT_LOGGER
 
-    if isinstance(logger_or_name, logging.Logger):
-        return logger_or_name
-
-    logger = logging.getLogger(logger_or_name)
-
-    if logger_or_name in _CACHED_LOGGERS:
+    if isinstance(logger, logging.Logger):
         return logger
 
-    _CACHED_LOGGERS.append(logger_or_name)
+    logger = logging.getLogger(logger)
+
+    if logger in _CACHED_LOGGERS:
+        return logger
+
+    _CACHED_LOGGERS.append(logger)
 
     if _DEFAULT_LOGGER is None:
         _DEFAULT_LOGGER = logger
@@ -106,7 +106,7 @@ def get_logger(logger_or_name=None,
     return logger
 
 
-def set_default_logger(logger_or_name=None,
+def set_default_logger(logger=None,
                        fmt='[%(asctime)s %(levelname)s]: %(message)s',
                        datefmt='%Y-%m-%d %H:%M:%S',
                        log_level=logging.INFO,
@@ -121,8 +121,8 @@ def set_default_logger(logger_or_name=None,
     ``0``, a :obj:`FileHandler` will also be added.
 
     Args:
-        logger_or_name (:obj:`logging.Logger` | str | None, optional): The
-            logger or name of the logger. Default: ``None``.
+        logger (:obj:`logging.Logger` | str | None, optional): The logger or
+            name of the logger. Default: ``None``.
         fmt (str, optional): Logging format of the logger. The format must end
             with ``'%(message)s'`` to make sure that the colors can be rendered
             properly. Default: ``'[%(asctime)s %(levelname)s]: %(message)s'``.
@@ -139,14 +139,14 @@ def set_default_logger(logger_or_name=None,
     global _DEFAULT_LOGGER
 
     _DEFAULT_LOGGER = get_logger(
-        logger_or_name=logger_or_name,
+        logger=logger,
         fmt=fmt,
         datefmt=datefmt,
         log_level=log_level,
         log_file=log_file)
 
 
-def log(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
+def log(*args, logger=None, log_level=logging.INFO, **kwargs):
     """
     Print a message with a logger. If ``logger`` is a valid
     :obj:`logging.Logger` or a name of the logger, then it would be used.
@@ -154,17 +154,18 @@ def log(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
     :obj:`print` function instead.
 
     Args:
-        msg (str): The message to be logged.
-        logger_or_name (:obj:`logging.Logger` | str | None, optional): The
-            logger or name of the logger to use. Default: ``None``.
+        *args (list[str] | str): The message to be logged.
+        logger (:obj:`logging.Logger` | str | None, optional): The logger
+            or name of the logger to use. Default: ``None``.
         log_level (int, optional): Log level of the logger. Default:
             :obj:`logging.INFO`.
     """
     level = logging._checkLevel(log_level)
-    if isinstance(logger_or_name, logging.Logger):
-        logger_or_name.log(level, msg)
-    elif isinstance(logger_or_name, str):
-        logger = get_logger(logger_or_name, **kwargs)
+    msg = ' '.join(args)
+    if isinstance(logger, logging.Logger):
+        logger.log(level, msg)
+    elif isinstance(logger, str):
+        logger = get_logger(logger, **kwargs)
         logger.log(level, msg)
     elif isinstance(_DEFAULT_LOGGER, logging.Logger):
         _DEFAULT_LOGGER.log(level, msg)
