@@ -8,7 +8,15 @@ class TXTHandler(FileHandler):
     Handler for plain text files.
     """
 
-    def load_from_file(self, file, offset=0, separator=None, max_length=-1):
+    def load_from_file(self,
+                       file,
+                       pure_text=False,
+                       offset=0,
+                       separator=None,
+                       max_length=-1):
+        if pure_text:
+            return file.read()
+
         out, count = [], 0
 
         for _ in range(offset):

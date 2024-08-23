@@ -24,6 +24,7 @@ _FILE_HANDLERS = {
     'npz': NumPyzHandler(),
     'xml': XMLHandler(),
     'txt': TXTHandler(),
+    'log': TXTHandler(),
     'sh': TXTHandler()
 }
 
