@@ -161,7 +161,7 @@ def log(*args, logger=None, log_level=logging.INFO, **kwargs):
             :obj:`logging.INFO`.
     """
     level = logging._checkLevel(log_level)
-    msg = ' '.join(args)
+    msg = ' '.join([str(a) for a in args])
     if isinstance(logger, logging.Logger):
         logger.log(level, msg)
     elif isinstance(logger, str):
