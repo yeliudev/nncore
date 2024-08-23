@@ -48,7 +48,7 @@ class Buffer(object):
                     "Number of '{}' values in the buffer exceeds max size "
                     "({}), removing the oldest element".format(
                         key, self._max_size),
-                    self._logger,
+                    logger=self._logger,
                     log_level='WARNING')
             self._data[key].pop(0)
 
