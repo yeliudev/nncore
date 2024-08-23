@@ -17,6 +17,7 @@ _COLOR_MAP = {
 }
 
 _CACHED_LOGGERS = []
+_DEFAULT_LOGGER = None
 
 
 class _Formatter(logging.Formatter):
@@ -61,6 +62,8 @@ def get_logger(logger_or_name=None,
     Returns:
         :obj:`logging.Logger`: The expected logger.
     """
+    global _DEFAULT_LOGGER
+
     if isinstance(logger_or_name, logging.Logger):
         return logger_or_name
 
@@ -71,14 +74,17 @@ def get_logger(logger_or_name=None,
 
     _CACHED_LOGGERS.append(logger_or_name)
 
+    if _DEFAULT_LOGGER is None:
+        _DEFAULT_LOGGER = logger
+
     logger.setLevel(log_level)
     logger.propagate = False
 
-    if not fmt.endswith('%(message)s'):
+    if fmt is not None and not fmt.endswith('%(message)s'):
         raise ValueError("fmt must end with '%(message)s'")
 
-    sh = logging.StreamHandler(stream=sys.stdout)
     formatter = _Formatter(fmt=fmt, datefmt=datefmt)
+    sh = logging.StreamHandler(stream=sys.stdout)
     sh.setFormatter(formatter)
     logger.addHandler(sh)
 
@@ -100,11 +106,52 @@ def get_logger(logger_or_name=None,
     return logger
 
 
-def log_or_print(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
+def set_default_logger(logger_or_name=None,
+                       fmt='[%(asctime)s %(levelname)s]: %(message)s',
+                       datefmt='%Y-%m-%d %H:%M:%S',
+                       log_level=logging.INFO,
+                       log_file=None):
+    """
+    Initialize and set the default logger.
+
+    If the logger has not been initialized, this method will initialize the
+    logger by adding one or two handlers, otherwise the initialized logger will
+    be directly set. During initialization, a :obj:`StreamHandler` will
+    always be added. If ``log_file`` is specified and the process rank is
+    ``0``, a :obj:`FileHandler` will also be added.
+
+    Args:
+        logger_or_name (:obj:`logging.Logger` | str | None, optional): The
+            logger or name of the logger. Default: ``None``.
+        fmt (str, optional): Logging format of the logger. The format must end
+            with ``'%(message)s'`` to make sure that the colors can be rendered
+            properly. Default: ``'[%(asctime)s %(levelname)s]: %(message)s'``.
+        datefmt (str, optional): Date format of the logger. Default:
+            ``'%Y-%m-%d %H:%M:%S'``.
+        log_level (str | int, optional): Log level of the logger. Note that
+            only the main process (rank 0) is affected, and other processes
+            will set the level to ``ERROR`` thus be silent at most of the time.
+            Default: :obj:`logging.INFO`.
+        log_file (str | None, optional): Path to the log file. If specified, a
+            :obj:`FileHandler` will be added to the logger of the main process.
+            Default: ``None``.
+    """
+    global _DEFAULT_LOGGER
+
+    _DEFAULT_LOGGER = get_logger(
+        logger_or_name=logger_or_name,
+        fmt=fmt,
+        datefmt=datefmt,
+        log_level=log_level,
+        log_file=log_file)
+
+
+def log(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
     """
     Print a message with a logger. If ``logger`` is a valid
     :obj:`logging.Logger` or a name of the logger, then it would be used.
-    Otherwise this method will use the normal :obj:`print` function instead.
+    Otherwise this method will try to use the default logger or the normal
+    :obj:`print` function instead.
 
     Args:
         msg (str): The message to be logged.
@@ -119,9 +166,8 @@ def log_or_print(msg, logger_or_name=None, log_level=logging.INFO, **kwargs):
     elif isinstance(logger_or_name, str):
         logger = get_logger(logger_or_name, **kwargs)
         logger.log(level, msg)
-    elif len(_CACHED_LOGGERS) > 0:
-        logger = get_logger(_CACHED_LOGGERS[0], **kwargs)
-        logger.log(level, msg)
+    elif isinstance(_DEFAULT_LOGGER, logging.Logger):
+        _DEFAULT_LOGGER.log(level, msg)
     else:
         if level > 20:
             level_name = logging._levelToName[level]

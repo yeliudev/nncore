@@ -44,7 +44,7 @@ class Buffer(object):
         elif not key.startswith('_') and len(
                 self._data[key]) == self._max_size:
             if warning:
-                nncore.log_or_print(
+                nncore.log(
                     "Number of '{}' values in the buffer exceeds max size "
                     "({}), removing the oldest element".format(
                         key, self._max_size),

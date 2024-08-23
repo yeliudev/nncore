@@ -81,7 +81,7 @@ def _load_state_dict(module,
                 'error in loading state dict for {}:\n\t{}'.format(
                     module.__class__.__name__, "\n\t".join(err_msg)))
         if warning:
-            nncore.log_or_print(err_msg, logger, log_level='WARNING')
+            nncore.log(err_msg, logger, log_level='WARNING')
 
 
 def generate_random_seed(sync=True, src=0, group=None):
