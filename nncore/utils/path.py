@@ -186,6 +186,20 @@ def is_dir(path, raise_error=False):
     return is_dir
 
 
+@recursive()
+def get_size(path):
+    """
+    Get the size of a file.
+
+    Args:
+        path (str): Path to the file.
+
+    Returns:
+        int: The size of the file.
+    """
+    return os.path.getsize(path)
+
+
 def ls(path=None, ext=None, skip_hidden_files=True, join_path=False):
     """
     List all files in a directory.
