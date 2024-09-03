@@ -200,7 +200,11 @@ def get_size(path):
     return os.path.getsize(path)
 
 
-def ls(path=None, ext=None, skip_hidden_files=True, join_path=False):
+def ls(path=None,
+       ext=None,
+       skip_hidden_files=True,
+       join_path=False,
+       sort=False):
     """
     List all files in a directory.
 
@@ -214,6 +218,7 @@ def ls(path=None, ext=None, skip_hidden_files=True, join_path=False):
             whose filenames start with '.'. Default: ``True``.
         join_path (bool, optional): Whether to return the joined path of files.
             Default: ``False``.
+        sort (bool, optional): Whether to sort the paths. Default: ``False``.
 
     Returns:
         list: The list of files.
@@ -236,6 +241,9 @@ def ls(path=None, ext=None, skip_hidden_files=True, join_path=False):
 
     if join_path:
         files = [join(path, f) for f in files]
+
+    if sort:
+        files.sort()
 
     return files
 
