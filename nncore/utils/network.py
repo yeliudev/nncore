@@ -51,7 +51,7 @@ def download(url,
     if is_file(out_path):
         if exist == 'skip':
             if verbose:
-                print(f'File {out_path} already downloaded')
+                print(f'File {out_path} is already downloaded')
             return out_path
         elif exist == 'overwrite':
             remove(out_path)
