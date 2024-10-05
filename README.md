@@ -9,21 +9,11 @@
 </p>
 
 <p align="center">
-  <a href="https://pypi.org/project/nncore">
-    <img src="https://badgen.net/pypi/v/nncore?label=PyPI&cache=300">
-  </a>
-  <a href="https://pypistats.org/packages/nncore">
-    <img src="https://badgen.net/pypi/dm/nncore?label=Downloads&color=cyan&cache=300">
-  </a>
-  <a href="https://github.com/yeliudev/nncore/blob/main/LICENSE">
-    <img src="https://badgen.net/github/license/yeliudev/nncore?label=License&cache=300">
-  </a>
-  <a href="https://coveralls.io/github/yeliudev/nncore?branch=main">
-    <img src="https://badgen.net/coveralls/c/github/yeliudev/nncore/main?label=Coverage&cache=300">
-  </a>
-  <a href="https://www.codacy.com/gh/yeliudev/nncore/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yeliudev/nncore&amp;utm_campaign=Badge_Grade">
-    <img src="https://badgen.net/codacy/grade/93d963e3247e43eb86d282cffacf0125?label=Code%20Quality&cache=300">
-  </a>
+  <a href="https://pypi.org/project/nncore"><img src="https://badgen.net/pypi/v/nncore?label=PyPI&cache=300"></a>
+  <a href="https://pypistats.org/packages/nncore"><img src="https://badgen.net/pypi/dm/nncore?label=Downloads&color=cyan&cache=300"></a>
+  <a href="https://github.com/yeliudev/nncore/blob/main/LICENSE"><img src="https://badgen.net/github/license/yeliudev/nncore?label=License&cache=300"></a>
+  <a href="https://coveralls.io/github/yeliudev/nncore?branch=main"><img src="https://badgen.net/coveralls/c/github/yeliudev/nncore/main?label=Coverage&cache=300"></a>
+  <a href="https://www.codacy.com/gh/yeliudev/nncore/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yeliudev/nncore&amp;utm_campaign=Badge_Grade"><img src="https://badgen.net/codacy/grade/93d963e3247e43eb86d282cffacf0125?label=Code%20Quality&cache=300"></a>
 </p>
 
 NNCore is a library that provides common functionalities for Machine Learning and Deep Learning researchers. This project aims at helping users focus more on science but not engineering during research. The essential functionalities include but are not limited to:
