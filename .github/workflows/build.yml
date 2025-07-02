@@ -10,27 +10,27 @@ jobs:
         os: [ubuntu-22.04, ubuntu-24.04, macos-14, macos-15, windows-2025]
         python: ['3.9', '3.10', '3.11', '3.12']
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python }}
-    - name: Install requirements
-      run: pip install --upgrade setuptools wheel isort yapf flake8 coveralls pytest
-    - name: Check code style
-      run: |
-        isort --df nncore tests examples setup.py
-        yapf -dr nncore tests examples setup.py
-        flake8 nncore tests examples setup.py
-    - name: Install NNCore
-      run: pip install -e .
-    - name: Run unit tests
-      run: coverage run --source=nncore -m pytest
-    - name: Report coverage
-      run: coverage report
-    - name: Coveralls
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        COVERALLS_SERVICE_NAME: github
-      run: coveralls
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install requirements
+        run: pip install --upgrade setuptools wheel isort yapf flake8 coveralls pytest
+      - name: Check code style
+        run: |
+          isort --df nncore tests examples setup.py
+          yapf -dr nncore tests examples setup.py
+          flake8 nncore tests examples setup.py
+      - name: Install NNCore
+        run: pip install -e .
+      - name: Run unit tests
+        run: coverage run --source=nncore -m pytest
+      - name: Report coverage
+        run: coverage report
+      - name: Coveralls
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_SERVICE_NAME: github
+        run: coveralls

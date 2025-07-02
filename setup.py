@@ -50,4 +50,5 @@ setup(
     ],
     python_requires='>=3.9',
     install_requires=INSTALL_REQUIRES,
+    extras_require={'docs': ['sphinx-rtd-theme']},
     packages=find_packages(exclude=('.github', 'docs', 'examples', 'tests')))
