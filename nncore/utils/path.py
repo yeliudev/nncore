@@ -135,6 +135,20 @@ def pure_ext(path):
     return split_ext(path)[1]
 
 
+def cwd(base=False):
+    """
+    Get the current working directory.
+
+    Args:
+        base (str): Whether to return the base name only.
+
+    Returns:
+        str: The current working directory.
+    """
+    cwd = os.getcwd()
+    return base_name(cwd) if base else cwd
+
+
 def join(*args):
     """
     Combine strings into a path.
