@@ -9,6 +9,7 @@
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
+import ast
 import os
 import sys
 
@@ -27,8 +28,8 @@ def get_version():
         lines = f.readlines()
     for line in lines:
         if line.startswith('__version__'):
-            exec(line.strip())
-    return locals()['__version__']
+            return ast.literal_eval(line.split('=', 1)[1].strip())
+    raise RuntimeError('Unable to find package version')
 
 
 # The full version, including alpha/beta/rc tags

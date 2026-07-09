@@ -1,5 +1,6 @@
 # Copyright (c) Ye Liu. Licensed under the MIT License.
 
+import ast
 import os
 
 from setuptools import find_packages, setup
@@ -17,8 +18,8 @@ def get_version():
         lines = f.readlines()
     for line in lines:
         if line.startswith('__version__'):
-            exec(line.strip())
-    return locals()['__version__']
+            return ast.literal_eval(line.split('=', 1)[1].strip())
+    raise RuntimeError('Unable to find package version')
 
 
 def get_readme():
